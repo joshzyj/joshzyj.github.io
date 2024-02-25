@@ -79,8 +79,6 @@ Yongjun Zhang. 2023. "[Multiplex Spatial Segregation of Asian American Voters in
 
 Yongjun Zhang and Siwei Cheng. 2023. "[Mobility-based Segregation in U.S. Metropolitan Areas](https://yongjunzhang.com/files/nb_seg.pdf)."
 
-Yongjun Zhang and Jennifer Heerwig. 2023. "[Gender, Race, and Intersectionality in the Political Donations of America's Corporate Elite](https://yongjunzhang.com/files/cf-paper.pdf)".
-
 Yongjun Zhang, Sijia Liu, Yi Wang, and Xinguang Fan. 2022. ''[Detecting Fake News on Twitter in the Chinese Language Community](https://doi.org/10.48550/arXiv.2304.03454)."
 
 Yongjun Zhang. 2021. "[Using Population Mobility to Measure Racial Residential Segregation in the U.S. Metro Areas](https://osf.io/pvbxw/)." 
