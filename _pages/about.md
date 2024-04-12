@@ -42,33 +42,12 @@ November 4, 2022, Conversation with Assitant Professor Rebecca Johnson at George
 
 ## New Paper Alert
 
+Siwei Cheng, Yongjun Zhang, and Jenna Shaw. 2024. ''The Geography of Activity Space Segregation: Combining Mobile Device Data and Census Data.'' RSF Journal of the Social Sciences.
+
 Thomas V. Maher, Charles Seguin, and Yongjun Zhang. 2024. ''The Racial Limits of Disruption: How Race and Tactics Influence Social Movement Organization Testimony Before Congress, 1960-1995.'' Social Forces.
 
 Yongjun Zhang and Jennifer Heerwig. 2024. ''[Gender, Race, and Intersectionality in the Political Donations of America’s Corporate Elite](https://doi.org/10.1080/00380253.2024.2314069)." The Sociological Quarterly.
 
-Andrew Davis and Yongjun Zhang. 2023. ''[Civil Society and Democracy under Pressure: Does Authoritarian Mobilization and Party Incapacity Diminish the Positive Effect of Civil Society?](https://doi.org/10.1080/00380253.2023.2289500).'' The Sociological Quarterly.
-
-Yongjun Zhang. 2023. "[Spatial Segregation and Voting Behavior among Asian Americans in 2020 General Election](https://authors.elsevier.com/a/1hpCB,17Rod9WC)." Social Science Research. 
-
-Yue Yu, Yifang Wang, Qisen Yang, Di Weng, Yongjun Zhang, Xiaogang Wu, Yingcai Wu, and Huamin Qu. 2023. ''NeighViz: Towards Better Understanding of Neighborhood Effects on Social Groups with Spatial Data.'' [Visualization in Data Science at IEEE VIS](https://arxiv.org/abs/2309.11454).
-
-Yongjun Zhang, Hao Lin, Yi Wang, and Xinguang Fan. 2023. ''[Sinophobia was popular on Twitter during the early COVID-19 pandemic](https://www.nature.com/articles/s41599-023-01959-6)." Nature Humanities and Social Sciences Communications.
-
-Yongjun Zhang, Siwei Cheng, Zhi Li, and Wenhao Jiang. 2023. "[Human  mobility patterns are associated with experienced partisan segregation in US Metropolitan areas](https://www.nature.com/articles/s41598-023-36946-z)." Scientific Reports.
-
-Charles Seguin, Thomas Maher, Yongjun Zhang. 2023. ''[A Seat at the Table: A New Dataset of Social Movement Organization Representation Before Congress during the 20th Century](https://t.co/wkTU2sQDlo)''. Socius.
-
-Yongjun Zhang and Jennifer Heerwig. 2022. "[Gender, Race, and Intersectionality in Campaign Cash to the U.S. Congress, 1990-2014.](https://journals.sagepub.com/doi/full/10.1177/23780231221121063)" Socius.
-
-Xinguang Fan and Yongjun Zhang. 2022. "[Just Virus or Politicized Virus? An Analysis of over 13 Million Global Web News of China on COVID-19.](https://www.tandfonline.com/eprint/9WWTWZKT55HISQFFQVQU/full?target=10.1080/21620555.2022.2116308)" Chinese Sociological Review.
-
-Hao Lin, Pradeep Nalluri, Lantian Li, Yifan Sun, and Yongjun Zhang. 2022. "[Multiplex Anti-Asian Sentiment before and during the Pandemic: Introducing New Datasets from Twitter Mining](https://aclanthology.org/2022.wassa-1.2/)." 12th Workshop on Computational Approaches to Subjectivity, Sentiment & Social Media Analysis.
-
-Yongjun Zhang, Sienna Thorgusen, and Xinguang Fan. 2022. "[News Coverage of Social Protests in Global Society](https://doi.org/10.1177/00207152221085601)." International Journal of Comparative Sociology.
-
-Yongjun Zhang. 2021. "[Corporate Responses to COVID19: A Non-Market Strategy Approach](https://doi.org/10.1177/07311214211017587)." Sociological Perspectivies.
-
-Charles Seguin, Chris Julien, and Yongjun Zhang. 2021. "[The stability of androgynous names: Dynamics of gendered naming practices in the United States 1880–2016.](http://www.charlieseguin.com/uploads/4/1/2/7/41271621/seguin_poetics_names_10-2020.pdf)" Poetics
 
 ## Working Paper
 Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
