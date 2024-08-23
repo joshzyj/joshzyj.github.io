@@ -31,16 +31,10 @@ I co-organized the 2023 NYU Shanghai site for Summer Institute of Computational 
 
 I also taught intro to css for NYU Shanghai CASER. Check here for [the syllabus](https://yongjunzhang.com/files/CSS_Intro_NYU_Shanghai_Syllabus.pdf). 
 
-## Frontiers Conversations on Digital Society
-I am co-hosting a Brownbag series with Professor Zeqi Qiu at Peking University focusing on digital society and its impact on our world. Our first speaker is Professor Chris Bail.
-
-April 6, 2022, Conversation with Professor Chris Bail at Duke University, Director of Polarization Lab. [Click here for more info](https://yongjunzhang.com/files/smp.pdf). 
-
-November 10, 2022, Conversation with Professor Esteban Moro at MIT Media Lab. Sponsored by IACS at Stony Brook University.
-
-November 4, 2022, Conversation with Assitant Professor Rebecca Johnson at Georgetown McCourt School of Public Policy. Sponsored by Sociology at Stony Brook University.
 
 ## New Paper Alert
+
+Yongjun Zhang and Siwei Cheng. 2024. ''Mobility-based Segregation in U.S. Metropolitan Areas: Evidence from Large-scale Mobile Device Data.'' Demography.
 
 Siwei Cheng, Yongjun Zhang, and Jenna Shaw. 2024. ''The Geography of Activity Space Segregation: Combining Mobile Device Data and Census Data.'' RSF Journal of the Social Sciences.
 
@@ -50,41 +44,21 @@ Yongjun Zhang and Jennifer Heerwig. 2024. ''[Gender, Race, and Intersectionality
 
 
 ## Working Paper
+
+Hao Lin and Yongjun Zhang. 2024. "[The Risks of Using LLMs for Text Annotation in Social Science Research](https://files.osf.io/v1/resources/79qu8/providers/osfstorage/66aa8212aa5b64458b9b3fe2)."
+
 Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
 
 Yongjun Zhang. 2023. "[Generative AI has lowered the barriers to computational social sciences](https://yongjunzhang.com/files/Generative_AI_and_CSS.pdf)."
 
-Yongjun Zhang. 2023. "[Multiplex Spatial Segregation of Asian American Voters in New York City]()."
-
-Yongjun Zhang and Siwei Cheng. 2023. "[Mobility-based Segregation in U.S. Metropolitan Areas](https://yongjunzhang.com/files/nb_seg.pdf)."
-
 Yongjun Zhang, Sijia Liu, Yi Wang, and Xinguang Fan. 2022. ''[Detecting Fake News on Twitter in the Chinese Language Community](https://doi.org/10.48550/arXiv.2304.03454)."
 
-Yongjun Zhang. 2021. "[Using Population Mobility to Measure Racial Residential Segregation in the U.S. Metro Areas](https://osf.io/pvbxw/)." 
 
-## Talks
+## Upcoming Talks
 
-Yongjun Zhang. Feb 2024. ''Sinophobia on Western Social Media During the Early Pandemic.'' York Centre for Asian Research. [[Poster]](https://yongjunzhang.com/files/ycar.jpg); [[Link]](https://ycar.apps01.yorku.ca/event/sinophobia-western-social-media-early-covid19-zhang-09022024/)
+Yongjun Zhang. Feb 2025. ''The Color of Activity Spaces.'' Department of Sociology, Brown University.
 
-Yongjun Zhang. Novemeber 2023. "Generative AI and Computational Social Science." Peking University.
-
-Yongjun Zhang. October 2023. "Quantifying Segregation with Big Data." Department of Sociology at Queens College. [[Poster]](https://yongjunzhang.com/files/queens-soc.pdf)
-
-Yongjun Zhang. August 2023. "Experienced Partisan Segregation." ASA Session on Inequality across Time, Space, and Families.
-
-Yongjun Zhang. July 2023. "Frontiers in Computational Social Science: New Trends, Opportunities, and Challenges." Nanjing University [[Poster]](https://yongjunzhang.com/files/nanjing.jpeg).
-
-Yongjun Zhang. June 2023. "An Overview of Computational Social Science". SICSS NYU-Shanghai.
-
-Yongjun Zhang. March 2022. "Gender, Race, and Intersectionality in the Political Donations of America's Corporate Elite". European University Institute. with Dr. Jennifer Heerwig.
-
-Yongjun Zhang. Dec 2021. "Computational Social Science: Its Recent Development, Opportunities, and Challenges." Peking University [[Poster]](https://yongjunzhang.com/images/pkutalk.png).
-
-Yongjun Zhang. Oct 2021. ["Residential Segregation in U.S. Metro Areas: Using Facebook and Safegraph Data to Assess Racial Segregation."](https://arts-sciences.buffalo.edu/sociology/news-events/colloquium.html) Department of Sociology, SUNY Buffalo [[Poster]](https://yongjunzhang.com/files/ub.pdf).
-
-Yongjun Zhang. Oct 2021. ["Using Population Mobility Data to Measure Racial Segregation in the U.S." IACS, Stony Brook University](https://calendar.stonybrook.edu/site/iacs/event/stride-con-2021/).
-
-Yongjun Zhang. Sept 24, 2021. "Using Relational Data from Facebook and SafeGraph to Measure Racial Segregation." Department of Physchology, Stony Brook University.
+Yongjun Zhang. Oct 2024. ''Using GPS Data to Study Activity Space Segregation in US Metro Areas.'' NetMob2024, World Bank, Washington DC.
 
 ## Social Media
 
