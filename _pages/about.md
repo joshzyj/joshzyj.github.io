@@ -34,9 +34,11 @@ I also taught intro to css for NYU Shanghai CASER. Check here for [the syllabus]
 
 ## New Paper Alert
 
-Yongjun Zhang and Siwei Cheng. 2024. ''Mobility-based Segregation in U.S. Metropolitan Areas: Evidence from Large-scale Mobile Device Data.'' Demography.
+Yue Yu, Yifang Wang, Yongjun Zhang, Huamin Qu, and Dongyu Liu. ''InclusiViz: Visual Analytics of Human Mobility Data for Understanding and Mitigating Urban Segregation.'' IEEE PacificVis 2025. Forthcoming.
 
-Siwei Cheng, Yongjun Zhang, and Jenna Shaw. 2024. ''The Geography of Activity Space Segregation: Combining Mobile Device Data and Census Data.'' RSF Journal of the Social Sciences.
+Yongjun Zhang and Siwei Cheng. ''Mobility-based Segregation in U.S. Metropolitan Areas: Evidence from Large-scale Mobile Device Data.'' Demography. Forthcoming.
+
+Siwei Cheng, Yongjun Zhang, and Jenna Shaw. 2025. ''[The Geography of Activity Space Segregation: Combining Mobile Device Data and Census Data](https://www.rsfjournal.org/content/11/1/132).'' RSF Journal of the Social Sciences.
 
 Thomas V. Maher, Charles Seguin, and Yongjun Zhang. 2024. ''The Racial Limits of Disruption: How Race and Tactics Influence Social Movement Organization Testimony Before Congress, 1960-1995.'' Social Forces.
 
@@ -45,7 +47,7 @@ Yongjun Zhang and Jennifer Heerwig. 2024. ''[Gender, Race, and Intersectionality
 
 ## Working Paper
 
-Hao Lin and Yongjun Zhang. 2024. "[The Risks of Using LLMs for Text Annotation in Social Science Research](https://files.osf.io/v1/resources/79qu8/providers/osfstorage/66aa8212aa5b64458b9b3fe2)."
+Hao Lin and Yongjun Zhang. 2024. "[The Opportunities and Risks of Using LLMs for Text Annotation in Social Science Research](https://files.osf.io/v1/resources/79qu8/providers/osfstorage/66aa8212aa5b64458b9b3fe2)."
 
 Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
 
