@@ -28,9 +28,9 @@ main:
   #- title: "中文"
   #  url: /chn/
 
-  - title: "ZLab"
-    url: /zlab/
+  #- title: "ZLab"
+  #  url: /zlab/
 
-  - title: "AAPI"
-    url: /aapi/
+  #- title: "AAPI"
+  #  url: /aapi/
 
