@@ -36,6 +36,11 @@ I also taught intro to css for NYU Shanghai CASER. Check here for [the syllabus]
 
 ## New Paper Alert
 
+Hao Lin and Yongjun Zhang. 2025. "[Navitaging The Risks of Using LLMs for Text Annotation in Social Science Research](https://doi.org/10.48550/arXiv.2503.22040)." Social Science Computer Review.
+
+Yongjun Zhang. 2025. "[Generative AI has lowered the barriers to computational social sciences](https://yongjunzhang.com/files/Generative_AI_and_CSS.pdf)." Journal of Intelligent Socities.
+
+
 Yue Yu, Yifang Wang, Yongjun Zhang, Huamin Qu, and Dongyu Liu. ''InclusiViz: Visual Analytics of Human Mobility Data for Understanding and Mitigating Urban Segregation.'' IEEE PacificVis 2025. Forthcoming.
 
 Yongjun Zhang and Siwei Cheng. ''Mobility-based Segregation in U.S. Metropolitan Areas: Evidence from Large-scale Mobile Device Data.'' Demography. Forthcoming.
@@ -49,11 +54,7 @@ Yongjun Zhang and Jennifer Heerwig. 2024. ''[Gender, Race, and Intersectionality
 
 ## Working Paper
 
-Hao Lin and Yongjun Zhang. 2024. "[The Risks of Using LLMs for Text Annotation in Social Science Research](https://files.osf.io/v1/resources/79qu8/providers/osfstorage/66aa8212aa5b64458b9b3fe2)."
-
 Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
-
-Yongjun Zhang. 2023. "[Generative AI has lowered the barriers to computational social sciences](https://yongjunzhang.com/files/Generative_AI_and_CSS.pdf)."
 
 Yongjun Zhang, Sijia Liu, Yi Wang, and Xinguang Fan. 2022. ''[Detecting Fake News on Twitter in the Chinese Language Community](https://doi.org/10.48550/arXiv.2304.03454)."
 
@@ -67,7 +68,3 @@ Yongjun Zhang. Mar 2025. "Reflections on Using LLMs in Social Science Research".
 Yongjun Zhang. Feb 2025. ''The Color of Activity Spaces.'' Department of Sociology, Brown University.
 
 Yongjun Zhang. Oct 2024. ''Using GPS Data to Study Activity Space Segregation in US Metro Areas.'' NetMob2024, World Bank, Washington DC.
-
-## Social Media
-
-<a class="twitter-timeline" data-width="500" href="https://twitter.com/DrJoshZhang?ref_src=twsrc%5Etfw">Tweets by DrJoshZhang</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
