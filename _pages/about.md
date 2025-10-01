@@ -1,4 +1,4 @@
----
+--- 
 permalink: /
 title: "Welcome"
 excerpt: "About me"
@@ -8,9 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-I (Chinese: 张勇军[audio](https://yongjunzhang.com/files/name.m4a)) am a computational sociologist who develops and applies natural language processing and computer vision techniques with big data to study political, social, and organizational behavior. I received my Sociology PhD in 2020 from the University of Arizona. I am currently working as an Assistant Professor of [Sociology](https://www.stonybrook.edu/commcms/sociology//people/faculty/Zhang.php) and [Institute for Advanced Computational Science](https://iacs.stonybrook.edu/) at Stony Brook University. I am also an affiliated faculty member in the Department of Asian and Asian American Studies and the AI Innovation Institute at Stony Brook University, as well as a research affiliate at New York University.
-
-My previous work explored the dynamic relationship between social movements and socio-political changes both in the United States and globally. For instance, my undergraduate thesis was an ethnographic study of the state repression of petitioners in Beijing based on the participant observation of the Dong Zhuang village; my MA thesis used quantitative data to understand how relative deprivation influences protest propensity in China. Some of my social movement-related studies were published in [Journal of Marriage and Family](https://yongjunzhang.com/files/jomf.12419.pdf), [Demography](https://doi.org/10.1007/s13524-017-0632-9), [Poetics](https://doi.org/10.1016/j.poetic.2018.05.001), [International Journal of Comparative Sociology](https://doi.org/10.1177/0020715219837752), [American Journal of Sociology](https://yongjunzhang.com/files/Fiel-Zhang-2019_AJS.pdf), and [PLoS One](https://yongjunzhang.com/files/pone.pdf). I won the 2020 James Coleman Award from Sociology of Education Section at American Sociological Association and the 2021 SIM Best Paper Submission at Academy of Management. Currently, I am extending this line to visual representation of global protests by examining millions of images from newspapers worldwide with computer vision techniques and large language/vision models.
+I (Chinese: 张勇军[audio](https://yongjunzhang.com/files/name.m4a)) am a computational sociologist who develops and applies natural language processing and computer vision techniques with big data to study political, social, and organizational behavior. I received my Sociology PhD in 2020 from the University of Arizona. I am currently working as an Assistant Professor of [Sociology](https://www.stonybrook.edu/commcms/sociology//people/faculty/Zhang.php) and [Institute for Advanced Computational Science](https://iacs.stonybrook.edu/) at Stony Brook University. I am also an affiliated faculty member in the Department of Asian and Asian American Studies, the AI Innovation Institute, and Center for Changing Systems of Power at Stony Brook University, as well as a research affiliate at New York University. My previous work has appeared in leading sociological and social science journals, such as [Journal of Marriage and Family](https://yongjunzhang.com/files/jomf.12419.pdf), [Demography](https://doi.org/10.1007/s13524-017-0632-9), [Poetics](https://doi.org/10.1016/j.poetic.2018.05.001), [International Journal of Comparative Sociology](https://doi.org/10.1177/0020715219837752), and [American Journal of Sociology](https://yongjunzhang.com/files/Fiel-Zhang-2019_AJS.pdf). I have been recognized with the 2025 Honorable Mention for the Midwest Sociological Association’s TSQ Award for Articles (2023–2024), the 2020 James Coleman Award from the ASA Sociology of Education Section, and the 2021 SIM Best Paper Submission Award from the Academy of Management.
 
 My current work focuses primarily on understanding mobility, segregation, and polarization in the U.S. I am using big data from FEC with corp data to track the polarization/partisanship trend in the US corporate leadership. I am using large-scale mobility data with administrative records to assess the antecedents and consequences of racial/partisan/income/cultural segregation in both residential and activity spaces. Some of these projects have been funded by the OVPR and IACS seed grants at Stony Brook University. Some of these ongoing studies have appeared in top journals such as Demography, RSF: Journal of Social Sciences, the Sociological Quarterly, Chinese Sociological Review, Socius, Scientific Reports, and Nature Humanities and Social Sciences Communications.
 
@@ -40,7 +38,6 @@ Hao Lin and Yongjun Zhang. 2025. "[Navitaging The Risks of Using LLMs for Text A
 
 Yongjun Zhang. 2025. "[Generative AI has lowered the barriers to computational social sciences](https://yongjunzhang.com/files/Generative_AI_and_CSS.pdf)." Journal of Intelligent Socities.
 
-
 Yue Yu, Yifang Wang, Yongjun Zhang, Huamin Qu, and Dongyu Liu. ''InclusiViz: Visual Analytics of Human Mobility Data for Understanding and Mitigating Urban Segregation.'' IEEE PacificVis 2025. Forthcoming.
 
 Yongjun Zhang and Siwei Cheng. ''Mobility-based Segregation in U.S. Metropolitan Areas: Evidence from Large-scale Mobile Device Data.'' Demography. Forthcoming.
@@ -61,10 +58,4 @@ Yongjun Zhang, Sijia Liu, Yi Wang, and Xinguang Fan. 2022. ''[Detecting Fake New
 
 ## Upcoming Talks
 
-Yongjun Zhang. April 2025. ''The Color of Activity Spaces.'' PAA, DC.
-
-Yongjun Zhang. Mar 2025. "Reflections on Using LLMs in Social Science Research". Department of Sociology, University of Arizona.
-
-Yongjun Zhang. Feb 2025. ''The Color of Activity Spaces.'' Department of Sociology, Brown University.
-
-Yongjun Zhang. Oct 2024. ''Using GPS Data to Study Activity Space Segregation in US Metro Areas.'' NetMob2024, World Bank, Washington DC.
+Yongjun Zhang. Nov 2025. "Community Resilience from a Mobility Perspective." Urban Institute, NYU.
