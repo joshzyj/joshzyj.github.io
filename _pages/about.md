@@ -60,4 +60,4 @@ Yongjun Zhang, Sijia Liu, Yi Wang, and Xinguang Fan. 2022. ''[Detecting Fake New
 
 ## Upcoming Talks
 
-Yongjun Zhang. Nov 2025. "Community Resilience from a Mobility Perspective." Urban Institute, NYU.
+Yongjun Zhang. Nov 2025. "Community Resilience from a Mobility Perspective." Urban Science Program PhD Colloquium, NYU.
