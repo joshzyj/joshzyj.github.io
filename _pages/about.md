@@ -36,22 +36,16 @@ I also taught intro to css for NYU Shanghai CASER. Check here for [the syllabus]
 
 ## New Paper Alert
 
+Ting‐Syuan Lin and Yongjun Zhang. "[Multidimensional Segregation Among Asian American Voters: Racial, Income, and Partisan Sorting in New York and California.](https://doi.org/10.1002/psp.70271)" Population, Space and Place 32, no. 4 (2026): e70271.
+
 Hao Lin and Yongjun Zhang. 2025. "[Navitaging The Risks of Using LLMs for Text Annotation in Social Science Research](https://doi.org/10.48550/arXiv.2503.22040)." Social Science Computer Review.
 
 Yongjun Zhang. 2025. "[Generative AI has lowered the barriers to computational social sciences](https://yongjunzhang.com/files/Generative_AI_and_CSS.pdf)." Journal of Intelligent Socities.
 
-Yue Yu, Yifang Wang, Yongjun Zhang, Huamin Qu, and Dongyu Liu. ''InclusiViz: Visual Analytics of Human Mobility Data for Understanding and Mitigating Urban Segregation.'' IEEE PacificVis 2025. Forthcoming.
-
-Yongjun Zhang and Siwei Cheng. ''Mobility-based Segregation in U.S. Metropolitan Areas: Evidence from Large-scale Mobile Device Data.'' Demography. Forthcoming.
-
-Siwei Cheng, Yongjun Zhang, and Jenna Shaw. 2025. ''[The Geography of Activity Space Segregation: Combining Mobile Device Data and Census Data](https://www.rsfjournal.org/content/11/1/132).'' RSF Journal of the Social Sciences.
-
-Thomas V. Maher, Charles Seguin, and Yongjun Zhang. 2024. ''The Racial Limits of Disruption: How Race and Tactics Influence Social Movement Organization Testimony Before Congress, 1960-1995.'' Social Forces.
-
-Yongjun Zhang and Jennifer Heerwig. 2024. ''[Gender, Race, and Intersectionality in the Political Donations of America’s Corporate Elite](https://doi.org/10.1080/00380253.2024.2314069)." The Sociological Quarterly.
-
 
 ## Working Paper
+
+Yongjun Zhang. 2026. "[Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists? ]()"
 
 Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
 
