@@ -45,7 +45,7 @@ Yongjun Zhang. 2025. "[Generative AI has lowered the barriers to computational s
 
 ## Working Paper
 
-Yongjun Zhang. 2026. "[Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists? ]()"
+Yongjun Zhang. 2026. "[Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists? ](https://arxiv.org/abs/2602.22401)"
 
 Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
 
