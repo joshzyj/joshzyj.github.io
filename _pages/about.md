@@ -28,6 +28,8 @@ I have presented *Vibe Researching* in invited workshops, seminars, and courses 
 - **NYU Shanghai** — *Agentic AI for Social Science Research*, a course in the [2026 Summer School](https://caser.shanghai.nyu.edu/training/2026-summer-school-methods/course-and-instructor-introduction/agentic-ai-for-social-science-research/) at CASER (July 1–5).
 - **The Chinese University of Hong Kong (CUHK)** — the [CSSL@CUHK webinar](https://cssl.socsc.cuhk.edu.hk/2026/06/22/vibe-researching-with-agentic-ai-for-social-sciences/) *Vibe Researching with Agentic AI for Social Sciences*, hosted by the Computational Social Science Laboratory.
 
+If you need *Vibe Researching* with coding agents workshops or lectures, please reach out to me directly at [yongjun.zhang@stonybrook.edu](mailto:yongjun.zhang@stonybrook.edu).
+
 ## Summer CSS Workshop
 
 I am co-organizing the 2026 NYU Shanghai site for the Summer Institute of Computational Social Science (SICSS), June 24–30, 2026. [See HERE](https://sicss.io/2026/nyu-shanghai/)
