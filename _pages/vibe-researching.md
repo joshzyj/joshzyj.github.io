@@ -52,9 +52,27 @@ The handbook is built around one running example — a *Social Forces*-style pap
 <strong>Built for copy-and-paste.</strong> Commands prefixed with <code>$</code> go in your terminal (without the <code>$</code>); commands prefixed with <code>&gt;</code> go inside a running Claude Code session. Hover any code block and hit <strong>Copy</strong>.
 </div>
 
+## The talk
+
+The workshops are paired with a research talk — *Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists?* Walk through it slide by slide right in your browser — arrow keys to move, an overview grid, and fullscreen.
+
+<div class="vr-cards">
+  <a class="vr-card" href="/vibe-researching/slides-en/">
+    <div class="vr-eyebrow">Slides · English</div>
+    <h3>Vibe Researching as Wolf Coming &rarr;</h3>
+    <p>The full talk, slide by slide: arrow-key navigation, an overview grid, and fullscreen.</p>
+  </a>
+  <a class="vr-card" href="/vibe-researching/slides-zh/">
+    <div class="vr-eyebrow">幻灯片 · 中文</div>
+    <h3>狼来了 &rarr;</h3>
+    <p>逐张浏览完整演讲，支持方向键翻页、缩略图总览与全屏。</p>
+  </a>
+</div>
+
 ## Resources
 
 - **Read the handbook:** [English](/vibe-researching/en/) · [中文](/vibe-researching/zh/)
+- **Talk slides (read online):** [English](/vibe-researching/slides-en/) · [中文](/vibe-researching/slides-zh/)
 - **The skill suite:** [`open-scholar-skill` on GitHub](https://github.com/joshzyj/open-scholar-skill)
 - **PDF (print version):** [English](/files/vibe-researching-handbook-en.pdf) · [中文](/files/vibe-researching-handbook-cn.pdf)
 

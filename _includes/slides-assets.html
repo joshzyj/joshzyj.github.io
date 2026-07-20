@@ -1,0 +1,320 @@
+<style>
+#main{max-width:1200px}
+.page{float:none !important; width:100% !important; margin:0 !important; padding:0 1rem !important}
+.page__content{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}
+.vrs-mount{display:block}
+.vrs{
+  --vrs-accent:#a84a22; --vrs-primary:#8a5a34; --vrs-ink:#463f38;
+  --vrs-mut:#7a6f63; --vrs-tint:#f7ece2; --vrs-line:#e7ddd0; --vrs-stage:#241f1b;
+  max-width:1080px; margin:0 auto 1.2rem;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  color:var(--vrs-ink); -webkit-font-smoothing:antialiased;
+}
+.vrs *{box-sizing:border-box}
+.vrs-top{
+  display:flex; justify-content:space-between; align-items:flex-end; gap:1rem;
+  flex-wrap:wrap; margin:0 0 .8rem; padding-bottom:.7rem; border-bottom:2px solid var(--vrs-tint);
+}
+.vrs-title{font-size:1.16rem; font-weight:700; line-height:1.25; color:var(--vrs-primary); margin:0}
+.vrs-sub{font-size:.85rem; color:var(--vrs-mut); margin-top:.2rem; max-width:56ch; line-height:1.4}
+.vrs-links{font-size:.85rem; display:flex; gap:.95rem; align-items:center; flex-wrap:wrap}
+.vrs-links a{color:var(--vrs-accent); text-decoration:none; font-weight:600; white-space:nowrap}
+.vrs-links a:hover{text-decoration:underline}
+.vrs-stage{
+  position:relative; background:var(--vrs-stage); border-radius:12px;
+  padding:min(2.2%,22px); box-shadow:0 10px 34px rgba(40,25,12,.20);
+}
+.vrs-figure{
+  margin:0; position:relative; aspect-ratio:16/9; border-radius:6px;
+  overflow:hidden; background:#fff; cursor:pointer;
+}
+.vrs-img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+  background:#fff; display:block;
+}
+.vrs-nav{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:3;
+  width:44px; height:44px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.85); color:var(--vrs-primary); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 9px rgba(0,0,0,.28); transition:background .15s ease, opacity .15s ease;
+}
+.vrs-nav:hover{background:#fff}
+.vrs-nav svg{width:22px; height:22px}
+.vrs-prev{left:calc(min(2.2%,22px) + 10px)}
+.vrs-next{right:calc(min(2.2%,22px) + 10px)}
+.vrs-nav[disabled]{opacity:.28; cursor:default}
+.vrs-bar{display:flex; align-items:center; gap:.85rem; margin-top:.85rem; flex-wrap:wrap}
+.vrs-btn{
+  border:1px solid var(--vrs-line); background:#fff; color:var(--vrs-primary);
+  border-radius:8px; padding:.44em .72em; font-size:.82rem; font-weight:600;
+  cursor:pointer; display:inline-flex; align-items:center; gap:.42em; line-height:1;
+  transition:border-color .15s ease, color .15s ease;
+}
+.vrs-btn:hover{border-color:var(--vrs-accent); color:var(--vrs-accent)}
+.vrs-btn svg{width:15px; height:15px}
+.vrs-counter{font-size:.9rem; color:var(--vrs-ink); display:flex; align-items:center; gap:.32em}
+.vrs-num{
+  width:2.7em; text-align:center; border:1px solid var(--vrs-line);
+  border-radius:6px; padding:.24em .2em; font:inherit; font-size:.9rem;
+  color:var(--vrs-primary); font-weight:700;
+}
+.vrs-total{color:var(--vrs-mut)}
+.vrs-progress{
+  flex:1 1 120px; height:5px; background:var(--vrs-tint);
+  border-radius:3px; overflow:hidden; min-width:100px;
+}
+.vrs-progress-fill{
+  height:100%; width:0; border-radius:3px;
+  background:linear-gradient(90deg,var(--vrs-primary),var(--vrs-accent));
+  transition:width .22s ease;
+}
+.vrs-hint{font-size:.75rem; color:#9a8f82; margin-top:.55rem}
+.vrs-grid{
+  margin-top:1rem; display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:.6rem;
+}
+.vrs-grid[hidden]{display:none}
+.vrs-thumb{
+  border:2px solid var(--vrs-line); border-radius:6px; overflow:hidden;
+  background:#fff; cursor:pointer; padding:0; position:relative; aspect-ratio:16/9;
+}
+.vrs-thumb img{width:100%; height:100%; object-fit:contain; display:block}
+.vrs-thumb.is-active{border-color:var(--vrs-accent); box-shadow:0 0 0 2px rgba(168,74,34,.28)}
+.vrs-thumb-n{
+  position:absolute; left:0; bottom:0; background:rgba(36,31,27,.78); color:#fff;
+  font-size:.66rem; padding:.08em .42em; border-top-right-radius:5px; line-height:1.5;
+}
+.vrs:fullscreen{
+  max-width:none; width:100%; height:100%; background:var(--vrs-stage);
+  display:flex; flex-direction:column; justify-content:center;
+  padding:1.1rem 1.8rem; margin:0;
+}
+.vrs:fullscreen .vrs-title{color:#f3ece2}
+.vrs:fullscreen .vrs-sub{color:#c9bcac}
+.vrs:fullscreen .vrs-top{border-bottom-color:rgba(255,255,255,.14)}
+.vrs:fullscreen .vrs-stage{
+  flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+  background:transparent; box-shadow:none; padding:0; min-height:0;
+}
+.vrs:fullscreen .vrs-figure{
+  aspect-ratio:auto; width:auto; height:100%; max-width:100%;
+  max-height:100%; background:transparent;
+}
+.vrs:fullscreen .vrs-img{position:static; height:100%; width:auto; max-width:100%;}
+.vrs:fullscreen .vrs-grid{display:none}
+.vrs:fullscreen .vrs-hint{color:#b6a897}
+.vrs:fullscreen .vrs-counter{color:#e9ded0}
+.vrs:fullscreen .vrs-total{color:#b6a897}
+@media (max-width:600px){
+  .vrs-title{font-size:1.04rem}
+  .vrs-nav{width:38px; height:38px}
+  .vrs-hint{display:none}
+}
+</style>
+
+<script>
+(function () {
+  "use strict";
+  function ready(fn) { if (document.readyState !== "loading") { fn(); } else { document.addEventListener("DOMContentLoaded", fn); } }
+  ready(function () {
+  var mount = document.querySelector(".vrs-mount");
+  if (!mount) { return; }
+  var base = mount.getAttribute("data-base") || "";
+  var count = parseInt(mount.getAttribute("data-count"), 10) || 0;
+  if (count < 1) { return; }
+  var lang = mount.getAttribute("data-lang") || "en";
+  var title = mount.getAttribute("data-title") || "";
+  var subtitle = mount.getAttribute("data-subtitle") || "";
+  var hub = mount.getAttribute("data-hub") || "";
+  var other = mount.getAttribute("data-other") || "";
+  var otherLabel = mount.getAttribute("data-other-label") || "";
+
+  var STR = (lang === "zh")
+    ? { slide:"第", of:"张", overview:"总览", closeOverview:"关闭总览", full:"全屏", exit:"退出全屏", hub:"返回主页", hint:"用 ← → 键翻页 · F 全屏 · G 总览" }
+    : { slide:"Slide", of:"of", overview:"Overview", closeOverview:"Hide overview", full:"Fullscreen", exit:"Exit", hub:"Hub", hint:"Use ← → to move · F for fullscreen · G for grid" };
+
+  var padW = String(count).length;
+  function pad(n) { var s = String(n); while (s.length < padW) { s = "0" + s; } return s; }
+  function src(n) { return base + "slide-" + pad(n) + ".png"; }
+
+  var chevL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+  var chevR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  var gridIco = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>';
+  var fullIco = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"></path></svg>';
+
+  var links = "";
+  if (hub) { links += '<a href="' + hub + '">' + STR.hub + '</a>'; }
+  if (other && otherLabel) { links += '<a href="' + other + '">' + otherLabel + '</a>'; }
+
+  var html =
+    '<div class="vrs" tabindex="-1">'
+    + '<div class="vrs-top">'
+    + '<div><p class="vrs-title">' + title + '</p>'
+    + (subtitle ? '<div class="vrs-sub">' + subtitle + '</div>' : '')
+    + '</div>'
+    + '<nav class="vrs-links">' + links + '</nav>'
+    + '</div>'
+    + '<div class="vrs-stage">'
+    + '<button class="vrs-nav vrs-prev" type="button" aria-label="Previous">' + chevL + '</button>'
+    + '<figure class="vrs-figure"><img class="vrs-img" alt="" decoding="async"></figure>'
+    + '<button class="vrs-nav vrs-next" type="button" aria-label="Next">' + chevR + '</button>'
+    + '</div>'
+    + '<div class="vrs-bar">'
+    + '<button class="vrs-btn vrs-grid-btn" type="button">' + gridIco + '<span>' + STR.overview + '</span></button>'
+    + '<div class="vrs-counter">' + STR.slide + ' <input class="vrs-num" type="text" inputmode="numeric" value="1" aria-label="slide number"> <span class="vrs-total">/ ' + count + '</span></div>'
+    + '<div class="vrs-progress"><div class="vrs-progress-fill"></div></div>'
+    + '<button class="vrs-btn vrs-full-btn" type="button">' + fullIco + '<span>' + STR.full + '</span></button>'
+    + '</div>'
+    + '<div class="vrs-hint">' + STR.hint + '</div>'
+    + '<div class="vrs-grid" hidden></div>'
+    + '</div>';
+
+  mount.innerHTML = html;
+
+  var root = mount.querySelector(".vrs");
+  var img = mount.querySelector(".vrs-img");
+  var figure = mount.querySelector(".vrs-figure");
+  var prevBtn = mount.querySelector(".vrs-prev");
+  var nextBtn = mount.querySelector(".vrs-next");
+  var numInput = mount.querySelector(".vrs-num");
+  var fill = mount.querySelector(".vrs-progress-fill");
+  var gridBtn = mount.querySelector(".vrs-grid-btn");
+  var gridBox = mount.querySelector(".vrs-grid");
+  var fullBtn = mount.querySelector(".vrs-full-btn");
+  var gridBuilt = false;
+
+  var current = 1;
+
+  function preload(n) {
+    if (n >= 1 && n <= count) { var im = new Image(); im.src = src(n); }
+  }
+
+  function markGrid() {
+    if (!gridBuilt) { return; }
+    var thumbs = gridBox.children;
+    for (var i = 0; i < thumbs.length; i++) {
+      if (i === current - 1) { thumbs[i].classList.add("is-active"); }
+      else { thumbs[i].classList.remove("is-active"); }
+    }
+  }
+
+  function render() {
+    img.src = src(current);
+    img.alt = STR.slide + " " + current + " " + STR.of + " " + count;
+    numInput.value = current;
+    var pct = (count > 1) ? ((current - 1) / (count - 1) * 100) : 100;
+    fill.style.width = pct + "%";
+    prevBtn.disabled = (current <= 1);
+    nextBtn.disabled = (current >= count);
+    preload(current + 1);
+    preload(current + 2);
+    preload(current - 1);
+    markGrid();
+  }
+
+  function go(n) {
+    n = Math.max(1, Math.min(count, n));
+    current = n;
+    render();
+    try { history.replaceState(null, "", "#" + current); } catch (e) { }
+  }
+  function next() { if (current < count) { go(current + 1); } }
+  function prev() { if (current > 1) { go(current - 1); } }
+
+  prevBtn.addEventListener("click", function (e) { e.stopPropagation(); prev(); });
+  nextBtn.addEventListener("click", function (e) { e.stopPropagation(); next(); });
+
+  figure.addEventListener("click", function (e) {
+    var r = figure.getBoundingClientRect();
+    if ((e.clientX - r.left) < r.width * 0.32) { prev(); } else { next(); }
+  });
+
+  numInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); var v = parseInt(numInput.value, 10); if (!isNaN(v)) { go(v); } numInput.blur(); }
+  });
+  numInput.addEventListener("focus", function () { numInput.select(); });
+
+  function buildGrid() {
+    if (gridBuilt) { return; }
+    var parts = "";
+    for (var i = 1; i <= count; i++) {
+      parts += '<button class="vrs-thumb" type="button" data-n="' + i + '">'
+        + '<img loading="lazy" decoding="async" alt="" src="' + src(i) + '">'
+        + '<span class="vrs-thumb-n">' + i + '</span></button>';
+    }
+    gridBox.innerHTML = parts;
+    gridBox.addEventListener("click", function (e) {
+      var b = e.target.closest(".vrs-thumb");
+      if (!b) { return; }
+      go(parseInt(b.getAttribute("data-n"), 10));
+      toggleGrid(false);
+    });
+    gridBuilt = true;
+    markGrid();
+  }
+
+  function toggleGrid(force) {
+    var show = (typeof force === "boolean") ? force : gridBox.hasAttribute("hidden");
+    if (show) {
+      buildGrid();
+      gridBox.removeAttribute("hidden");
+      gridBtn.querySelector("span").textContent = STR.closeOverview;
+    } else {
+      gridBox.setAttribute("hidden", "");
+      gridBtn.querySelector("span").textContent = STR.overview;
+    }
+  }
+  gridBtn.addEventListener("click", function () { toggleGrid(); });
+
+  function inFull() { return document.fullscreenElement === root || document.webkitFullscreenElement === root; }
+  function toggleFull() {
+    if (inFull()) {
+      if (document.exitFullscreen) { document.exitFullscreen(); }
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+    } else {
+      if (root.requestFullscreen) { root.requestFullscreen(); }
+      else if (root.webkitRequestFullscreen) { root.webkitRequestFullscreen(); }
+    }
+  }
+  function syncFull() {
+    var span = fullBtn.querySelector("span");
+    span.textContent = inFull() ? STR.exit : STR.full;
+  }
+  fullBtn.addEventListener("click", toggleFull);
+  document.addEventListener("fullscreenchange", syncFull);
+  document.addEventListener("webkitfullscreenchange", syncFull);
+
+  document.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "ArrowDown" || k === "PageDown" || k === " ") { e.preventDefault(); next(); }
+    else if (k === "ArrowLeft" || k === "ArrowUp" || k === "PageUp") { e.preventDefault(); prev(); }
+    else if (k === "Home") { e.preventDefault(); go(1); }
+    else if (k === "End") { e.preventDefault(); go(count); }
+    else if (k === "f" || k === "F") { toggleFull(); }
+    else if (k === "g" || k === "G") { toggleGrid(); }
+    else if (k === "Escape" && !gridBox.hasAttribute("hidden") && !inFull()) { toggleGrid(false); }
+  });
+
+  var tsx = 0, tsy = 0;
+  figure.addEventListener("touchstart", function (e) {
+    if (e.touches && e.touches.length === 1) { tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; }
+  }, { passive: true });
+  figure.addEventListener("touchend", function (e) {
+    if (!e.changedTouches || e.changedTouches.length !== 1) { return; }
+    var dx = e.changedTouches[0].clientX - tsx;
+    var dy = e.changedTouches[0].clientY - tsy;
+    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy)) { if (dx < 0) { next(); } else { prev(); } }
+  }, { passive: true });
+
+  var startN = 1;
+  var h = (location.hash || "").replace("#", "");
+  var hv = parseInt(h, 10);
+  if (!isNaN(hv) && hv >= 1 && hv <= count) { startN = hv; }
+  go(startN);
+  syncFull();
+  });
+}());
+</script>

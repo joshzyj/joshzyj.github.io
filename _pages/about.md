@@ -20,6 +20,8 @@ I teach Intro to Computational Social Science and Research Methods in Sociology 
 
 I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
 
+The research talk behind these workshops — *Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists?* — is also readable online, slide by slide in your browser: [English slides](/vibe-researching/slides-en/) · [中文幻灯片](/vibe-researching/slides-zh/).
+
 I have presented *Vibe Researching* in invited workshops, seminars, and courses in 2026, including:
 
 - **Lingnan University** — *Vibe Researching with Agentic AI for Social Sciences*, a seminar hosted by the Governance and Bureaucracy Lab, Department of Government and International Affairs (June 17).
