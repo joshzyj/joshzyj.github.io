@@ -16,16 +16,6 @@ I teach Intro to Computational Social Science and Research Methods in Sociology 
 
 [Download my CV here](https://yongjunzhang.com/files/zhang-vita.pdf).
 
-## Summer CSS Workshop
-
-I am co-organizing the 2026 NYU Shanghai site for the Summer Institute of Computational Social Science (SICSS), June 24–30, 2026. [See HERE](https://sicss.io/2026/nyu-shanghai/)
-
-I co-organized the 2025 NYU Shanghai site for SICSS with Dr. Xiaogang Wu, Dr. Jia Miao, and Dr. Zixi Chen. [See HERE](https://sicss.io/2025/nyu-shanghai/)
-
-I co-organized the 2023 NYU Shanghai site for SICSS with Dr. Xiaogang Wu and Dr. Yongren Shi. [See HERE](https://sicss.io/2023/nyu-shanghai/)
-
-I also taught intro to CSS for NYU Shanghai CASER. Check here for [the syllabus](https://yongjunzhang.com/files/CSS_Intro_NYU_Shanghai_Syllabus.pdf).
-
 ## Vibe Researching
 
 I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
@@ -37,6 +27,16 @@ I have presented *Vibe Researching* in invited workshops, seminars, and courses 
 - **Zhejiang University (ZJU)** — *When AI Starts Writing Papers, Where Is the Future of PhD Students?*, a lecture hosted by the School of Public Affairs (June 23).
 - **NYU Shanghai** — *Agentic AI for Social Science Research*, a course in the [2026 Summer School](https://caser.shanghai.nyu.edu/training/2026-summer-school-methods/course-and-instructor-introduction/agentic-ai-for-social-science-research/) at CASER (July 1–5).
 - **The Chinese University of Hong Kong (CUHK)** — the [CSSL@CUHK webinar](https://cssl.socsc.cuhk.edu.hk/2026/06/22/vibe-researching-with-agentic-ai-for-social-sciences/) *Vibe Researching with Agentic AI for Social Sciences*, hosted by the Computational Social Science Laboratory.
+
+## Summer CSS Workshop
+
+I am co-organizing the 2026 NYU Shanghai site for the Summer Institute of Computational Social Science (SICSS), June 24–30, 2026. [See HERE](https://sicss.io/2026/nyu-shanghai/)
+
+I co-organized the 2025 NYU Shanghai site for SICSS with Dr. Xiaogang Wu, Dr. Jia Miao, and Dr. Zixi Chen. [See HERE](https://sicss.io/2025/nyu-shanghai/)
+
+I co-organized the 2023 NYU Shanghai site for SICSS with Dr. Xiaogang Wu and Dr. Yongren Shi. [See HERE](https://sicss.io/2023/nyu-shanghai/)
+
+I also taught intro to CSS for NYU Shanghai CASER. Check here for [the syllabus](https://yongjunzhang.com/files/CSS_Intro_NYU_Shanghai_Syllabus.pdf).
 
 ## New Paper Alert
 
