@@ -58,4 +58,4 @@ The handbook is built around one running example — a *Social Forces*-style pap
 - **The skill suite:** [`open-scholar-skill` on GitHub](https://github.com/joshzyj/open-scholar-skill)
 - **PDF (print version):** [English](/files/vibe-researching-handbook-en.pdf) · [中文](/files/vibe-researching-handbook-cn.pdf)
 
-<p class="vr-meta">Author: Yongjun Zhang (Stony Brook University). If you would like this workshop run for your department or program, feel free to <a href="mailto:joshzyj@gmail.com">reach out</a>.</p>
+<p class="vr-meta">Author: Yongjun Zhang (Stony Brook University). If you would like this workshop run for your department or program, feel free to <a href="mailto:yongjun.zhang@stonybrook.edu">reach out</a>.</p>

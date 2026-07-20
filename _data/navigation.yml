@@ -10,8 +10,8 @@ main:
   #- title: "Talks"
   #  url: /talks/
 
-  - title: "Data"
-    url: /data/
+  #- title: "Data"
+  #  url: /data/
 
   - title: "Vibe Researching"
     url: /vibe-researching/

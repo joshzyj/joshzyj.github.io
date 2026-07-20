@@ -18,8 +18,10 @@
 .page__content a { color: var(--hb-accent); text-decoration: none; }
 .page__content a:hover { text-decoration: underline; }
 .page__content strong { color: var(--hb-ink-strong); }
-.page__content code { font-size: .88em; background: #f2f4f6; padding: .12em .35em; border-radius: 4px; }
+.page__content code { font-size: .9em; background: #f2f4f6; padding: .12em .35em; border-radius: 4px; }
 .page__content pre code, .page__content .highlight code { background: none; padding: 0; }
+/* the theme renders code blocks at ~11px ($type-size-7); bump to a readable size */
+.page__content .highlighter-rouge .highlight, .page__content figure.highlight .highlight { font-size: 0.92rem; line-height: 1.6; }
 .page__content .hb-backlink { font-size: 0.92em; color: var(--hb-muted); margin: 0 0 1.4em; }
 .page__content .hb-backlink code { background: #f2f4f6; }
 
@@ -106,7 +108,7 @@
 .hb-tab { border: 0; background: none; padding: 8px 16px; font-size: .88rem; font-weight: 600; color: var(--hb-muted); cursor: pointer; font-family: var(--hb-sans); border-bottom: 2px solid transparent; }
 .hb-tab:hover { color: var(--hb-accent); }
 .hb-tab.hb-active { color: var(--hb-accent); background: #fff; border-bottom-color: var(--hb-accent); }
-.hb-panel pre.hb-code { margin: 0; border: 0; border-radius: 0; background: #fafafa; padding: 1em 1.1em; overflow-x: auto; font-size: .88em; position: relative; }
+.hb-panel pre.hb-code { margin: 0; border: 0; border-radius: 0; background: #fafafa; padding: 1em 1.1em; overflow-x: auto; font-size: 0.92rem; line-height: 1.6; position: relative; }
 
 /* ============================ code copy button ============================ */
 .page__content .highlighter-rouge, .page__content pre.hb-code { position: relative; }
