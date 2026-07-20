@@ -1,4 +1,4 @@
---- 
+---
 permalink: /
 title: "Welcome"
 excerpt: "About me"
@@ -8,36 +8,27 @@ redirect_from:
   - /about.html
 ---
 
-I (Chinese: 张勇军[audio](https://yongjunzhang.com/files/name.m4a)) am a computational sociologist who develops and applies natural language processing and computer vision techniques with big data to study political, social, and organizational behavior. I received my Sociology PhD in 2020 from the University of Arizona. I am currently working as an Assistant Professor of [Sociology](https://www.stonybrook.edu/commcms/sociology//people/faculty/Zhang.php) and [Institute for Advanced Computational Science](https://iacs.stonybrook.edu/) at Stony Brook University. I am also an affiliated faculty member in the Department of Asian and Asian American Studies, the AI Innovation Institute, and Center for Changing Systems of Power at Stony Brook University, as well as a research affiliate at New York University. 
+I (Chinese: 张勇军 [audio](https://yongjunzhang.com/files/name.m4a)) am a computational sociologist who applies natural language processing and computer vision to big data to study political, social, and organizational behavior. I received my Sociology PhD from the University of Arizona in 2020 and am an Assistant Professor of [Sociology](https://www.stonybrook.edu/commcms/sociology//people/faculty/Zhang.php) and the [Institute for Advanced Computational Science (IACS)](https://iacs.stonybrook.edu/) at Stony Brook University, with affiliations in Asian and Asian American Studies, the AI Innovation Institute, and the Center for Changing Systems of Power, and as a research affiliate at New York University.
 
-My previous work has appeared in leading sociological and social science journals, such as [Journal of Marriage and Family](https://yongjunzhang.com/files/jomf.12419.pdf), [Demography](https://doi.org/10.1007/s13524-017-0632-9), [Poetics](https://doi.org/10.1016/j.poetic.2018.05.001), [International Journal of Comparative Sociology](https://doi.org/10.1177/0020715219837752), and [American Journal of Sociology](https://yongjunzhang.com/files/Fiel-Zhang-2019_AJS.pdf). I have been recognized with the 2025 Honorable Mention for the Midwest Sociological Association’s TSQ Award for Articles (2023–2024), the 2020 James Coleman Award from the ASA Sociology of Education Section, and the 2021 SIM Best Paper Submission Award from the Academy of Management.
+My work has appeared in leading journals such as the [American Journal of Sociology](https://yongjunzhang.com/files/Fiel-Zhang-2019_AJS.pdf), [Demography](https://doi.org/10.1007/s13524-017-0632-9), the [Journal of Marriage and Family](https://yongjunzhang.com/files/jomf.12419.pdf), and [Poetics](https://doi.org/10.1016/j.poetic.2018.05.001), and has been recognized with the 2020 ASA James Coleman Award, among other honors. My current research examines mobility, segregation, and polarization in the U.S., and—increasingly—how AI shapes society and how society shapes AI, including the responsible use of AI to address challenges such as conflict, climate change, and community resilience.
 
-My current work focuses primarily on understanding mobility, segregation, and polarization in the U.S. I am using big data from FEC with corp data to track the polarization/partisanship trend in the US corporate leadership. I am using large-scale mobility data with administrative records to assess the antecedents and consequences of racial/partisan/income/cultural segregation in both residential and activity spaces. Some of these projects have been funded by the OVPR and IACS seed grants at Stony Brook University. Some of these ongoing studies have appeared in top journals such as Demography, RSF: Journal of Social Sciences, the Sociological Quarterly, Chinese Sociological Review, Socius, Scientific Reports, and Nature Humanities and Social Sciences Communications.
+I teach Intro to Computational Social Science and Research Methods in Sociology at Stony Brook University. If you need CSS-related talks or workshops, feel free to reach out.
 
-Recently, I am very interested in the following two big questions: How will AI shape the future of our society and how will our society shape the future of AI? To address these questions, I am starting to expand my research into new areas (Yes, I like new challenges), including the responsible usage of AI in addressing climate and health issues. Specifically, I am keen on exploring a significant question: How can we leverage the rapid advancements in AI to confront critical challenges such as conflict and violence and climate change to improve community resilience? If you are interested in these questions, feel free to reach out to me. I am seeking any potential collaboration in the near future. Building on large-scale multimodal social media data such as Twitter (now X) and YouTube, we are developing and applying large language and vision models to capture the psychological state of online social media users and further assess how it might shape online and offline behavior.  We are also interested in the discourse opportunity structure of climate change and environmental issues across various social media platforms over time and how AIs can help mitigate misinformation on these platforms. 
-
-I am teaching Intro to Computational Social Science and Research Methods in Sociology at Stony Brook University. I co-edited a special issue on computational social science and Chinese societies for Chinese Sociological Review. I also co-organized the 2023 NYU Shanghai site for Summer Institute of Computational Social Science (SICSS).
-
-If you need CSS-related talks or workshops, please feel free to contact me directly. 
-
-[Download Zhang's Vita Here](https://yongjunzhang.com/files/zhang-vita.pdf).
-
-## Incoming Students
-
-If you are interested in working with me at Stony Brook, feel free to apply for our program. You can also check this amazing [IACS graduate fellowship](https://iacs.stonybrook.edu/opportunities/fellowships/Graduate-Fellowships). 
+[Download my CV here](https://yongjunzhang.com/files/zhang-vita.pdf).
 
 ## Summer CSS Workshop
-I am co-organizing the 2025 NYU Shanghai site for Summer Institute of Computational Social Science (SICSS) with Dr. Xiaogang Wu, Dr. Jia Miao, and Dr. Zixi Chen. [See HERE](https://sicss.io/2025/nyu-shanghai/)
 
-I co-organized the 2023 NYU Shanghai site for Summer Institute of Computational Social Science (SICSS) with Dr. Xiaogang Wu and Dr. Yongren Shi. [See HERE](https://sicss.io/2023/nyu-shanghai/)
+I am co-organizing the 2026 NYU Shanghai site for the Summer Institute of Computational Social Science (SICSS), June 24–30, 2026. [See HERE](https://sicss.io/2026/nyu-shanghai/)
 
-I also taught intro to css for NYU Shanghai CASER. Check here for [the syllabus](https://yongjunzhang.com/files/CSS_Intro_NYU_Shanghai_Syllabus.pdf). 
+I co-organized the 2025 NYU Shanghai site for SICSS with Dr. Xiaogang Wu, Dr. Jia Miao, and Dr. Zixi Chen. [See HERE](https://sicss.io/2025/nyu-shanghai/)
 
+I co-organized the 2023 NYU Shanghai site for SICSS with Dr. Xiaogang Wu and Dr. Yongren Shi. [See HERE](https://sicss.io/2023/nyu-shanghai/)
+
+I also taught intro to CSS for NYU Shanghai CASER. Check here for [the syllabus](https://yongjunzhang.com/files/CSS_Intro_NYU_Shanghai_Syllabus.pdf).
 
 ## Vibe Researching
 
 I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
-
 
 ## New Paper Alert
 
@@ -46,17 +37,3 @@ Ting‐Syuan Lin and Yongjun Zhang. "[Multidimensional Segregation Among Asian A
 Hao Lin and Yongjun Zhang. 2025. "[Navitaging The Risks of Using LLMs for Text Annotation in Social Science Research](https://doi.org/10.48550/arXiv.2503.22040)." Social Science Computer Review.
 
 Yongjun Zhang. 2025. "[Generative AI has lowered the barriers to computational social sciences](https://yongjunzhang.com/files/Generative_AI_and_CSS.pdf)." Journal of Intelligent Socities.
-
-
-## Working Paper
-
-Yongjun Zhang. 2026. "[Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists? ](https://arxiv.org/abs/2602.22401)"
-
-Yongjun Zhang. 2023. "[LLVMs4Protest: Harnessing the Power of Large Language and Vision Models for Deciphering Protests in the News](https://yongjunzhang.com/files/LLVM4Protest.pdf)." [(Fine-tuned models available here)](https://github.com/joshzyj/llvms4protest)
-
-Yongjun Zhang, Sijia Liu, Yi Wang, and Xinguang Fan. 2022. ''[Detecting Fake News on Twitter in the Chinese Language Community](https://doi.org/10.48550/arXiv.2304.03454)."
-
-
-## Upcoming Talks
-
-Yongjun Zhang. Nov 2025. "Community Resilience from a Mobility Perspective." Urban Science Program PhD Colloquium, NYU.
