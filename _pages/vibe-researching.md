@@ -27,12 +27,12 @@ This is the home of my **participant handbook**, written for a two-hour hands-on
   <a class="vr-card" href="/vibe-researching/en/">
     <div class="vr-eyebrow">Read online · English</div>
     <h3>The Handbook &rarr;</h3>
-    <p>Full walkthrough with a sticky table of contents and one-click copy on every code block.</p>
+    <p>Read section by section with a searchable sidebar and one-click copy on every code block.</p>
   </a>
   <a class="vr-card" href="/vibe-researching/zh/">
     <div class="vr-eyebrow">在线阅读 · 中文</div>
     <h3>学员实操手册 &rarr;</h3>
-    <p>完整手册，带固定目录，代码块一键复制，适合边读边操作。</p>
+    <p>侧边栏可搜索、逐节阅读，代码块一键复制，适合边读边操作。</p>
   </a>
 </div>
 
