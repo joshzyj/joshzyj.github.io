@@ -22,6 +22,16 @@
 .page__content pre code, .page__content .highlight code { background: none; padding: 0; }
 /* the theme renders code blocks at ~11px ($type-size-7); bump to a readable size */
 .page__content .highlighter-rouge .highlight, .page__content figure.highlight .highlight { font-size: 0.92rem; line-height: 1.6; }
+/* warm-leaning code syntax highlighting (overrides the theme's cool solarized palette) */
+.page__content .highlight .c, .page__content .highlight .cm, .page__content .highlight .c1, .page__content .highlight .sb { color: #9a8d7a; font-style: italic; }
+.page__content .highlight .n, .page__content .highlight .p, .page__content .highlight .na, .page__content .highlight .nl, .page__content .highlight .nn, .page__content .highlight .nx, .page__content .highlight .l, .page__content .highlight .w, .page__content .highlight .py, .page__content .highlight .sd, .page__content .highlight .sh { color: #4a4038; }
+.page__content .highlight .k, .page__content .highlight .kn, .page__content .highlight .kp, .page__content .highlight .o, .page__content .highlight .ow, .page__content .highlight .cp, .page__content .highlight .cs { color: #a5401c; }
+.page__content .highlight .s, .page__content .highlight .s1, .page__content .highlight .s2, .page__content .highlight .sc, .page__content .highlight .si, .page__content .highlight .ss, .page__content .highlight .sx, .page__content .highlight .m, .page__content .highlight .mf, .page__content .highlight .mh, .page__content .highlight .mi, .page__content .highlight .mo, .page__content .highlight .il, .page__content .highlight .gd { color: #6f7a1e; }
+.page__content .highlight .kd, .page__content .highlight .kr, .page__content .highlight .nc, .page__content .highlight .nd, .page__content .highlight .nf, .page__content .highlight .nt, .page__content .highlight .nv, .page__content .highlight .bp, .page__content .highlight .vc, .page__content .highlight .vg, .page__content .highlight .vi, .page__content .highlight .fm { color: #9c5a1f; }
+.page__content .highlight .kc, .page__content .highlight .no, .page__content .highlight .se, .page__content .highlight .ni, .page__content .highlight .ne, .page__content .highlight .gh, .page__content .highlight .gu, .page__content .highlight .x { color: #c05a1e; }
+.page__content .highlight .nb { color: #b07d15; }
+.page__content .highlight .kt, .page__content .highlight .sr, .page__content .highlight .gr, .page__content .highlight .err { color: #c0392b; }
+.page__content .highlight .gi { color: #6f7a1e; }
 .page__content .hb-backlink { font-size: 0.92em; color: var(--hb-muted); margin: 0 0 1.4em; }
 .page__content .hb-backlink code { background: #f3eee7; }
 
