@@ -111,6 +111,8 @@
 .hb-panel pre.hb-code { margin: 0; border: 0; border-radius: 0; background: #fafafa; padding: 1em 1.1em; overflow-x: auto; font-size: 0.92rem; line-height: 1.6; position: relative; }
 
 /* ============================ code copy button ============================ */
+/* hide the theme's decorative </> icon (::before) at top-right so it doesn't collide with the Copy button */
+.page__content .highlighter-rouge::before, .page__content figure.highlight::before { content: none !important; display: none !important; }
 .page__content .highlighter-rouge, .page__content pre.hb-code { position: relative; }
 .page__content .hb-copy {
   position: absolute; top: 6px; right: 6px; z-index: 3; display: inline-flex; align-items: center; gap: 4px;
