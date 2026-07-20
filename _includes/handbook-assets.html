@@ -339,6 +339,41 @@
       });
       window.addEventListener('hashchange', function () { var id = location.hash.slice(1); if (id) show(id, true, false); });
 
+      /* ---- linkify in-text "Appendix X" / "附录 X" references to their section ---- */
+      (function () {
+        var apx = {};
+        heads.forEach(function (h) { var m = /^(?:Appendix|附录)\s*([A-Z])\b/.exec((h.textContent || '').trim()); if (m) apx[m[1]] = h.id; });
+        if (!Object.keys(apx).length) return;
+        var re = /(Appendix|附录)\s*([A-Z])\b/g;
+        var walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, {
+          acceptNode: function (n) {
+            if (!n.nodeValue || !/(Appendix|附录)\s*[A-Z]/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+            var p = n.parentNode;
+            while (p && p !== content) { var t = p.tagName; if (t === 'A' || t === 'CODE' || t === 'PRE' || /^H[1-6]$/.test(t)) return NodeFilter.FILTER_REJECT; p = p.parentNode; }
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+        var nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(function (node) {
+          var text = node.nodeValue, frag = document.createDocumentFragment(), last = 0, m, hit = false; re.lastIndex = 0;
+          while ((m = re.exec(text))) {
+            var id = apx[m[2]];
+            frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+            if (id) { var a = document.createElement('a'); a.href = '#' + id; a.className = 'hb-xref'; a.textContent = m[0]; frag.appendChild(a); hit = true; }
+            else { frag.appendChild(document.createTextNode(m[0])); }
+            last = m.index + m[0].length;
+          }
+          if (hit) { frag.appendChild(document.createTextNode(text.slice(last))); node.parentNode.replaceChild(frag, node); }
+        });
+      })();
+
+      /* ---- intercept in-content anchor links (prose xrefs) so they drive the section viewer; the pager has its own handler ---- */
+      content.addEventListener('click', function (e) {
+        var a = e.target.closest('a[href^="#"]'); if (!a || a.closest('.hb-pager')) return;
+        var id = a.getAttribute('href').slice(1); if (!id || !byId[id]) return;
+        e.preventDefault(); show(id, true, true);
+      });
+
       /* ---- search ---- */
       input.addEventListener('input', function () {
         var q = input.value.trim().toLowerCase(); var any = false;
