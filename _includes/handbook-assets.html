@@ -1,12 +1,108 @@
-<!-- Vibe Researching handbook assets: copy-to-clipboard buttons + sticky TOC. Page-scoped: loaded only on the handbook pages that reference this file. -->
+<!-- Vibe Researching handbook assets: docs-style left sidebar (search + collapsible nav), copy-to-clipboard code buttons, mobile drawer. Page-scoped: loaded only on the handbook pages that reference this file. Keep this file free of Liquid delimiters. -->
 <style>
-/* ---------- code blocks: copy button ---------- */
+/* ============================ layout ============================ */
+/* Widen the handbook pages to a docs layout (these styles load only here). */
+#main { max-width: 1440px; }
+.page { float: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+
+.page__content .hb-backlink { font-size: 0.9em; color: #666; margin: 0 0 1.4em; }
+
+@media (min-width: 900px) {
+  .page__inner-wrap.hb-docs {
+    display: grid;
+    grid-template-columns: 292px minmax(0, 1fr);
+    column-gap: 3rem;
+    align-items: start;
+  }
+  .hb-docs > header,
+  .hb-docs > .page__content,
+  .hb-docs > footer,
+  .hb-docs > .page__meta { grid-column: 2; min-width: 0; }
+  .hb-docs > header, .hb-docs > .page__content { max-width: 900px; }
+  .hb-docs > .hb-sidebar {
+    grid-column: 1; grid-row: 1 / 99;
+    position: sticky; top: 1rem; align-self: start;
+    max-height: calc(100vh - 1.5rem);
+    display: flex; flex-direction: column;
+    border-right: 1px solid #e8eaed;
+  }
+}
+
+/* ============================ sidebar ============================ */
+.hb-sidebar { font-size: 0.86em; }
+.hb-sidebar-head { padding: 0 0 .7rem; }
+.hb-sidebar-title {
+  font-size: 0.95em; font-weight: 700; color: #2f5c8f; text-transform: uppercase;
+  letter-spacing: .05em; margin: 0 0 .6rem; padding-right: 1rem;
+}
+.hb-search { position: relative; padding-right: 1rem; }
+.hb-search-input {
+  width: 100%; box-sizing: border-box; padding: 8px 10px 8px 32px;
+  font-size: 0.95em; border: 1px solid #d0d4d9; border-radius: 7px; color: #222;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 9px center;
+  background-size: 15px; outline: none;
+}
+.hb-search-input:focus { border-color: #2f5c8f; box-shadow: 0 0 0 2px rgba(47,92,143,.15); }
+
+.hb-nav { overflow-y: auto; padding-right: .4rem; flex: 1; }
+.hb-nav-list, .hb-sec-items { list-style: none; margin: 0; padding: 0; }
+.hb-sec { margin: 1px 0; }
+.hb-sec-head { display: flex; align-items: flex-start; gap: 2px; }
+.hb-sec-toggle {
+  flex: 0 0 auto; width: 20px; height: 26px; padding: 0; margin: 0; border: 0; background: none;
+  color: #9aa0a6; cursor: pointer; font-size: 11px; line-height: 26px; text-align: center;
+}
+.hb-sec-toggle::before { content: "▾"; display: inline-block; transition: transform .12s ease; }
+.hb-sec.collapsed .hb-sec-toggle::before { transform: rotate(-90deg); }
+.hb-sec.no-items .hb-sec-toggle { visibility: hidden; }
+.hb-sec-link {
+  flex: 1; display: block; padding: 4px 8px 4px 2px; color: #1a1a1a; font-weight: 600;
+  text-decoration: none; border-radius: 5px; line-height: 1.3;
+}
+.hb-sec-link:hover { color: #2f5c8f; background: #eef2f7; }
+.hb-sec.collapsed .hb-sec-items { display: none; }
+.hb-sec-items { margin: 0 0 4px 0; }
+.hb-item > a {
+  display: block; padding: 4px 8px 4px 30px; color: #4a4f55; text-decoration: none;
+  border-left: 2px solid transparent; border-radius: 0 5px 5px 0; line-height: 1.35;
+}
+.hb-item > a:hover { color: #2f5c8f; background: #eef2f7; }
+.hb-item.hb-active > a, .hb-sec-link.hb-active {
+  color: #2f5c8f; background: #eaf0f7; border-left-color: #2f5c8f; font-weight: 600;
+}
+.hb-nav mark { background: #fff3ba; color: inherit; padding: 0; border-radius: 2px; }
+.hb-no-results { color: #888; font-style: italic; padding: 8px 4px; display: none; }
+.hb-nav.hb-empty .hb-no-results { display: block; }
+
+/* ===================== mobile drawer ===================== */
+.hb-drawer-toggle {
+  display: none; position: fixed; z-index: 60; bottom: 22px; left: 22px;
+  align-items: center; gap: 6px; padding: 10px 15px; border: 0;
+  border-radius: 22px; background: #2f5c8f; color: #fff; font-weight: 600; font-size: .85em;
+  box-shadow: 0 2px 10px rgba(0,0,0,.28); cursor: pointer;
+}
+.hb-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 90;
+}
+@media (max-width: 899px) {
+  .hb-drawer-toggle { display: inline-flex; }
+  .hb-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 86%; max-width: 330px;
+    background: #fff; z-index: 100; transform: translateX(-100%); transition: transform .25s ease;
+    box-shadow: 2px 0 16px rgba(0,0,0,.25); padding: 1rem 0 1rem 1rem; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .hb-sidebar.hb-open { transform: translateX(0); }
+  .hb-overlay.hb-show { display: block; }
+  .hb-nav { max-height: none; }
+}
+
+/* ===================== code blocks: copy button ===================== */
 .page__content .highlighter-rouge { position: relative; }
 .page__content .highlighter-rouge .hb-copy {
   position: absolute; top: 6px; right: 6px; z-index: 3;
   font-size: 0.72em; line-height: 1; padding: 5px 9px;
-  border: 1px solid #cfcfcf; border-radius: 5px;
-  background: #fff; color: #555;
+  border: 1px solid #cfcfcf; border-radius: 5px; background: #fff; color: #555;
   cursor: pointer; opacity: 0; transition: opacity .15s ease, background .15s ease, color .15s ease;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -15,7 +111,7 @@
 .page__content .highlighter-rouge .hb-copy.hb-copied { background: #2e7d32; color: #fff; border-color: #2e7d32; opacity: 1; }
 @media (hover: none) { .page__content .highlighter-rouge .hb-copy { opacity: 1; } }
 
-/* ---------- converted tables & figure ---------- */
+/* ===================== converted tables & figure ===================== */
 .page__content .hb-table-wrap { overflow-x: auto; margin: 1.2em 0; }
 .page__content .hb-table-wrap table { font-size: 0.86em; }
 .page__content .hb-table-wrap td, .page__content .hb-table-wrap th { vertical-align: top; }
@@ -24,53 +120,9 @@
 .page__content figure.hb-figure img { max-width: 100%; height: auto; border: 1px solid #e6e6e6; border-radius: 6px; background: #fff; padding: 8px; box-sizing: border-box; }
 .page__content figure.hb-figure figcaption { font-size: 0.85em; color: #555; margin-top: 0.6em; text-align: left; line-height: 1.5; }
 
-.page__content .hb-backlink { font-size: 0.9em; color: #666; margin-bottom: 1.5em; }
+.page__content h1, .page__content h2, .page__content h3 { scroll-margin-top: 1rem; }
 
-/* ---------- headings: anchor offset for sticky masthead ---------- */
-.page__content h1, .page__content h2, .page__content h3 { scroll-margin-top: 80px; }
-
-/* ---------- sticky TOC ---------- */
-nav.hb-toc {
-  font-size: 0.82em; margin: 1.5em 0;
-  border: 1px solid #e6e6e6; border-radius: 8px; background: #fafafa;
-}
-nav.hb-toc .hb-toc-toggle {
-  display: block; width: 100%; text-align: left; cursor: pointer;
-  font-weight: 700; font-size: 0.95em; letter-spacing: .04em; text-transform: uppercase;
-  padding: 10px 14px; border: 0; background: none; color: #2f5c8f;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-nav.hb-toc .hb-toc-toggle::after { content: " ▾"; font-size: 0.9em; color: #999; }
-nav.hb-toc.collapsed .hb-toc-toggle::after { content: " ▸"; }
-nav.hb-toc.collapsed .hb-toc-body { display: none; }
-nav.hb-toc .hb-toc-body { padding: 2px 6px 10px; }
-nav.hb-toc ul { list-style: none; margin: 0; padding: 0; }
-nav.hb-toc li { margin: 0; padding: 0; line-height: 1.35; }
-nav.hb-toc li a { display: block; padding: 3px 8px; color: #444; text-decoration: none; border-left: 2px solid transparent; }
-nav.hb-toc li a:hover { color: #2f5c8f; background: #eef2f7; }
-nav.hb-toc li.hb-h1 > a { font-weight: 700; color: #222; margin-top: 4px; }
-nav.hb-toc li.hb-h2 > a { padding-left: 18px; font-size: 0.96em; }
-nav.hb-toc li.hb-active > a { color: #2f5c8f; border-left-color: #2f5c8f; background: #eef2f7; font-weight: 600; }
-
-@media (min-width: 1024px) {
-  .page__inner-wrap.hb-has-toc {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 250px;
-    column-gap: 2.5rem;
-  }
-  .hb-has-toc > header { grid-column: 1 / -1; }
-  .hb-has-toc > .page__content { grid-column: 1; grid-row: 2; min-width: 0; }
-  .hb-has-toc > footer, .hb-has-toc > .page__meta { grid-column: 1; }
-  .hb-has-toc > nav.hb-toc {
-    grid-column: 2; grid-row: 2; align-self: start;
-    position: sticky; top: 84px; margin: 0;
-    max-height: calc(100vh - 104px); overflow-y: auto;
-  }
-  nav.hb-toc.collapsed .hb-toc-body { display: block; } /* stay open on desktop */
-  nav.hb-toc .hb-toc-toggle { cursor: default; }
-}
-
-/* ---------- back to top ---------- */
+/* ===================== back to top ===================== */
 #hb-top {
   position: fixed; bottom: 22px; right: 22px; z-index: 40;
   width: 42px; height: 42px; border-radius: 50%; border: 0;
@@ -87,9 +139,16 @@ nav.hb-toc li.hb-active > a { color: #2f5c8f; border-left-color: #2f5c8f; backgr
   function ready(fn){ if(document.readyState!=='loading'){fn();} else {document.addEventListener('DOMContentLoaded',fn);} }
   ready(function () {
     var content = document.querySelector('.page__content');
-    if (!content) return;
+    var wrap = document.querySelector('.page__inner-wrap');
+    if (!content || !wrap) return;
 
-    /* ---- 1. copy buttons on every code block ---- */
+    var langEl = document.querySelector('[data-hb-lang]');
+    var isZh = langEl && langEl.getAttribute('data-hb-lang') === 'zh';
+    var T = isZh
+      ? { title: '目录', search: '搜索手册…', none: '没有匹配的章节。', menu: '目录' }
+      : { title: 'Contents', search: 'Search the handbook…', none: 'No matching sections.', menu: 'Contents' };
+
+    /* ---- 1. copy buttons ---- */
     content.querySelectorAll('.highlighter-rouge').forEach(function (block) {
       var code = block.querySelector('code') || block.querySelector('pre');
       if (!code) return;
@@ -112,59 +171,127 @@ nav.hb-toc li.hb-active > a { color: #2f5c8f; border-left-color: #2f5c8f; backgr
       ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
     }
 
-    /* ---- 2. build sticky TOC from H1 (parts) + H2 (sections) ---- */
-    var heads = content.querySelectorAll('h1, h2');
+    /* ---- 2. build docs sidebar (search + collapsible nav) ---- */
+    var heads = [].slice.call(content.querySelectorAll('h1, h2'));
     if (heads.length > 3) {
-      var slugify = function (s) {
-        return s.toLowerCase().trim().replace(/[^\w一-鿿]+/g, '-').replace(/^-+|-+$/g, '');
-      };
-      var ul = document.createElement('ul');
       var used = {};
-      heads.forEach(function (h) {
-        if (!h.id) { var base = slugify(h.textContent) || 'sec'; var id = base, i = 2;
+      var slugify = function (s) { return s.toLowerCase().trim().replace(/[^\w一-鿿]+/g, '-').replace(/^-+|-+$/g, ''); };
+      var ensureId = function (h) {
+        if (!h.id) { var base = slugify(h.textContent) || 'sec', id = base, i = 2;
           while (used[id] || document.getElementById(id)) { id = base + '-' + (i++); } h.id = id; }
         used[h.id] = true;
-        var li = document.createElement('li');
-        li.className = (h.tagName === 'H1') ? 'hb-h1' : 'hb-h2';
-        var a = document.createElement('a');
-        a.href = '#' + h.id; a.textContent = h.textContent;
-        li.appendChild(a); ul.appendChild(li); h._hbLi = li;
-      });
-      var nav = document.createElement('nav');
-      nav.className = 'hb-toc'; nav.setAttribute('aria-label', 'Table of contents');
-      var toggle = document.createElement('button');
-      toggle.type = 'button'; toggle.className = 'hb-toc-toggle';
-      toggle.setAttribute('aria-expanded', 'true');
-      var langEl = document.querySelector('[data-hb-lang]');
-      var isZh = langEl && langEl.getAttribute('data-hb-lang') === 'zh';
-      toggle.textContent = isZh ? '目录' : 'Contents';
-      var body = document.createElement('div'); body.className = 'hb-toc-body'; body.appendChild(ul);
-      nav.appendChild(toggle); nav.appendChild(body);
+      };
 
-      var wrap = document.querySelector('.page__inner-wrap');
-      wrap.insertBefore(nav, content);        // sits between header and content
-      wrap.classList.add('hb-has-toc');
-
-      if (window.innerWidth < 1024) nav.classList.add('collapsed');
-      toggle.addEventListener('click', function () {
-        nav.classList.toggle('collapsed');
-        toggle.setAttribute('aria-expanded', String(!nav.classList.contains('collapsed')));
+      var sections = [];
+      heads.forEach(function (h) {
+        ensureId(h);
+        if (h.tagName === 'H1' || !sections.length) sections.push({ head: h, items: [] });
+        else sections[sections.length - 1].items.push(h);
       });
 
-      /* scrollspy: highlight the section currently in view */
+      var aside = document.createElement('aside');
+      aside.className = 'hb-sidebar'; aside.setAttribute('aria-label', 'Handbook navigation');
+      var head = document.createElement('div'); head.className = 'hb-sidebar-head';
+      head.innerHTML = '<div class="hb-sidebar-title"></div><div class="hb-search"><input type="search" class="hb-search-input" aria-label="Search sections"></div>';
+      head.querySelector('.hb-sidebar-title').textContent = T.title;
+      var input = head.querySelector('.hb-search-input'); input.placeholder = T.search;
+      aside.appendChild(head);
+
+      var nav = document.createElement('nav'); nav.className = 'hb-nav';
+      var list = document.createElement('ul'); list.className = 'hb-nav-list';
+      var allItems = [];   // {a, li, text, section}
+
+      function mkLink(h, cls) {
+        var a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent;
+        a.className = cls; h._hbA = a; return a;
+      }
+
+      sections.forEach(function (sec) {
+        var li = document.createElement('li'); li.className = 'hb-sec' + (sec.items.length ? '' : ' no-items');
+        var shead = document.createElement('div'); shead.className = 'hb-sec-head';
+        var toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'hb-sec-toggle';
+        toggle.setAttribute('aria-label', 'Toggle section');
+        var slink = mkLink(sec.head, 'hb-sec-link');
+        shead.appendChild(toggle); shead.appendChild(slink); li.appendChild(shead);
+        sec.head._hbSecLi = li;
+        allItems.push({ a: slink, li: li, text: sec.head.textContent.toLowerCase(), section: li, isHead: true });
+
+        if (sec.items.length) {
+          var ul = document.createElement('ul'); ul.className = 'hb-sec-items';
+          sec.items.forEach(function (h) {
+            var ili = document.createElement('li'); ili.className = 'hb-item';
+            var a = mkLink(h, ''); ili.appendChild(a); ul.appendChild(ili);
+            h._hbLi = ili;
+            allItems.push({ a: a, li: ili, text: h.textContent.toLowerCase(), section: li, isHead: false });
+          });
+          li.appendChild(ul);
+          toggle.addEventListener('click', function () { li.classList.toggle('collapsed'); });
+        }
+        list.appendChild(li);
+      });
+
+      var none = document.createElement('p'); none.className = 'hb-no-results'; none.textContent = T.none;
+      nav.appendChild(list); nav.appendChild(none);
+      aside.appendChild(nav);
+
+      wrap.insertBefore(aside, wrap.firstChild);
+      wrap.classList.add('hb-docs');
+
+      /* ---- search filter ---- */
+      input.addEventListener('input', function () {
+        var q = input.value.trim().toLowerCase();
+        var anyShown = false;
+        sections.forEach(function (sec) {
+          var li = sec.head._hbSecLi;
+          var headHit = !q || sec.head.textContent.toLowerCase().indexOf(q) !== -1;
+          var itemShown = 0;
+          (sec.items || []).forEach(function (h) {
+            var hit = !q || h.textContent.toLowerCase().indexOf(q) !== -1;
+            var show = headHit || hit;
+            h._hbLi.style.display = show ? '' : 'none';
+            if (show) itemShown++;
+          });
+          var secShow = headHit || itemShown > 0;
+          li.style.display = secShow ? '' : 'none';
+          if (secShow) anyShown = true;
+          if (q) { li.classList.remove('collapsed'); }  // expand while searching
+        });
+        nav.classList.toggle('hb-empty', !anyShown);
+      });
+
+      /* ---- scrollspy ---- */
       var spy = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
-          if (e.isIntersecting && e.target._hbLi) {
-            ul.querySelectorAll('li.hb-active').forEach(function(x){ x.classList.remove('hb-active'); });
-            e.target._hbLi.classList.add('hb-active');
-            if (window.innerWidth >= 1024) {
-              var li = e.target._hbLi, r = li.getBoundingClientRect(), nr = nav.getBoundingClientRect();
-              if (r.top < nr.top || r.bottom > nr.bottom) li.scrollIntoView({ block: 'nearest' });
-            }
+          if (!e.isIntersecting) return;
+          var li = e.target._hbLi || e.target._hbSecLi;
+          var a = e.target._hbA;
+          if (!a) return;
+          list.querySelectorAll('.hb-active').forEach(function (x) { x.classList.remove('hb-active'); });
+          if (e.target.tagName === 'H1') { a.classList.add('hb-active'); }
+          else if (li) {
+            li.classList.add('hb-active');
+            var secLi = li.closest('.hb-sec'); if (secLi) secLi.classList.remove('collapsed');
+          }
+          if (window.innerWidth >= 900) {
+            var box = a.getBoundingClientRect(), nb = nav.getBoundingClientRect();
+            if (box.top < nb.top || box.bottom > nb.bottom) a.scrollIntoView({ block: 'nearest' });
           }
         });
-      }, { rootMargin: '-70px 0px -70% 0px' });
+      }, { rootMargin: '-8% 0px -75% 0px' });
       heads.forEach(function (h) { spy.observe(h); });
+
+      /* ---- mobile drawer ---- */
+      var toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button'; toggleBtn.className = 'hb-drawer-toggle';
+      toggleBtn.innerHTML = '<span aria-hidden="true">☰</span> ' + T.menu;
+      var overlay = document.createElement('div'); overlay.className = 'hb-overlay';
+      document.body.appendChild(toggleBtn); document.body.appendChild(overlay);
+      function openDrawer(o){ aside.classList.toggle('hb-open', o); overlay.classList.toggle('hb-show', o); }
+      toggleBtn.addEventListener('click', function(){ openDrawer(!aside.classList.contains('hb-open')); });
+      overlay.addEventListener('click', function(){ openDrawer(false); });
+      aside.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A' && window.innerWidth < 900) openDrawer(false);
+      });
     }
 
     /* ---- 3. back-to-top ---- */
