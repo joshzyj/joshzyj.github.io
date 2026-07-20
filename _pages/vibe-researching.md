@@ -9,14 +9,14 @@ author_profile: true
 .vr-lead { font-size: 1.05em; line-height: 1.6; }
 .vr-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 1.6em 0; }
 .vr-card { display: block; border: 1px solid #e2e2e2; border-radius: 10px; padding: 1.1em 1.2em; text-decoration: none !important; color: inherit; background: #fafafa; transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease; }
-.vr-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.10); border-color: #2f5c8f; transform: translateY(-2px); }
-.vr-card .vr-eyebrow { font-size: .72em; letter-spacing: .08em; text-transform: uppercase; color: #2f5c8f; font-weight: 700; }
+.vr-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.10); border-color: #a84a22; transform: translateY(-2px); }
+.vr-card .vr-eyebrow { font-size: .72em; letter-spacing: .08em; text-transform: uppercase; color: #a84a22; font-weight: 700; }
 .vr-card h3 { margin: .25em 0 .35em; font-size: 1.15em; }
 .vr-card p { margin: 0; font-size: .88em; color: #555; line-height: 1.45; }
 .vr-parts { margin: 1em 0; }
 .vr-parts li { margin-bottom: .35em; }
 .vr-meta { font-size: .85em; color: #666; }
-.vr-note { border-left: 3px solid #2f5c8f; background: #f4f7fb; padding: .7em 1em; border-radius: 0 6px 6px 0; font-size: .92em; }
+.vr-note { border-left: 3px solid #a84a22; background: #f7ece2; padding: .7em 1em; border-radius: 0 6px 6px 0; font-size: .92em; }
 </style>
 
 <p class="vr-lead"><strong>Vibe researching</strong> is doing real empirical social science by <em>directing coding agents</em> — Claude Code and Codex — rather than writing every line yourself. You describe the study; the agent runs the brainstorm, the design, the analysis, the draft, and the checks. The discipline that separates it from careless automation is <strong>verification</strong>: nothing is trusted until an independent pass confirms it.</p>
