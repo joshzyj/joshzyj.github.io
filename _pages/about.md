@@ -30,6 +30,8 @@ I also taught intro to CSS for NYU Shanghai CASER. Check here for [the syllabus]
 
 I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
 
+I have presented *Vibe Researching* in invited workshops and talks — including at NYU Shanghai, the University of Hong Kong (HKU), and the Chinese University of Hong Kong (the [CSSL@CUHK webinar](https://cssl.socsc.cuhk.edu.hk/2026/06/22/vibe-researching-with-agentic-ai-for-social-sciences/) on *Vibe Researching with Agentic AI for Social Sciences*) in summer 2026, and at Zhejiang University (ZJU).
+
 ## New Paper Alert
 
 Ting‐Syuan Lin and Yongjun Zhang. "[Multidimensional Segregation Among Asian American Voters: Racial, Income, and Partisan Sorting in New York and California.](https://doi.org/10.1002/psp.70271)" Population, Space and Place 32, no. 4 (2026): e70271.
