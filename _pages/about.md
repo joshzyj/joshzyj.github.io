@@ -30,7 +30,13 @@ I also taught intro to CSS for NYU Shanghai CASER. Check here for [the syllabus]
 
 I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
 
-I have presented *Vibe Researching* in invited workshops and talks — including at NYU Shanghai, the University of Hong Kong (HKU), and the Chinese University of Hong Kong (the [CSSL@CUHK webinar](https://cssl.socsc.cuhk.edu.hk/2026/06/22/vibe-researching-with-agentic-ai-for-social-sciences/) on *Vibe Researching with Agentic AI for Social Sciences*) in summer 2026, and at Zhejiang University (ZJU).
+I have presented *Vibe Researching* in invited workshops, seminars, and courses in 2026, including:
+
+- **Lingnan University** — *Vibe Researching with Agentic AI for Social Sciences*, a seminar hosted by the Governance and Bureaucracy Lab, Department of Government and International Affairs (June 17).
+- **University of Hong Kong (HKU)** — *Using AI in Social Science Research: From Smart Prompting to Research Agents*, a one-day practical workshop co-led with Prof. Weidong Wang, hosted by the Faculty of Social Sciences and the Social Sciences Research Centre (June 18).
+- **Zhejiang University (ZJU)** — *When AI Starts Writing Papers, Where Is the Future of PhD Students?*, a lecture hosted by the School of Public Affairs (June 23).
+- **NYU Shanghai** — *Agentic AI for Social Science Research*, a course in the [2026 Summer School](https://caser.shanghai.nyu.edu/training/2026-summer-school-methods/course-and-instructor-introduction/agentic-ai-for-social-science-research/) at CASER (July 1–5).
+- **The Chinese University of Hong Kong (CUHK)** — the [CSSL@CUHK webinar](https://cssl.socsc.cuhk.edu.hk/2026/06/22/vibe-researching-with-agentic-ai-for-social-sciences/) *Vibe Researching with Agentic AI for Social Sciences*, hosted by the Computational Social Science Laboratory.
 
 ## New Paper Alert
 
