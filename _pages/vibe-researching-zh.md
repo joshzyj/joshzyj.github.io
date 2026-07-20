@@ -287,8 +287,8 @@ $ bash setup.sh    # 幂等；刷新 symlink 与 hook 注册
 | GLM / Z.ai（国际） | `api.z.ai` | Opus → `glm-5.1`；Sonnet → `glm-5-turbo`；Haiku → `glm-4.5-air`。同时 `API_TIMEOUT_MS=3000000`。 |
 | GLM 中国大陆 | `open.bigmodel.cn` | 同样思路；按账号可用的 GLM 系列选择。 |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`；Haiku 与 subagents → `deepseek-v4-flash`。 |
-| 本地 —— Ollama（经 CCR/代理） | CCR → `http://localhost:11434/v1/chat/completions` | 你拉下来的任意 tag（如 `qwen2.5-coder:32b`）；需要一层转换。详见 §2.5.4。 |
-| 本地 —— vLLM / llama.cpp（经代理） | 你启动的代理地址 | 由你的代理决定，详见 §2.5.4。 |
+| 本地 —— Ollama（经 CCR/代理） | CCR → `http://localhost:11434/v1/chat/completions` | 你拉下来的任意 tag（如 `qwen2.5-coder:32b`）；需要一层转换。详见 §2.5.5。 |
+| 本地 —— vLLM / llama.cpp（经代理） | 你启动的代理地址 | 由你的代理决定，详见 §2.5.5。 |
 
 完整 `ANTHROPIC_BASE_URL`：Z.ai 为 `https://api.z.ai/api/anthropic`，BigModel 为 `https://open.bigmodel.cn/api/anthropic`，DeepSeek 为 `https://api.deepseek.com/anthropic`。后缀 `/anthropic` 是让 endpoint 走 compatibility shim 的关键，漏掉它是最常见的配置错误。
 
@@ -372,7 +372,42 @@ claude-anthropic() {
 
 之后 `glm` 在 Z.ai 上启动 Claude Code，`deepseek` 在 DeepSeek 上启动，`claude-anthropic` 回到原版 Anthropic。PATH 里的二进制 `claude` 始终是同一个你信任的 CLI。
 
-### 2.5.4 在本机跑本地模型
+### 2.5.4 方案 C —— CC Switch：一键切换 provider 的图形界面
+
+方案 A、B 都要手动改配置。如果你要在多个 provider 或多个账号之间来回切 —— 一个项目用 Anthropic 登录，另一些用 GLM 和 DeepSeek，还有个合作者的仓库用 Kimi key —— 那么用一个替你改这些配置的图形界面会更不容易出错。**CC Switch** 是一个跨平台桌面应用，在一个窗口里管理 Claude Code（以及 Codex、Gemini CLI、Claude Desktop 等）的 provider 配置，内置 50+ provider 预设，还带一个系统托盘菜单可即时切换。它是开源的第三方工具，**不是** Anthropic 官方产品。
+
+**安装。**
+
+```bash
+# macOS（Homebrew）—— 已签名并经 Apple 公证
+brew install --cask cc-switch
+
+# Linux（Arch）
+paru -S cc-switch-bin
+```
+
+**Windows** 下载 `.msi` 安装包（Windows 10+）；其它 **Linux** 发行版用 `.deb`、`.rpm` 或通用的 `.AppImage`。所有安装包都在官方发布页：
+
+- 官网：<https://ccswitch.io>
+- 下载：<https://github.com/farion1231/cc-switch/releases>
+
+**工作原理。** CC Switch 把你的 provider 定义存在本地 SQLite 数据库 `~/.cc-switch/cc-switch.db` 里；切换时，它把对应的值写进各工具的实时配置 —— 也就是方案 A 里你手动改的那些 `~/.claude/settings.json` 环境变量 —— 采用原子写入，并在 `~/.cc-switch/backups/` 里滚动备份。Claude Code 支持**热切换、无需重启**；其它 CLI 切换后需要重启终端。
+
+**四步：添加与切换。**
+
+1. **Add Provider（添加）** → 选一个预设（Anthropic 官方、GLM/Z.ai、DeepSeek、Kimi/Moonshot ……）或填自定义 base URL + key。
+2. 选中该 provider 点 **Enable（启用）** —— 或直接从**托盘**菜单里选，即时切换。
+3. 重启终端（Claude Code 不需要），触发任意工具调用或 `/usage` 确认后端已切换。
+4. 想切回 Anthropic 登录：启用 **"Official Login"** 预设，重启，再正常登录。
+
+**两条提醒 —— 工作坊的数据边界规则依然适用。**
+
+- **它把你的 API key 明文存**在 `~/.cc-switch/cc-switch.db` 里。把这个文件当凭据库对待：不要放在共用的实验室机器上，不要放进你无法掌控的同步 / 备份目录，永远不要提交进 git。在借来的电脑上，宁可用方案 B（key 放 `~/.api-keys`，`chmod 600`），或用完清理干净。
+- **很多预设是社区中转（relay），不是厂商自己的 endpoint。** 中转方能看到你发给它的每一条 prompt —— 包括受访者文本。在把含敏感数据的项目路由到任何非官方后端之前，先做 §2.5.6 的信任检查；受限数据请优先用官方通道或你已核验过的 provider。
+
+CC Switch 不替代方案 A/B —— 它只是把它们收进一个界面。工作流的其它部分（插件、`CLAUDE.md`、权限门）都不变。
+
+### 2.5.5 在本机跑本地模型
 
 如果机构禁止把数据发到云端 API，或者你需要可离线复现的实验，可以在本机跑一个 checkpoint，再把 Claude Code 路由过去。注意：Claude Code 说的是 Anthropic Messages API，而本地服务（Ollama、vLLM、llama.cpp）说的是 OpenAI 风格的 chat completions，所以中间要垫一层薄薄的转换层。`claude-code-router`（CCR）最省事：它对 provider 说的是 OpenAI 风格的 chat completions，所以这三者都当作普通的 OpenAI-compatible 后端接入即可——不需要为每个本地服务单独配 transformer。
 
@@ -411,7 +446,7 @@ $ ccr code        # 通过 CCR 启动 Claude Code
 
 > **vLLM / llama.cpp。** 如果你已经用 vLLM（`vllm serve <model>`）或 llama.cpp（`llama-server`）提供服务，它们暴露的是 OpenAI 风格的 chat completions，不是 Anthropic 风格。vLLM 自带一份 Claude Code 接入指引；否则在前面套一层 `litellm`、`anthropic-proxy` 或 CCR 转换 OpenAI ↔ Anthropic schema 即可。Claude Code 这一侧保持不变。
 
-### 2.5.5 信任新后端前必做的三项检查
+### 2.5.6 信任新后端前必做的三项检查
 
 Open Scholar 技能**不是 model-agnostic** 的。它们依赖长上下文阅读、tool use 和结构化 JSON 输出。在用非 Anthropic 后端跑 CFPS 流水线之前，必须先过下面三步烟测：
 
@@ -1859,6 +1894,26 @@ THEORIZE 进一步把任务分八类——类型学构建（Lazarsfeld property-
 **目标：** 维护**单一、用户作用域、跨项目**的知识图谱：你 ingest 过的每篇论文、抽取过的每条发现、记下的每条方法、标过的每条论文-论文关系，都能在下一项目里复用。它就是**让智能体不再每次重新发现同一片文献**的那一层。
 
 这是技能套件里**最被低估却最有价值**的一个。审计语料里，CFPS 数字鸿沟、CFPS 户口-婚姻、十几个其它项目都在同一个智识邻域里——Wu & Treiman 2004、Xie & Jin 2015、van Deursen & Helsper 2015、DiMaggio et al. 2004 ……。没有 `scholar-knowledge` 时，每个项目从零开始。有了它，ingest 是一次性投资，**永远在还利息**。
+
+### 8C.0 SELECT 的三条路 —— 为什么用 wiki，而不只是 RAG
+
+把*对的*文本送进模型窗口（也就是"SELECT"这一步），有三种截然不同的策略，而 `scholar-knowledge` 是第三种：
+
+- **RAG** —— 把语料切块、做 embedding，查询时按向量相似度取回最近的 top-*K* 块。快、可扩展，但取回的是按*表面相似度*排序的**不透明片段**；源文件一改，索引就过期；而且你很难读出某个块*为什么*被选中。
+- **智能体式搜索（agentic search）** —— 没有索引；智能体在循环里 `grep` 并直接读活文件（Claude Code 读你的仓库就是这么干的）。永远是最新、完全可审计，但受限于少数几次搜索够得着的范围，而且每次会话都要从头再读一遍。
+- **知识 wiki（"LLM-wiki"路线）** —— 模型把每篇源文献*读一次*，抽取发现、机制与关系，写成**人类可读、互相链接的 markdown wiki**。要回答问题时，它读 index 页、顺着 `[[链接]]` 走到真正相关的那几页。这正是 `/scholar-knowledge compile` 和 `ask` 做的事。
+
+对于一个你会*反复回来查*的语料，wiki 为什么可能胜过 RAG：*综合是预先算好的*（主题综述、`contradictions.md`、`gaps.md`），而不是每次查询都重新推导一遍；关系是*可遍历的显式链接*（`extends`、`contradicts`、`same-dataset`），不是隐含的向量邻居；它*就是 markdown* —— 可审计、可编辑，不需要 embedding 模型、也不需要向量库；而且它会*滚雪球* —— 你把自己的产出 file 回去，于是第 5 篇论文站在第 1–4 篇的肩膀上。代价是：抽取是*前期一次性投入*且有损（wiki 是模型对源文献的*阅读*，不是源文献本身 —— 所以 `raw/` 会保留原件），而且 wiki 必须保持最新（由 LLM 维护，你几乎不用手动改）。这就是 Andrej Karpathy 的"LLM wiki"想法：模型自己写、自己维护这个知识库，你把产出 file 回去，让它为将来的查询变得更好。
+
+三者是**互补，不是对手**。把 wiki 当作持久记忆，把活的检索器（OpenAlex、Zotero）包成 MCP *工具*来延伸触达（Lab 3 §4b），让智能体自己决定该伸手去拿哪一个。想看完整机制 —— ingest → 图谱 → compile → 导航 —— 只用约 250 行零依赖 Python，跑一下 Day 3 的 demo：
+
+```bash
+cd demo/day3-claude-code/llm-wiki
+python3 build_wiki.py     # 7 篇论文 -> 图谱 -> 34 个互链 wiki 页
+python3 ask.py "why doesn't closing the access gap close the divide?"
+```
+
+`ask.py` 会打印出确切的导航路径（`index.md → topics/… → concepts/… → papers/…`），把它与 RAG 不透明的 top-*K* 之间的差别摆到明面上。
 
 ### 8C.1 文件长什么样
 

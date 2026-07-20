@@ -304,8 +304,8 @@ You do **not** need to install another CLI, swap your scripts, or hand-edit JSON
 | GLM / Z.ai (international) | `api.z.ai` | Opus → `glm-5.1`; Sonnet → `glm-5-turbo`; Haiku → `glm-4.5-air`. Also set `API_TIMEOUT_MS=3000000`. |
 | GLM mainland China | `open.bigmodel.cn` | Same idea; pick the GLM family your BigModel account has access to. |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`; Haiku and subagents → `deepseek-v4-flash`. |
-| Local — Ollama (via CCR/proxy) | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.5.4. |
-| Local — vLLM / llama.cpp (via proxy) | proxy address you start | Whatever you exposed; see §2.5.4. |
+| Local — Ollama (via CCR/proxy) | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.5.5. |
+| Local — vLLM / llama.cpp (via proxy) | proxy address you start | Whatever you exposed; see §2.5.5. |
 
 The full `ANTHROPIC_BASE_URL` for Z.ai is `https://api.z.ai/api/anthropic`; for BigModel it is `https://open.bigmodel.cn/api/anthropic`; for DeepSeek it is `https://api.deepseek.com/anthropic`. The trailing `/anthropic` segment is what makes these endpoints route to the compatibility shim — leaving it off is the most common configuration error.
 
@@ -389,7 +389,42 @@ claude-anthropic() {
 
 From then on, `glm` opens Claude Code against Z.ai, `deepseek` opens it against DeepSeek, and `claude-anthropic` falls back to vanilla Anthropic. The PATH binary `claude` itself is still the one CLI you trust.
 
-### 2.5.4 Running models locally
+### 2.5.4 Option C — CC Switch, a one-click GUI for provider switching
+
+Options A and B edit configuration by hand. If you juggle several providers or accounts — an Anthropic login for one project, GLM and DeepSeek for others, a Kimi key for a collaborator's repo — a GUI that makes those same edits for you is less error-prone. **CC Switch** is a cross-platform desktop app that manages provider configurations for Claude Code (and Codex, Gemini CLI, Claude Desktop, and more) from one window, with 50+ built-in provider presets and a system-tray menu for instant switching. It is an open-source, third-party tool — **not** an Anthropic product.
+
+**Install.**
+
+```bash
+# macOS (Homebrew) — signed and notarized
+brew install --cask cc-switch
+
+# Linux (Arch)
+paru -S cc-switch-bin
+```
+
+On **Windows**, download the `.msi` installer (Windows 10+); on other **Linux** distributions, the `.deb`, `.rpm`, or universal `.AppImage`. All builds are on the official releases page:
+
+- Website: <https://ccswitch.io>
+- Downloads: <https://github.com/farion1231/cc-switch/releases>
+
+**How it works.** CC Switch keeps your provider definitions in a local SQLite database at `~/.cc-switch/cc-switch.db` and, when you switch, writes the matching values into the live tool config — the same `~/.claude/settings.json` env keys you set by hand in Option A — using atomic writes with rotating backups in `~/.cc-switch/backups/`. Claude Code supports **hot-switching without a restart**; for the other CLIs you restart the terminal after switching.
+
+**Add and switch, in four steps.**
+
+1. **Add Provider** → choose a preset (Anthropic official, GLM/Z.ai, DeepSeek, Kimi/Moonshot, …) or enter a custom base URL + key.
+2. Select the provider and click **Enable** — or pick it from the **tray** menu for an instant switch.
+3. Restart the terminal (not needed for Claude Code) and run any tool call or `/usage` to confirm the backend changed.
+4. To return to your Anthropic login, enable the **"Official Login"** preset, restart, and sign in normally.
+
+**Two cautions — the workshop's data-boundary rules still apply.**
+
+- **It stores your API keys unencrypted** in `~/.cc-switch/cc-switch.db`. Treat that file like any credential store: not on a shared lab machine, not in a synced or backed-up folder you don't control, never in git. On a borrowed computer, prefer Option B (keys in `~/.api-keys`, `chmod 600`) or clean up afterwards.
+- **Many presets are community relays**, not the vendor's own endpoint. A relay sees every prompt you send it — including participant text. Before routing a project with sensitive data through any non-official backend, run the trust checks in §2.5.6, and for restricted data prefer an official channel or a provider you have vetted.
+
+CC Switch does not replace Options A/B — it automates them behind a UI. Everything else (the plugin, `CLAUDE.md`, the permission gates) is unchanged.
+
+### 2.5.5 Running models locally
 
 If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and route Claude Code to it. The catch: Claude Code speaks the Anthropic Messages API, while local servers (Ollama, vLLM, llama.cpp) speak OpenAI-style chat completions, so you put a thin translation layer in between. `claude-code-router` (CCR) is the lightest option: it speaks OpenAI-style chat completions to providers, so all three plug in as ordinary OpenAI-compatible backends — no per-server transformer required.
 
@@ -429,7 +464,7 @@ There is no `ccr config init`; the config file is created the first time you run
 
 > **vLLM / llama.cpp.** If you already serve models with vLLM (`vllm serve <model>`) or llama.cpp (`llama-server`), they expose OpenAI-style chat completions, not Anthropic-style. vLLM ships its own Claude Code integration guide; otherwise put `litellm`, an `anthropic-proxy`, or CCR in front to translate the OpenAI ↔ Anthropic schemas. The Claude Code side never changes.
 
-### 2.5.5 Workshop checks before you trust a backend
+### 2.5.6 Workshop checks before you trust a backend
 
 Open Scholar skills are **not model-agnostic**. They depend on long-context reading, tool use, and JSON-structured output. Before running the CFPS pipeline on a non-Anthropic backend, run this three-step smoke test:
 
@@ -1937,6 +1972,26 @@ The skill also writes a `figure caption` block ready to paste under the figure i
 **Goal:** maintain a **single, user-scoped knowledge graph** across all your projects so that every paper you ingest, every finding you extract, every method note, and every relationship between papers is reusable next time. This is what stops the agent from re-discovering the same literature on every project.
 
 This is the most under-used skill in the suite and arguably the most valuable. The CFPS digital-divide paper, the CFPS hukou-marriage paper, and a dozen others in the audited corpus all share the same intellectual neighborhood — Wu & Treiman 2004, Xie & Jin 2015, van Deursen & Helsper 2015, DiMaggio et al. 2004, etc. Without `scholar-knowledge`, each project starts from zero. With it, ingestion is an investment that pays back forever.
+
+### 8C.0 Three ways to SELECT — and why a wiki, not just RAG
+
+Getting the *right* text into the model's window (the "SELECT" move) has three distinct strategies, and `scholar-knowledge` is the third:
+
+- **RAG** — chunk your corpus, embed it, and at query time pull the top-*K* nearest chunks by vector similarity. Fast and scalable, but it returns opaque fragments ranked by surface similarity, the index goes stale when sources change, and you cannot easily read *why* a chunk was chosen.
+- **Agentic search** — no index; the agent `grep`s and reads the live files in a loop (this is how Claude Code reads your repo). Always current and fully auditable, but bounded by what a handful of searches can reach, and it re-reads from scratch every session.
+- **Knowledge wiki (the "LLM-wiki" approach)** — the model reads each source *once*, extracts the findings, mechanisms, and relationships, and writes them as a **human-readable, interlinked markdown wiki**. To answer, it reads the index page and follows `[[links]]` to the few pages that matter. This is exactly what `/scholar-knowledge compile` and `ask` do.
+
+Why a wiki can beat RAG for a corpus you return to: the *synthesis is precomputed* (topic overviews, `contradictions.md`, `gaps.md`) instead of re-derived on every query; relationships are *explicit links* you can traverse (`extends`, `contradicts`, `same-dataset`), not implicit vector neighbours; it is *just markdown* — auditable, editable, and needs no embedding model or vector database; and it *compounds* — you file your own outputs back in, so paper #5 stands on the shoulders of #1–4. The cost is that extraction is upfront and lossy (the wiki is the model's *reading* of a source, not the source — which is why `raw/` keeps the originals), and the wiki must be kept current (the LLM maintains it; you rarely edit by hand). This is Andrej Karpathy's "LLM wiki" idea: the model writes and maintains the knowledge base, and you file outputs back to enrich it for future queries.
+
+The three are **complementary, not rivals**. Keep the wiki as durable memory, wrap a live retriever (OpenAlex, Zotero) as an MCP *tool* for reach (Lab 3 §4b), and let the agent choose which to reach for. To see the whole mechanism in ~250 lines of dependency-free Python — ingest → graph → compile → navigate — run the Day-3 demo:
+
+```bash
+cd demo/day3-claude-code/llm-wiki
+python3 build_wiki.py     # 7 papers -> graph -> 34 interlinked wiki pages
+python3 ask.py "why doesn't closing the access gap close the divide?"
+```
+
+`ask.py` prints the exact navigation path (`index.md → topics/… → concepts/… → papers/…`), making the contrast with RAG's opaque top-*K* concrete.
 
 ### 8C.1 What lives where
 
