@@ -34,6 +34,11 @@ I co-organized the 2023 NYU Shanghai site for Summer Institute of Computational 
 I also taught intro to css for NYU Shanghai CASER. Check here for [the syllabus](https://yongjunzhang.com/files/CSS_Intro_NYU_Shanghai_Syllabus.pdf). 
 
 
+## Vibe Researching
+
+I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
+
+
 ## New Paper Alert
 
 Ting‐Syuan Lin and Yongjun Zhang. "[Multidimensional Segregation Among Asian American Voters: Racial, Income, and Partisan Sorting in New York and California.](https://doi.org/10.1002/psp.70271)" Population, Space and Place 32, no. 4 (2026): e70271.

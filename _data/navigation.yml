@@ -13,6 +13,9 @@ main:
   - title: "Data"
     url: /data/
 
+  - title: "Vibe Researching"
+    url: /vibe-researching/
+
   #- title: "Teaching"
   #  url: /teaching/
 

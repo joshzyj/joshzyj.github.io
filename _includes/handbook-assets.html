@@ -1,0 +1,181 @@
+<!-- Vibe Researching handbook: copy-to-clipboard buttons + sticky TOC. Page-scoped: only loaded on handbook pages that {% include %} this file. -->
+<style>
+/* ---------- code blocks: copy button ---------- */
+.page__content .highlighter-rouge { position: relative; }
+.page__content .highlighter-rouge .hb-copy {
+  position: absolute; top: 6px; right: 6px; z-index: 3;
+  font-size: 0.72em; line-height: 1; padding: 5px 9px;
+  border: 1px solid #cfcfcf; border-radius: 5px;
+  background: #fff; color: #555;
+  cursor: pointer; opacity: 0; transition: opacity .15s ease, background .15s ease, color .15s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.page__content .highlighter-rouge:hover .hb-copy { opacity: 1; }
+.page__content .highlighter-rouge .hb-copy:hover { background: #2f5c8f; color: #fff; border-color: #2f5c8f; }
+.page__content .highlighter-rouge .hb-copy.hb-copied { background: #2e7d32; color: #fff; border-color: #2e7d32; opacity: 1; }
+@media (hover: none) { .page__content .highlighter-rouge .hb-copy { opacity: 1; } }
+
+/* ---------- converted tables & figure ---------- */
+.page__content .hb-table-wrap { overflow-x: auto; margin: 1.2em 0; }
+.page__content .hb-table-wrap table { font-size: 0.86em; }
+.page__content .hb-table-wrap td, .page__content .hb-table-wrap th { vertical-align: top; }
+.page__content figure.hb-figure { margin: 1.6em 0; text-align: center; }
+.page__content figure.hb-figure svg,
+.page__content figure.hb-figure img { max-width: 100%; height: auto; border: 1px solid #e6e6e6; border-radius: 6px; background: #fff; padding: 8px; box-sizing: border-box; }
+.page__content figure.hb-figure figcaption { font-size: 0.85em; color: #555; margin-top: 0.6em; text-align: left; line-height: 1.5; }
+
+.page__content .hb-backlink { font-size: 0.9em; color: #666; margin-bottom: 1.5em; }
+
+/* ---------- headings: anchor offset for sticky masthead ---------- */
+.page__content h1, .page__content h2, .page__content h3 { scroll-margin-top: 80px; }
+
+/* ---------- sticky TOC ---------- */
+nav.hb-toc {
+  font-size: 0.82em; margin: 1.5em 0;
+  border: 1px solid #e6e6e6; border-radius: 8px; background: #fafafa;
+}
+nav.hb-toc .hb-toc-toggle {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  font-weight: 700; font-size: 0.95em; letter-spacing: .04em; text-transform: uppercase;
+  padding: 10px 14px; border: 0; background: none; color: #2f5c8f;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+nav.hb-toc .hb-toc-toggle::after { content: " ▾"; font-size: 0.9em; color: #999; }
+nav.hb-toc.collapsed .hb-toc-toggle::after { content: " ▸"; }
+nav.hb-toc.collapsed .hb-toc-body { display: none; }
+nav.hb-toc .hb-toc-body { padding: 2px 6px 10px; }
+nav.hb-toc ul { list-style: none; margin: 0; padding: 0; }
+nav.hb-toc li { margin: 0; padding: 0; line-height: 1.35; }
+nav.hb-toc li a { display: block; padding: 3px 8px; color: #444; text-decoration: none; border-left: 2px solid transparent; }
+nav.hb-toc li a:hover { color: #2f5c8f; background: #eef2f7; }
+nav.hb-toc li.hb-h1 > a { font-weight: 700; color: #222; margin-top: 4px; }
+nav.hb-toc li.hb-h2 > a { padding-left: 18px; font-size: 0.96em; }
+nav.hb-toc li.hb-active > a { color: #2f5c8f; border-left-color: #2f5c8f; background: #eef2f7; font-weight: 600; }
+
+@media (min-width: 1024px) {
+  .page__inner-wrap.hb-has-toc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 250px;
+    column-gap: 2.5rem;
+  }
+  .hb-has-toc > header { grid-column: 1 / -1; }
+  .hb-has-toc > .page__content { grid-column: 1; grid-row: 2; min-width: 0; }
+  .hb-has-toc > footer, .hb-has-toc > .page__meta { grid-column: 1; }
+  .hb-has-toc > nav.hb-toc {
+    grid-column: 2; grid-row: 2; align-self: start;
+    position: sticky; top: 84px; margin: 0;
+    max-height: calc(100vh - 104px); overflow-y: auto;
+  }
+  nav.hb-toc.collapsed .hb-toc-body { display: block; } /* stay open on desktop */
+  nav.hb-toc .hb-toc-toggle { cursor: default; }
+}
+
+/* ---------- back to top ---------- */
+#hb-top {
+  position: fixed; bottom: 22px; right: 22px; z-index: 40;
+  width: 42px; height: 42px; border-radius: 50%; border: 0;
+  background: #2f5c8f; color: #fff; font-size: 20px; line-height: 42px; text-align: center;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  opacity: 0; pointer-events: none; transition: opacity .2s ease;
+}
+#hb-top.show { opacity: 0.85; pointer-events: auto; }
+#hb-top:hover { opacity: 1; }
+</style>
+
+<script>
+(function () {
+  function ready(fn){ if(document.readyState!=='loading'){fn();} else {document.addEventListener('DOMContentLoaded',fn);} }
+  ready(function () {
+    var content = document.querySelector('.page__content');
+    if (!content) return;
+
+    /* ---- 1. copy buttons on every code block ---- */
+    content.querySelectorAll('.highlighter-rouge').forEach(function (block) {
+      var code = block.querySelector('code') || block.querySelector('pre');
+      if (!code) return;
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'hb-copy'; btn.textContent = 'Copy';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+      btn.addEventListener('click', function () {
+        var text = (code.textContent || '').replace(/\n$/, '');
+        var done = function () { btn.textContent = 'Copied!'; btn.classList.add('hb-copied');
+          setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('hb-copied'); }, 1500); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); });
+        } else { fallback(text); done(); }
+      });
+      block.appendChild(btn);
+    });
+    function fallback(text){
+      var ta = document.createElement('textarea'); ta.value = text;
+      ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+      ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
+    }
+
+    /* ---- 2. build sticky TOC from H1 (parts) + H2 (sections) ---- */
+    var heads = content.querySelectorAll('h1, h2');
+    if (heads.length > 3) {
+      var slugify = function (s) {
+        return s.toLowerCase().trim().replace(/[^\w一-鿿]+/g, '-').replace(/^-+|-+$/g, '');
+      };
+      var ul = document.createElement('ul');
+      var used = {};
+      heads.forEach(function (h) {
+        if (!h.id) { var base = slugify(h.textContent) || 'sec'; var id = base, i = 2;
+          while (used[id] || document.getElementById(id)) { id = base + '-' + (i++); } h.id = id; }
+        used[h.id] = true;
+        var li = document.createElement('li');
+        li.className = (h.tagName === 'H1') ? 'hb-h1' : 'hb-h2';
+        var a = document.createElement('a');
+        a.href = '#' + h.id; a.textContent = h.textContent;
+        li.appendChild(a); ul.appendChild(li); h._hbLi = li;
+      });
+      var nav = document.createElement('nav');
+      nav.className = 'hb-toc'; nav.setAttribute('aria-label', 'Table of contents');
+      var toggle = document.createElement('button');
+      toggle.type = 'button'; toggle.className = 'hb-toc-toggle';
+      toggle.setAttribute('aria-expanded', 'true');
+      var langEl = document.querySelector('[data-hb-lang]');
+      var isZh = langEl && langEl.getAttribute('data-hb-lang') === 'zh';
+      toggle.textContent = isZh ? '目录' : 'Contents';
+      var body = document.createElement('div'); body.className = 'hb-toc-body'; body.appendChild(ul);
+      nav.appendChild(toggle); nav.appendChild(body);
+
+      var wrap = document.querySelector('.page__inner-wrap');
+      wrap.insertBefore(nav, content);        // sits between header and content
+      wrap.classList.add('hb-has-toc');
+
+      if (window.innerWidth < 1024) nav.classList.add('collapsed');
+      toggle.addEventListener('click', function () {
+        nav.classList.toggle('collapsed');
+        toggle.setAttribute('aria-expanded', String(!nav.classList.contains('collapsed')));
+      });
+
+      /* scrollspy: highlight the section currently in view */
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && e.target._hbLi) {
+            ul.querySelectorAll('li.hb-active').forEach(function(x){ x.classList.remove('hb-active'); });
+            e.target._hbLi.classList.add('hb-active');
+            if (window.innerWidth >= 1024) {
+              var li = e.target._hbLi, r = li.getBoundingClientRect(), nr = nav.getBoundingClientRect();
+              if (r.top < nr.top || r.bottom > nr.bottom) li.scrollIntoView({ block: 'nearest' });
+            }
+          }
+        });
+      }, { rootMargin: '-70px 0px -70% 0px' });
+      heads.forEach(function (h) { spy.observe(h); });
+    }
+
+    /* ---- 3. back-to-top ---- */
+    var top = document.createElement('button');
+    top.id = 'hb-top'; top.type = 'button'; top.innerHTML = '&uarr;';
+    top.setAttribute('aria-label', 'Back to top');
+    top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    document.body.appendChild(top);
+    window.addEventListener('scroll', function () {
+      if (window.pageYOffset > 600) top.classList.add('show'); else top.classList.remove('show');
+    }, { passive: true });
+  });
+})();
+</script>
