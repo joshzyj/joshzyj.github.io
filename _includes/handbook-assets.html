@@ -217,6 +217,10 @@
       setOS(storedOS || (tabsets[0].querySelector('.hb-tab') && tabsets[0].querySelector('.hb-tab').getAttribute('data-os')), false);
     }
 
+    /* ---- viewer + sidebar (only when there are enough headings) ---- */
+    var rawHeads = content.querySelectorAll('h1, h2, h3');
+    var byId = {};
+    if (rawHeads.length > 3) {
     /* ---- partition content into section units (H1 / H2) ---- */
     var kids = [].slice.call(content.children);
     var units = [], cur = null, lastH1 = null;
@@ -235,8 +239,6 @@
 
     /* ---- build sidebar (search + nav with subsections) ---- */
     var heads = [].slice.call(content.querySelectorAll('.hb-section h1, .hb-section h2, .hb-section h3'));
-    var byId = {};
-    if (heads.length > 3) {
       var used = {};
       var slugify = function (s) { return s.toLowerCase().trim().replace(/[^\w一-鿿]+/g, '-').replace(/^-+|-+$/g, ''); };
       var ensureId = function (h) { if (!h.id) { var b = slugify(h.textContent) || 'sec', id = b, i = 2; while (used[id] || document.getElementById(id)) { id = b + '-' + (i++); } h.id = id; } used[h.id] = true; };
