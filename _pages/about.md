@@ -18,7 +18,40 @@ I teach Intro to Computational Social Science and Research Methods in Sociology 
 
 ## Vibe Researching
 
-I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the [`open-scholar-skill`](https://github.com/joshzyj/open-scholar-skill) suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
+I am developing *Vibe Researching* — a hands-on approach to doing empirical social science by directing coding agents (Claude Code, Codex) through the `open-scholar-skill` suite, with verification as the central discipline. I have written a participant handbook that walks all the way from installing the agents to a verified, journal-ready paper draft built on real CFPS data. Read it online (English and 中文), with copy-and-paste-ready commands, here: [**Vibe Researching**](/vibe-researching/).
+
+<style>
+.osk-wrap { margin: 1.5em 0; }
+.osk-cta { display:flex; align-items:center; gap:1.05rem; padding:1.05em 1.3em;
+  border:1px solid #e7d9c9; border-left:5px solid #a84a22; border-radius:12px;
+  background:linear-gradient(100deg,#f7ece2 0%, #fdfaf6 62%); text-decoration:none !important; color:inherit;
+  box-shadow:0 1px 2px rgba(80,50,20,.06); transition:box-shadow .16s ease, transform .16s ease, border-color .16s ease; }
+.osk-cta:hover { box-shadow:0 8px 22px rgba(168,74,34,.18); transform:translateY(-2px); border-left-color:#8a5a34; }
+.osk-mark { flex:0 0 auto; width:46px; height:46px; border-radius:12px; background:#8a5a34; color:#fff;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(138,90,52,.35); }
+.osk-cta:hover .osk-mark { background:#a84a22; }
+.osk-body { flex:1 1 auto; min-width:0; }
+.osk-eyebrow { display:block; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:#a84a22; font-weight:700; }
+.osk-title { display:block; font-size:1.18rem; font-weight:800; color:#7a3b1c; margin:.06em 0 .16em;
+  font-family:Menlo,Monaco,Consolas,"Liberation Mono",monospace; }
+.osk-desc { display:block; font-size:.9rem; color:#6a6058; line-height:1.45; }
+.osk-go { flex:0 0 auto; white-space:nowrap; align-self:center; font-weight:700; color:#fff; background:#a84a22;
+  padding:.5em .95em; border-radius:8px; font-size:.9rem; }
+.osk-cta:hover .osk-go { background:#8a5a34; }
+@media (max-width:600px){ .osk-cta{flex-wrap:wrap} .osk-go{flex-basis:100%; text-align:center; margin-top:.35em} }
+</style>
+
+<div class="osk-wrap" markdown="0">
+<a class="osk-cta" href="https://github.com/joshzyj/open-scholar-skill">
+<span class="osk-mark"><svg viewBox="0 0 16 16" width="26" height="26" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg></span>
+<span class="osk-body">
+<span class="osk-eyebrow">Open source · Claude Code plugin</span>
+<span class="osk-title">open-scholar-skill</span>
+<span class="osk-desc">41 specialist AI skills that walk the full research pipeline — idea, literature, design, analysis, writing, verification, and submission. Free and open on GitHub.</span>
+</span>
+<span class="osk-go">View on GitHub&nbsp;→</span>
+</a>
+</div>
 
 The research talk behind these workshops — *Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists?* — is also readable online, slide by slide in your browser: [English slides](/vibe-researching/slides-en/) · [中文幻灯片](/vibe-researching/slides-zh/).
 
