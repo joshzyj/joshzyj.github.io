@@ -4220,7 +4220,7 @@ If the report shows Tier 1 (local library) hits, you are configured. If everythi
 **3. Understand what a missing library costs you.** Nothing errors. `scholar-write` degrades quietly:
 
 - The **Tier 0/1 citation pool** is empty, so drafting leans on external APIs and produces more `[CITATION NEEDED]` markers.
-- **Exemplar retrieval** (§14.2, Step 0a-exemplars) falls back from your curated library to a per-project Zotero scan — and if Zotero is missing too, to nothing. Prose drafted without exemplars is measurably more generic; this is the mechanism behind §20G.
+- **Exemplar retrieval** (§14.2, Step 0a-exemplars) falls back from your curated library to a per-project Zotero scan — and if Zotero is missing too, to nothing. Prose drafted without exemplars is measurably more generic. **§14.3 is how you fix this permanently**, including seeding the library with your own published papers.
 - The **Theory-section carry-forward rule** still fires, but with fewer verified sources to carry forward.
 
 **4. Know that `scholar-write` is data-safety gated.** It is a **Tier B** skill: it checks `.claude/safety-status.json` and refuses fail-fast on `NEEDS_REVIEW:*`, `HALTED`, or `LOCAL_MODE` inputs. It does not implement the LOCAL_MODE dispatch contract itself — it just declines. Resolve the sidecar with `/scholar-init review` (§6.2) first.
@@ -4260,7 +4260,7 @@ This is the most important thing to understand about the skill. `scholar-write` 
 | **0a-safety** | `.claude/safety-status.json` | Halts on `NEEDS_REVIEW` / `HALTED` / `LOCAL_MODE` |
 | **0a-blueprint** | `drafts/section-blueprint.json` | The per-section authoring contract from §9.5 |
 | **0a-revision-directive** | Phase 11.5 / 7b directives | Switches to expansion or patch mode; directives older than 24 h are ignored |
-| **0a-exemplars** | The curated exemplar library (§20E) | Real paragraphs from your target journal, for **shape only** |
+| **0a-exemplars** | The curated exemplar library (§14.3, §20G) | Real paragraphs from your target journal, for **shape only** |
 | **0a-outcomes** | `reader_outcomes[]` | What the reader must be able to *do* after reading |
 | **0a-lrh** | `drafts/scholar-lrh-*.md` | **Binding for Theory sections** |
 | **0b** | The writing protocol and register guide | Builds the article knowledge base and verified citation pool |
@@ -4281,7 +4281,130 @@ Two of these deserve emphasis:
 
 **Exemplars are studied for shape, never copied.** `expansion-quality-check.sh` detects 10-gram overlap with an exemplar and fails the run.
 
-### 14.3 The eighteen forbidden patterns
+### 14.3 Making it draft in *your* voice
+
+Everything so far makes the draft **correct**. This subsection makes it sound like **you** rather than like a language model writing sociology. It is the highest-leverage thing in §14, and it is the step most people never do.
+
+Two independent mechanisms do the work, and they operate at different moments:
+
+| Mechanism | When | What it does |
+|---|---|---|
+| **Exemplars** | *Before* drafting — `scholar-write` Step 0a-exemplars | Shows the model real paragraphs to imitate the *shape* of |
+| **Tiny topos** | *After* drafting — `/scholar-polish` (§17) | Injects authorial micro-patterns into finished prose |
+
+Exemplars are the more powerful of the two, because shape is decided while drafting and is expensive to retrofit.
+
+#### 14.3.1 What an exemplar is
+
+Not a template and not text to copy. Each is a real published paragraph plus an annotation of *what it does well*:
+
+```markdown
+---
+journal: american-sociological-review
+section: methods
+source_id: zotero:ABCD1234
+authors: [...]  year: 2021  curated_by: user-work
+---
+
+## Excerpt
+> [80–350 words, verbatim, from the published paper]
+
+## What it does well
+- Opens with the sampling frame rather than a tour of the dataset.
+- Justifies the analytic-sample restriction in the same sentence that states it.
+
+## Caveats / when not to mimic
+- Assumes a panel; a cross-section cannot borrow the attrition move.
+```
+
+The **"What it does well"** block is the load-bearing part — generic praise like "clear writing" is explicitly banned by the extraction contract. And the excerpt is studied for structure only: `expansion-quality-check.sh` fails the run on 10-gram overlap with an exemplar, so it cannot leak into your manuscript.
+
+#### 14.3.2 What ships, and what you have to build
+
+The suite arrives pre-seeded for eight journals:
+
+```bash
+$ ls "$SCHOLAR_SKILL_DIR/.claude/skills/scholar-journal/exemplars/"
+```
+
+| Journal | Exemplars |
+|---|---|
+| american-sociological-review | 28 |
+| demography · journal-of-sociolinguistics | 25 each |
+| american-journal-of-sociology | 23 |
+| social-forces | 22 |
+| pnas | 21 |
+| nature-human-behaviour | 20 |
+| journal-of-marriage-and-family | 5 |
+
+If you write for a journal not on that list, **you have no exemplars and nobody will tell you** — drafting silently falls back to a per-project Zotero scan, then to nothing.
+
+#### 14.3.3 The three ways to personalize
+
+```yaml
+argument-hint: "<mode> [<journal>] [<section>] [<options>]"
+```
+
+| Mode | Source | Use it for |
+|---|---|---|
+| **`user-work`** | Your own publications — Zotero items tagged `My Publications` | **Your voice.** Start here |
+| **`top50`** | `~/.claude/scholar-knowledge/top-50.bib` — the papers you most want to write like | Aspirational voice |
+| **`zotero`** | Your library filtered by journal × time window | Coverage for a target journal |
+
+```
+> /scholar-exemplar-curate user-work
+> /scholar-exemplar-curate top50
+> /scholar-exemplar-curate zotero "Social Forces" methods --year-from 2020
+> /scholar-exemplar-curate review
+```
+
+> **`user-work` outranks everything else.** When several candidates exist for the same journal × section, user-work exemplars are **sorted first** — the skill's stated reason is that *your own published voice is the most relevant template for your next paper*. If you have published anything, this is the single highest-value command in this handbook.
+
+Tag your own papers `My Publications` in Zotero first (or point at a different tag with `--user-tag <tag>`, or set `SCHOLAR_USER_WORK_TAG`).
+
+For `top50`, create the list yourself — it does not exist by default, and the mode will prompt you:
+
+```bash
+$ ${EDITOR:-nano} ~/.claude/scholar-knowledge/top-50.bib
+```
+
+A plain BibTeX file where each entry has a `file = {…}` field pointing at the PDF. Fifty is a ceiling, not a target; ten papers you genuinely admire beat fifty you merely cited.
+
+#### 14.3.4 Nothing enters the library without your approval
+
+Every candidate is staged, never auto-promoted:
+
+```
+_staging/<journal>/<section>/   →   review   →   <journal>/<section>/   (approved)
+                                      ↓
+                               _rejected/<journal>/<section>/   (+ reason, never re-proposed)
+```
+
+```
+> /scholar-exemplar-curate review
+```
+
+walks each candidate — frontmatter, excerpt, "what it does well" — and waits for `[a]ccept` / `[r]eject` / `[s]kip`. Rejections record a reason so the same paper × section pair is never proposed again.
+
+Budget realistically: one journal across all sections with 20 candidate papers dispatches up to ~140 extraction agents and takes roughly five minutes. Expect to accept **30–50%**. Steady state is 5–15 exemplars per journal × section.
+
+#### 14.3.5 Verify it is actually being used
+
+```bash
+$ bash "$SCHOLAR_SKILL_DIR/scripts/exemplar-lookup.sh" social-forces methods
+STATUS=GREEN
+SOURCE=curated        # curated | fallback | both
+COUNT=4
+PATHS=...
+```
+
+`SOURCE=curated` means your library is feeding the draft. `SOURCE=fallback` means it is scraping Zotero per-project because the library has nothing for that pair. A `COUNT=0` is the silent failure this whole subsection exists to prevent.
+
+The library is **cross-project and cumulative**: curate once, and every future paper you write for that journal drafts against it. It is the one part of this pipeline that compounds.
+
+**Stop and check.** Run `/scholar-exemplar-curate user-work`, approve three paragraphs from your own best paper, then draft a section and read it aloud. If it still does not sound like you, that is what `/scholar-polish` (§17) is for — but fix the shape first, because polish cannot repair structure.
+
+### 14.4 The eighteen forbidden patterns
 
 Step 0d loads a table of eighteen classes of **pipeline machinery** that must never appear in body prose. This is the difference between a manuscript and a pipeline log:
 
@@ -4308,7 +4431,7 @@ Step 0d loads a table of eighteen classes of **pipeline machinery** that must ne
 
 Enforcement is mechanical: `pipeline-machinery-check.sh` at the polish phase and `submission-hygiene.sh` at the submission-hygiene phase.
 
-### 14.4 Word budgets, by journal
+### 14.5 Word budgets, by journal
 
 | Journal | Total | Abstract | Intro | Theory | Methods | Results | Discussion |
 |---|---|---|---|---|---|---|---|
@@ -4322,7 +4445,7 @@ Enforcement is mechanical: `pipeline-machinery-check.sh` at the polish phase and
 
 Hard floors on long-form journals: Discussion ≥ 1,200 words, Conclusion ≥ 500. The table is calibrated against a corpus of 53+ published papers — and the skill documents that its own earlier hand-curated table systematically *under*-specified these ranges, since corrected.
 
-### 14.5 The Methods section has a canonical shape
+### 14.6 The Methods section has a canonical shape
 
 For JMF, ASR, AJS, Demography, and Social Forces:
 
@@ -4337,7 +4460,7 @@ For JMF, ASR, AJS, Demography, and Social Forces:
 
 Regression tables must embed the **full coefficient ladder** — at least 80% of the source table's rows — never a five-row focal-contrast stub. And a footgun worth memorizing: **never embed a table from the `.csv` when an `.html` exists.** The CSV export flattens the two-row coefficient/SE layout and drops the significance stars, shipping a hollow table that looks complete.
 
-### 14.6 Real abstract (from `drafts/manuscript-final-...md`)
+### 14.7 Real abstract (from `drafts/manuscript-final-...md`)
 
 ```
 Internet access in China rose from a minority privilege to a near-universal
@@ -4367,7 +4490,7 @@ agricultural-hukou status is associated with -1.306 weekly hours
 
 These anchors are how `scholar-verify` later checks that every number matches a locked cell. They are HTML comments precisely so they are invisible in the rendered document, machine-readable to `anchor-verify.sh`, and strippable by `submission-prep.sh` before export. **Don't strip them yourself, and don't let them become visible brackets** — that is forbidden pattern P12.
 
-### 14.7 What runs before it saves
+### 14.8 What runs before it saves
 
 The tail of every drafting run is a stack of checks:
 
@@ -4382,7 +4505,7 @@ Then the file is written to exactly one path: `drafts/draft-<section>-<slug>-<YY
 
 The specific failure this guards against is worth naming, because it is a pure model-behaviour bug rather than a user error. Language models have seen an enormous amount of Jekyll and Hugo source, where sectioned documents live at `content/manuscript-sections/01-introduction.md`. That is a strong attractor: left unconstrained, the model writes `drafts/manuscript-sections/NN-section.md`, which looks entirely reasonable, passes every content check, and is invisible to the assembler. The pre-Write self-check (added in v5.11.1) means those paths can no longer land on disk at all.
 
-### 14.8 Stop and check
+### 14.9 Stop and check
 
 Open `drafts/draft-manuscript-...md`. Find one numeric claim. Confirm:
 
@@ -5368,7 +5491,7 @@ Three sourcing modes plus a review gate:
 
 Nothing enters the live library automatically. Each candidate is staged in `_staging/`, annotated by the `extract-section-exemplar` subagent (which pulls the strongest 1–3 paragraphs plus a "what it does well" block and caveats), and held until you run `review`. Approved exemplars promote to `scholar-journal/exemplars/<journal-slug>/<section>/`; rejected ones go to `_rejected/` so they are never proposed again.
 
-The library is **cross-project**: curate once, and every future paper you write for that journal drafts against it.
+The library is **cross-project**: curate once, and every future paper you write for that journal drafts against it. §14.3 walks the whole personalization workflow from the drafting side, including why `user-work` outranks the other sources.
 
 # PART III — ORCHESTRATORS
 
