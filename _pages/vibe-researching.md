@@ -89,6 +89,5 @@ The workshops are paired with a research talk — *Vibe Researching as Wolf Comi
 - **Read the handbook:** [English](/vibe-researching/en/) · [中文](/vibe-researching/zh/)
 - **Talk slides (read online):** [English](/vibe-researching/slides-en/) · [中文](/vibe-researching/slides-zh/)
 - **The skill suite:** [`open-scholar-skill` on GitHub](https://github.com/joshzyj/open-scholar-skill)
-- **PDF (print version):** [English](/files/vibe-researching-handbook-en.pdf) · [中文](/files/vibe-researching-handbook-cn.pdf)
 
 <p class="vr-meta">Author: Yongjun Zhang (Stony Brook University). If you would like this workshop run for your department or program, feel free to <a href="mailto:yongjun.zhang@stonybrook.edu">reach out</a>.</p>
