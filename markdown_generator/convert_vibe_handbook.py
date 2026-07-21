@@ -42,9 +42,18 @@ def clean_inline_prose(s: str) -> str:
     """Inline LaTeX -> Markdown, for non-code segments only."""
     s = re.sub(r"\\texttt\{([^{}]*)\}", r"`\1`", s)
     s = re.sub(r"\\emph\{([^{}]*)\}", r"*\1*", s)
+    s = re.sub(r"\\textit\{([^{}]*)\}", r"*\1*", s)
     s = re.sub(r"\\textbf\{([^{}]*)\}", r"**\1**", s)
     s = clean_math(s)
     s = s.replace(r"\textasciitilde", "~")
+    # strip LaTeX spacing / line-break directives that leak into prose
+    # (\medskip, \vfill, \allowbreak{}, \vspace{..}, ...) — they have no HTML meaning
+    s = re.sub(r"\\[vh]space\*?\s*\{[^}]*\}", "", s)
+    s = re.sub(
+        r"\\(?:medskip|smallskip|bigskip|vfill|hfill|noindent|allowbreak"
+        r"|clearpage|centering|raggedright|raggedleft)\b(?:\{\})?",
+        "", s,
+    )
     return s
 
 # ---------------------------------------------------------------- tabular -> HTML

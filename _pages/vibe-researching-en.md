@@ -29,11 +29,13 @@ The running example is a real one: a Social Forces-style paper on the Chinese di
 The handbook has four parts.
 
 - **Part I — Foundations** (the first hour of the workshop): install the agents, open your first session, learn the project layout, write an agent-quality prompt, and tour the newer Claude Code capabilities — dynamic workflows, subagents, and automation (§5A).
-- **Part II — Open Scholar Skills, end to end** (the second hour): walk through every major skill in the order you would actually use them, with the CFPS digital divide as the concrete artifact at every step.
-- **Part III — Orchestrators**: when a single paper deserves the full pipeline (`scholar-full-paper`, `scholar-auto-research`).
+- **Part II — Open Scholar Skills, end to end** (the second hour): a reference to **all 42 skills** — every mode, every argument, every gate, every file they write — organized in the order you would actually use them, with the CFPS digital divide as the concrete artifact at each step. §5B is the inventory table; read it first and come back to it.
+- **Part III — Orchestrators**: when a single paper deserves the full pipeline (`scholar-full-paper`, `scholar-auto-research`), how to find your place again (`scholar-resume`), how to run a queue of ideas unattended (`scholar-loop`), how to audit the suite itself (`scholar-auto-improve`), and how to get an independent second opinion from a different vendor's model (`scholar-openai`).
 - **Part IV — Responsible practice**: the take-home checklist, common participant mistakes, and the five principles.
 
-If you already use Claude or Codex, skim Part I and start at §5 (`scholar-init`). If you are completely new, do every step.
+If you already use Claude or Codex, skim Part I and start at §5B (the skill inventory) or §6 (`scholar-init`). If you are completely new, do every step.
+
+**Using Part II as a reference.** Each skill section follows the same shape: the `argument-hint` grammar copied verbatim from the skill's own frontmatter, a table of every mode, the internal workflow, the exact files written, the gates that can stop you, and the documented gotchas. Where a rule exists because a real run failed, the failure is named and dated — those are the passages worth reading even if you never run that skill.
 
 # PART I — FOUNDATIONS
 
@@ -213,8 +215,6 @@ Claude will read the repo's README, run `git clone`, execute `setup.sh`, install
 > 3. If the agent reports it cannot reach `github.com` or that a dependency install failed three times, switch to the manual path below — those failures usually need a human to debug your shell, proxy, or `PATH`.
 
 When Claude finishes, jump to §2.4.4 to confirm the install, then move on to §3.
-
-\medskip
 
 #### 2.4.1 Prerequisite — git
 
@@ -1370,27 +1370,211 @@ Every feature in this section moves work *away* from the single, watched convers
 
 This is the heart of the workshop. We build a Social Forces-style paper on the Chinese digital divide using **only** the open-scholar-skills suite. Every code block in this part is from a real run on May 4–5, 2026. Project slug: `digital-divide-china-cfps`.
 
-The skills appear in the order you actually use them.
+The skills appear in the order you actually use them. But before the walkthrough, three things you need in front of you at all times: the **complete inventory** (§5B.1), the **argument grammar** every skill shares (§5B.2), and the **artifact contract** that makes the chain work (§5B.3).
+
+## 5B. The suite at a glance — inventory, grammar, contract
+
+### 5B.1 All 42 skills, by stage
+
+The § column points at the section of this handbook documenting that skill in full — every mode, every argument, every gate, every file it writes.
+
+The suite installs into `~/.claude/skills/<skill-name>/SKILL.md`. Anything in that directory is invocable as `/<skill-name>`. Verify your install with:
+
+```bash
+$ ls ~/.claude/skills/ | grep scholar | wc -l      # expect 42
+$ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scripts/
+```
+
+**Stage 0 — set up and protect the project**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §6 | `scholar-init` | Create the project tree, ingest files, run the local safety scan | `init <slug> <files…>` / `review` / `add` / `status` |
+| §6 | `scholar-safety` | Scan a file, gate an operation, write the project safety protocol | `scan` / `gate` / `protocol` / `status` / `level` |
+
+**Stage 1 — find and sharpen the question**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §7 | `scholar-brainstorm` | Ranked menu of 15–20 candidate RQs from codebooks, data, or a paper | a file path, DOI, or pasted abstract |
+| §8 | `scholar-idea` | Turn one broad area into a specific puzzle with hypotheses | the rough idea, in prose |
+| §8E | `scholar-lit-review` | Map the literature landscape (three depths) | topic + `landscape` / `targeted` / `rapid` |
+| §8E | `scholar-hypothesis` | Formalize hypotheses and write the theory section | phenomenon or RQ |
+| §8A | `scholar-lit-review-hypothesis` | Both of the above in one integrated chain | RQ or topic |
+| §8B | `scholar-conceptual` | Build the theory *object* — typologies, mechanism diagrams | `theorize` / `diagram` |
+| §8C | `scholar-knowledge` | The cross-project knowledge graph and wiki | `ingest` / `search` / `relate` / `status` / `export` / `compile` / `ask` / `re-extract` |
+| §20F | `scholar-monitor` | Delta-based current-awareness digests from journals and preprints | `init` / `all` / `preview` / `digest` |
+
+**Stage 2 — design before data**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §8D | `scholar-causal` | Choose and justify an identification strategy; build the DAG | the causal question + variables |
+| §9 | `scholar-design` | Lock estimand, model ladder, power, PAP, section blueprint | `quant` / `qual` / `mixed` / `experiment` / `power` / `pap` / `computational` / `premortem` / `blueprint` |
+| §9A | `scholar-data` | Find or fetch data; design instruments; IRB; data-management plan | `dataset` / `survey` / `interview` / `irb` / `manage` / `vignette` / `scrape` / `web` / `api` |
+
+**Stage 3 — analyze**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §10 | `scholar-eda` | Analytic sample, missingness, distributions, Table 1 | dataset path |
+| §11 | `scholar-analyze` | The model ladder, publication tables, figures, results lock | data source + model spec |
+| §11A | `scholar-compute` | Text-as-data, ML, networks, spatial, Bayesian, audio, sequences | `text` / `network` / `ml` / `reproduce` / `spatial` / `bayesian` / `dsl` / `audio` / `life2vec` |
+| §11B | `scholar-simulate` | LLM-powered silicon sampling, generative ABM, synthetic experiments | `design` / `personas` / `silicon-survey` / `generative-abm` / `experiment` / `validate` |
+| §11C | `scholar-qual` | Coding, thematic analysis, LLM-assisted coding, reliability | `codebook` / `open-coding` / `axial` / `selective` / `thematic` / `content` / `llm-coding` / `mixed` / `reliability` |
+| §11D | `scholar-ling` | Sociolinguistics, phonetics, discourse, corpus, computational | `variation` / `acoustic` / `corpus` / `CA` / `CDA` / `attitudes` / `contact` / `computational` / `experimental` / `MDA` / `TTS-guise` |
+| §13 | `scholar-code-review` | Six-agent audit of every analysis script | `full` or one lens |
+
+**Stage 4 — write and verify**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §14 | `scholar-write` | Draft, revise, or polish any manuscript section | `draft` / `revise` / `polish` + section |
+| §15 | `scholar-verify` | Two-stage, four-agent output↔manuscript↔prose verification | `full` / `stage1` / `stage2` / one agent |
+| §16 | `scholar-citation` | Verify, insert, convert, materialize, retraction-check citations | `insert` / `audit` / `convert-style` / `full-rebuild` / `verify` / `export` / `materialize` / `retraction-check` / `reporting-summary` |
+| §17 | `scholar-polish` | Style personalization without touching claims | `scan` / `rewrite` / `full` |
+| §20G | `scholar-exemplar-curate` | Build the annotated paragraph-exemplar library `scholar-write` reads | `zotero` / `top50` / `user-work` / `review` |
+| §23A | `scholar-openai` | Independent Codex CLI review panel (read-only) | `code` / `stats` / `logic` / `full` / `prose` / `custom` |
+
+**Stage 5 — submit, share, and reuse**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §18 | `scholar-respond` | Reviewer simulation, response letters, R&R packages | `simulate` / `respond` / `revise` / `resubmit` / `cover-letter` |
+| §18 | `scholar-journal` | Journal fit ranking, format check, submission package | journal name + `FULL-PACKAGE` / `FORMAT-CHECK` / `COVER-LETTER` / `SELECT-JOURNAL` / `RESUBMIT-PACKAGE` |
+| §18A | `scholar-ethics` | AI-use audit, plagiarism, integrity audit, disclosures | `ai-audit` / `plagiarism` / `integrity` / `general` / `full` |
+| §19 | `scholar-replication` | Build, document, test, verify, archive the replication package | `BUILD` / `DOCUMENT` / `TEST` / `VERIFY` / `ARCHIVE` / `FULL` |
+| §19 | `scholar-open` | Preregistration, data/code sharing, open-science package | `PREREGISTER` / `DATA-SHARE` / `CODE-SHARE` / `FULL-PACKAGE` / `REPLICATION-PACKAGE` |
+
+**Stage 6 — downstream products**
+
+| § | Skill | Use it for | First argument |
+|---|---|---|---|
+| §20 | `scholar-presentation` | Talks and print-ready conference posters (8 modes) | talk type |
+| §20A | `scholar-image` | Decorative/conceptual figures via gpt-image-2 (never evidence) | `generate` / `prompt` / `preview` / `list-venues` |
+| §20B | `scholar-grant` | NSF / NIH / RSF / Spencer proposals and mock review | `nsf` / `nih` / `rsf` / `spencer` / `aims` / `budget` / `data-plan` / `review` / `compare` / `resubmit` |
+| §20C | `scholar-teach` | Syllabus-first course materials from your research | `syllabus` / `lecture` / `discussion` / `assignment` / `exam` / `reading-list` / `slides` / `rubric` / `adapt` |
+| §20D | `scholar-book` | Monographs, edited volumes, textbooks, diss-to-book | `proposal` / `outline` / `chapter` / `revise` / `assemble` / `diss2book` / `full` |
+| §20E | `scholar-collaborate` | CRediT roles, task delegation, team coordination | `credit` / `tasks` / `communication` / `contributions` / `mentor` / `team-setup` / `conflict` / `meeting` |
+
+**Orchestrators (Part III)**
+
+| § | Skill | Use it for |
+|---|---|---|
+| §21 | `scholar-full-paper` | The canonical gated chain, Phase −1 → Phase 12 |
+| §22 | `scholar-auto-research` | The deterministic 21-phase teaching scaffold |
+| §21A | `scholar-resume` | Read project state and emit the single next route |
+| §22A | `scholar-loop` | Drive a queue of ideas unattended across `/loop` wakeups |
+| §22B | `scholar-auto-improve` | Audit and evolve the skill suite itself |
+
+### 5B.2 The argument grammar every skill shares
+
+Each skill declares an `argument-hint` in its frontmatter. Read it before your first run:
+
+```bash
+$ head -8 ~/.claude/skills/scholar-design/SKILL.md
+```
+
+```yaml
+---
+name: scholar-design
+description: Plan a rigorous research design, run power analysis, ...
+argument-hint: "[quant|qual|mixed|experiment|power|methods-section|pap|
+                computational|NLP|ML|network|ABM|premortem|blueprint]
+                [research question] [optional: data source, design type,
+                journal target]"
+---
+```
+
+Three rules follow from that grammar:
+
+1. **The first token is almost always a mode.** `[a|b|c]` means "pick exactly one." If you omit it, the skill guesses from your prose — usually correctly, but guessing costs a turn and sometimes picks the wrong branch. Say the mode.
+2. **Bracketed `optional:` items are keyword-ish, not positional.** `journal=Social Forces` and `target Social Forces` both work; the skills parse loosely. Prefer `key=value` — it survives copy-paste into scripts.
+3. **File paths are literal.** Relative paths resolve against the directory Claude Code was launched in, not against `output/<slug>/`. When in doubt, paste absolute paths.
+
+A well-formed invocation names five things: **mode, subject, data, journal, constraint.**
+
+```
+> /scholar-analyze data=data/processed/cfps-panel-long.rds
+                  outcome=y2_hours
+                  predictors=hukou_rural,cohort,female,eduy
+                  fe=province_x_wave
+                  journal=Social Forces
+```
+
+An ill-formed one names one: `> /scholar-analyze run the models`.
+
+### 5B.3 The artifact contract — why the chain holds together
+
+The skills do not pass information to each other in the chat. They pass it through **files on disk** in `output/<slug>/`. That is the whole trick, and it is why you can stop, close your laptop, and resume three days later.
+
+| Producer | Artifact | Consumers |
+|---|---|---|
+| `scholar-init` | `.claude/safety-status.json` | every data-touching skill |
+| `scholar-brainstorm` / `scholar-idea` | selected-RQ memo | `scholar-lit-review-hypothesis`, `scholar-design` |
+| `scholar-lit-review*` | `refs.bib`, coverage matrix | `scholar-write`, `scholar-citation` |
+| `scholar-causal` | `identification-memo.md` (`causal_status:`) | `scholar-design`, `scholar-write`, `scholar-verify`, `scholar-polish` |
+| `scholar-design` | `model-specs.json`, `variable-dictionary.csv`, `results-lock` | `scholar-eda`, `scholar-analyze`, `scholar-write` |
+| `scholar-analyze` | `tables/`, `figures/`, `results-registry.csv` | `scholar-verify`, `scholar-write`, `scholar-replication` |
+| `scholar-write` | `drafts/*.md` with `<!--anchor:-->` comments | `scholar-verify`, `scholar-citation`, `scholar-polish` |
+| `scholar-verify` | `verify/verification-report-<date>.md` | you, and the Phase 7b gate |
+| every skill | `logs/process-log-<skill>-<date>.md` | `scholar-resume`, `scholar-auto-improve` |
+
+Two consequences you should internalize now:
+
+- **Deleting a file breaks the chain silently.** If you `rm` `design/results-lock-*.md`, `scholar-write` will not error — it will draft from imagination. Verification is what catches this, which is why §15 is not optional.
+- **You can run any skill standalone.** Every skill in this part works on its own, against whatever files happen to be on disk. The orchestrators in Part III add gates and ordering; they add no capability the individual skills lack.
 
 ## 6. `scholar-init` + `scholar-safety` — start with safety
 
-**Goal:** create the standard project structure, classify every file, and write the safety contract that all later skills consult.
+**Goal:** create the standard project structure, classify every file, install the guard that enforces those classifications, and write the safety contract all later skills consult.
+
+These two skills share the same machinery — the same scanner, the same anonymizer, the same sidecar file, the same PreToolUse hook. The division of labour is simple: **`scholar-init` owns the project and the file classifications; `scholar-safety` owns operations, protocols, and enforcement strength.**
+
+### 6.0 The four modes of `scholar-init`
+
+```yaml
+argument-hint: "[init <slug> <file1> <file2> ...] | [review] | [add <file1> ...]
+                | [status] — defaults to init if a slug-looking argument is
+                provided, review otherwise"
+```
+
+| Mode | Trigger | What it does |
+|---|---|---|
+| **init** | `init` as first token, **or** a slug-shaped string followed by file paths | Builds the directory tree, ingests raw files and materials, scans everything, writes the sidecar, README, `.gitignore`, and the project `CLAUDE.md` |
+| **review** | `review`, **or** no arguments when the sidecar has unresolved entries | Walks every `NEEDS_REVIEW` file interactively and records a decision plus rationale |
+| **add** | `add` as first token | Ingests new files into an existing project — scan + sidecar entry only, no rebuild |
+| **status** | `status` | Read-only: prints the safety level and a status→count breakdown |
+
+A slug must match `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, 2–64 characters. If you hand the skill a topic description instead ("digital divide in China"), it will slugify it — downcase, drop stopwords, hyphenate, truncate to 48 characters — and **ask you to confirm** before building anything.
 
 ### 6.1 Run `scholar-init`
 
 ```
-> /scholar-init --slug digital-divide-china-cfps \
-                --data ~/data/cfps/raw \
+> /scholar-init init digital-divide-china-cfps \
+                ~/data/cfps/raw \
                 --materials ~/data/cfps/materials
 ```
 
-What it does:
+Flags accepted by the underlying `scripts/init-project.sh`:
 
-1. Creates `output/digital-divide-china-cfps/` with the full subdirectory tree shown in §4.
-2. Symlinks (or copies) raw `.dta` files into `data/raw/`.
-3. Copies codebooks into `materials/`.
-4. Runs a **local-only** safety scan on every ingested file using `file`, `wc`, `grep`, `awk` — Claude only sees counts and pattern categories, never the raw values.
-5. Writes `logs/init-report.md` and `.claude/safety-status.json`.
+| Flag | Effect |
+|---|---|
+| `--dest <dir>` | Where to create the project directory (default: current directory) |
+| `--link` | Symlink raw inputs instead of copying them — use for multi-GB panel files |
+| `--materials <path>` | Route this path to `materials/` instead of `data/raw/` (repeatable) |
+| `--force` | Rebuild over an existing project directory |
+
+> **`--force` destroys prior review decisions.** A rebuild rewrites the sidecar from a fresh scan, so every `OVERRIDE` rationale and `LOCAL_MODE` choice you made is lost. Fix a broken init incrementally instead, unless you genuinely want to start over.
+
+What it does, in order:
+
+1. Creates `<dest>/<slug>/` with `data/{raw,interim,processed}/`, `materials/`, `output/`, `logs/`, `.claude/`.
+2. Copies (or, with `--link`, symlinks) raw files into `data/raw/` and materials into `materials/`. Name collisions get a numeric suffix.
+3. Runs a **local-only** safety scan on every ingested file via `scripts/gates/safety-scan.sh` — `file`, `wc`, `grep`, `awk` only. Claude sees counts and pattern categories, never the matching values.
+4. Writes `.claude/safety-status.json`, `logs/init-report.md`, `README.md`, `.gitignore`.
+5. Writes the auto-managed project-memory block into `CLAUDE.md` (Claude Code host), `AGENTS.md` (Codex host), or both (host undetected).
+6. If any file came back YELLOW or RED, transitions **immediately** into `review` mode without asking.
 
 Abridged terminal output from the real run:
 
@@ -1409,15 +1593,25 @@ Abridged terminal output from the real run:
 [scholar-init] DONE — 35 CLEARED, 3 NEEDS_REVIEW, 0 HALTED
 ```
 
+Exit codes from `init-project.sh`, worth knowing when you script it: `0` success, `1` usage error (bad slug or missing file), `2` project directory exists without `--force`, `3` `safety-scan.sh` not found (your install is broken — run `bash setup.sh` in the skill repo).
+
+#### 6.1.1 The project `CLAUDE.md` that init writes
+
+Step 5 above is easy to miss and matters a lot. `scholar-init` writes a **lean** project-memory profile — five sections, roughly 50 lines: the objectivity mandate, the data-safety stack and LOCAL_MODE scope, citation rules, and workflow rules. Every later Claude Code session in that directory reads it automatically.
+
+If you later run `/scholar-full-paper`, the orchestrator **upgrades** that file to the full 13-section, ~230-line profile. The upgrade is **one-way**: re-running `/scholar-init` on an upgraded project prints `already at v2-full ... lean request ignored` and changes nothing. This is deliberate — a lean re-init must never silently strip the gate conventions the orchestrator depends on.
+
+Idempotency messages you may see: `created <path> (v2-lean)`, `appended auto-rules block to <path>`, `migrated <path> from v1 to v2-lean`, `already at v2-lean, no-op`.
+
 ### 6.2 Resolve `NEEDS_REVIEW` with `scholar-init review`
 
-You **cannot** advance to brainstorming or analysis until every file is resolved.
+You **cannot** advance to brainstorming or analysis until every file is resolved. The guard will block the reads.
 
 ```
 > /scholar-init review
 ```
 
-Claude will walk through each `NEEDS_REVIEW` item interactively (the `review` mode is owned by `scholar-init`, not `scholar-safety`):
+Claude walks each `NEEDS_REVIEW` item interactively — re-running the scanner for live detail, and **never reading the file itself to "help decide."**
 
 ```
 File: cfps2020person_202306.dta
@@ -1434,7 +1628,29 @@ Options:
 Choice [c/l/a/o/h]:
 ```
 
-For CFPS we typically choose **`l` (LOCAL_MODE)** for any wave-level person file: scripts can load the data and produce summary counts, regression tables, and figures, but **the raw row values never reach Claude's context window**. This is a real privacy boundary, not a slogan.
+**The option set is not the same for every file.** The skill classifies each file as structured or qualitative — by extension (`.wav .mp3 .flac .m4a .mp4 .mov .eaf .textgrid .cha` …) or by path (a `.txt/.docx/.md` living under `transcripts/`, `interviews/`, `field-notes/`, `participants/`, `respondents/`, `materials/`):
+
+| File type and level | Options offered |
+|---|---|
+| Structured/tabular, RED | LOCAL_MODE · ANONYMIZE · OVERRIDE · HALT |
+| **Qualitative, RED** | LOCAL_MODE · ANONYMIZE · HALT — **`OVERRIDE` is never offered** |
+| Anything, YELLOW | The above **plus** a one-click `CLEARED` |
+| Anything, RED | `CLEARED` is never offered |
+
+The qualitative-`OVERRIDE` refusal is enforced twice — once in this menu, and again inside the PreToolUse guard itself, so hand-editing the sidecar does not get you past it.
+
+Choosing `OVERRIDE` requires a typed rationale of **at least 20 characters**. "n/a", "ok", and "false positive" alone are rejected; the prompt blocks until you write something real or cancel. The rationale lands in `logs/init-report.md` under **Decision history**, with the prior status, new status, and who decided.
+
+Choosing `ANONYMIZE` runs `python3 scripts/gates/anonymize-presidio.py anonymize <file>`. Three things to know:
+
+- Output goes to `output/qual/anonymized/ANON_<basename>` — **never** next to the original — alongside `pseudonym-key-DO-NOT-SHARE.csv`.
+- If Presidio finds no PII it exits 0 **without writing a file**. The original stays `NEEDS_REVIEW`; nothing is auto-cleared.
+- The `ANON_` file is re-scanned. Only if it comes back GREEN does the original become `HALTED` and the anonymized copy become `ANONYMIZED`. Still YELLOW or RED and you are back in the loop.
+- Presidio is optional for *scanning* (there is a regex fallback) but **mandatory for anonymizing**. Without `presidio-analyzer`, `presidio-anonymizer`, and `spacy` + `en_core_web_lg`, this option dies with an `ImportError` and your only valid choices are LOCAL_MODE or HALT.
+
+For CFPS we typically choose **LOCAL_MODE** for any wave-level person file: scripts can load the data and produce summary counts, regression tables, and figures, but **the raw row values never reach Claude's context window**. This is a real privacy boundary, not a slogan — §6.5 spells out exactly what LOCAL_MODE permits.
+
+> **Changes need a restart.** Claude Code snapshots hook configuration at session start. After a `review` pass that changes statuses, restart Claude Code before expecting the guard to honour the new values. Under Codex, the project must be *trusted* before the hook activates at all; until then `AGENTS.md` instructs the agent to self-enforce against the sidecar.
 
 ### 6.3 Inspect `safety-status.json`
 
@@ -1450,11 +1666,142 @@ $ jq . .claude/safety-status.json | head -30
 }
 ```
 
-The sidecar is a **flat** map — an absolute file path → a status string — plus the single meta key `_safety_level`. (An object-valued entry, or a relative-path key, is a schema violation that fails the guard *closed*; the guard's lookup has no relative-path fallback.)
+The sidecar is a **flat** map — an absolute file path → a status string — plus the single meta key `_safety_level`. The full status vocabulary, validated by `scripts/gates/sidecar-schema.sh`:
+
+| Status | Meaning for the agent |
+|---|---|
+| `CLEARED` | May `Read` directly |
+| `ANONYMIZED` | May `Read` directly (this is the de-identified derivative) |
+| `OVERRIDE` | May `Read` directly; a written rationale exists in the init report |
+| `LOCAL_MODE` | May **not** `Read`; may run summary-only loaders via Bash |
+| `HALTED` | Off-limits entirely |
+| `NEEDS_REVIEW` / `NEEDS_REVIEW:<LEVEL>` | Blocked until `/scholar-init review` resolves it (`LEVEL` ∈ GREEN/YELLOW/RED/UNKNOWN) |
+
+Two schema violations that fail the guard **closed**, so they are worth avoiding: an object-valued entry (the value must be a bare string), and a relative-path key. **The lookup has no relative-path or basename fallback.** A hand-written `{"foo.csv": "OVERRIDE"}` is silently ignored, and moving the project directory invalidates every entry in the file.
 
 Every later skill **reads this file before touching data**. If the status is `LOCAL_MODE`, the analysis script must enforce summary-only loading — and `scholar-analyze` will refuse to print raw rows.
 
-**Stop and check.** Open `logs/init-report.md`. Can you point at one file marked LOCAL_MODE and explain why? If you cannot, ask before you brainstorm.
+### 6.4 The guard — what actually enforces this
+
+The classification is only as good as the thing that enforces it. That is `scripts/gates/pretooluse-data-guard.sh`, registered as a Claude Code **PreToolUse hook** in `~/.claude/settings.json` (and mirrored into `<proj>/.codex/config.toml` for Codex hosts). It intercepts `Read`, `NotebookRead`, `NotebookEdit`, `Grep`, `Glob`, `Bash`, `Edit`, `Write`, and `MultiEdit`. Exit 0 allows; exit 2 blocks and hands the refusal reason back to Claude.
+
+What it does, channel by channel:
+
+- **Read channel.** Canonicalizes the path (resolving symlinks), refuses anything resolving into a system directory (`/etc`, `/dev`, `/proc`, `/sys`, `/System`, `/var/db`, `/var/log`), then consults the sidecar: `CLEARED`/`ANONYMIZED`/`OVERRIDE` → allow; `LOCAL_MODE`/`HALTED` → block with a hint to use a Bash loader; `NEEDS_REVIEW*` → block and tell you to run `/scholar-init review`.
+- **Bash channel.** A **cooperative speed-bump**, not a wall. It blocks the obvious dump verbs — `cat`, `head`, `tail`, `less`, `od`, `xxd`, `strings`, `base64`, `sqlite3`, `jq`, `sed`, `awk`, `perl`, and `grep` without `-c`/`-l`/`-q` — when they target a sensitive path. On ambiguity it fails **open**, because bricking the shell is worse than the marginal leak it would prevent.
+- **Grep/Glob channels.** Blocks searching or enumerating raw-data paths, and any direct target with a data extension.
+- **Edit/Write/MultiEdit.** Guards exactly one thing: writes to `.claude/safety-status.json`. It refuses to promote a RED or HALTED path to CLEARED/OVERRIDE unless `/scholar-init review` provenance exists in `logs/init-report.md`. Everything else fails open.
+- **Images.** Pixels cannot be grep-scanned, so images are classified by path: inside `data/raw/` → blocked; inside `output/figures/` → allowed.
+
+Failure behaviour is deliberately asymmetric: if `jq` is missing, the **read** channels fail closed (blocked, with an install-jq message) while the Bash/Edit/Write channels fail open. An abnormal script termination is converted into a block by an `EXIT` trap whenever the target had already been classified as data-risk.
+
+> **The footgun that silently disables everything.** If the hook's `command` path contains a space — and it will, if you installed under `~/Library/CloudStorage/GoogleDrive-…/My Drive/…` — both Claude Code and Codex fail to execute it, with **no visible error**. The guard becomes globally inert. Register it wrapped in quotes:
+>
+> ```json
+> { "command": "bash '/Users/you/My Drive/open-scholar-skills/scripts/gates/pretooluse-data-guard.sh'" }
+> ```
+>
+> Verify with a deliberate probe: ask Claude to `Read` a file you know is `HALTED`. If it succeeds, your hook is not wired up.
+
+### 6.5 The LOCAL_MODE contract
+
+`LOCAL_MODE` is the workhorse status for real survey data, so learn its rules. The analysis runs as **one `Rscript -e` or `python3 -c` heredoc per analysis**, and only aggregate output may come back:
+
+| Allowed back into context | Forbidden |
+|---|---|
+| Dimensions (`dim`, `nrow`) | `head()`, `print()`, `tail()`, `View()`, `slice()`, `sample_n()` |
+| Variable names and classes | Any row-level value |
+| Missingness percentages | Any free-text field content |
+| `summary()` output | Any cell with `n < 10` (small-cell suppression) |
+| Coefficients, SEs, p-values, AIC/BIC | Figures embedded inline when the data is sensitive |
+| Counts, but only where `n ≥ 10` | — |
+
+Intermediate files written by a LOCAL_MODE script must be saved to `data/interim/` or `data/processed/` and are auto-registered as `LOCAL_MODE` in the sidecar — derived data inherits the constraint rather than escaping it.
+
+### 6.6 `scholar-safety` — the six modes
+
+```yaml
+argument-hint: "[scan|gate|protocol|status|level] [file path / operation
+                description / level name] [optional: data type, project name,
+                journal target]"
+```
+
+| Mode | Trigger | What it does |
+|---|---|---|
+| **scan** | `scan`, `check`, `audit` + a path | Local pattern scan of one file; classifies 🟢 LOW / 🟡 MEDIUM / 🔴 HIGH |
+| **gate** | `gate`, `before`, `about to`, `going to read/load` | Extracts the file(s) from a described operation, scans each, then HALTs, pauses, or proceeds |
+| **protocol** | `protocol`, `plan`, `data handling plan` | Writes a full project data-safety protocol document |
+| **status** | `status`, `log`, `what was shared`, `history` | Formats the running safety log |
+| **level** | `level` + `standard`/`strict`/`lockdown` | Sets `_safety_level`; for lockdown, generates an OS sandbox config |
+| **full-paper-gate** | auto-invoked by `scholar-full-paper` Phase −1 | Scans every data path in the pipeline arguments, fail-closed, writes a consolidated gate report |
+
+```
+> /scholar-safety scan data/raw/cfps2020person_202306.dta
+> /scholar-safety gate "about to read data/interviews.txt for coding"
+> /scholar-safety protocol digital-divide-china-cfps journal="Social Forces"
+> /scholar-safety status
+> /scholar-safety level strict
+```
+
+**The critical operating rule**, stated in the skill itself: never `Read` a flagged file until the user explicitly selects `PROCEED` or `OVERRIDE` — and note that `LOCAL MODE` is the *opposite* of Read permission and must never trigger a Read.
+
+#### 6.6.1 What the scanner actually looks for
+
+The scan counts pattern hits across: SSNs; names; emails; phones; street addresses; ZIP codes; IP addresses; health and HIPAA markers; mental-health items; legal and immigration items; financial fields; restricted-dataset markers (NHANES, PSID, NLSY, IPUMS, Census RDC, DUA, "confidential"); international restricted-dataset markers (UK Biobank, ALSPAC, NHS Digital, SOEP, EU-SILC, **CFPS**, CHARLS, CGSS, CLHLS, IHDS, JGSS, Understanding Society, KLoSA, plus SHARE / HILDA / Add Health matched case-sensitively); IRB and participant markers; and fine geographic granularity.
+
+The classification matrix, abridged to the rows you will actually hit:
+
+| Condition | Level |
+|---|---|
+| Any SSN hit, or >5 emails / phones / addresses | 🔴 HIGH |
+| Any health, mental-health, or legal marker | 🔴 HIGH |
+| Any restricted-dataset marker (this is why CFPS files flag) | 🔴 HIGH |
+| Names present **and** IRB markers present | 🔴 HIGH |
+| IRB markers alone; or 1–5 emails/phones; or ZIP only | 🟡 MEDIUM |
+| Non-plaintext file, regardless of hit count | 🟡 MEDIUM (floor) |
+| No pattern hits **and** a plaintext scan actually ran | 🟢 LOW |
+
+Two fail-closed rules make this trustworthy. A missing, unreadable, or directory target returns `SCAN-ERROR` at 🔴 HIGH — never LOW. And a **binary file floors at 🟡**: a clean regex pass over a `.dta`, `.sav`, `.rds`, `.xlsx`, `.parquet`, or `.sqlite` file is *not* evidence of safety, because the scanner cannot read the container. This is exactly why CFPS `.dta` files land in review rather than sailing through.
+
+#### 6.6.2 The three safety levels — and what each actually guarantees
+
+```
+> /scholar-safety level lockdown
+```
+
+| Level | What is enforced | Honest guarantee |
+|---|---|---|
+| **standard** (default) | Bash speed-bump + sidecar tamper guard | Stops accidental leakage. Does **not** stop a determined agent. |
+| **strict** | The above + a PostToolUse output redactor | Active **only** if `posttooluse-output-guard.sh` is registered in `~/.claude/settings.json` **and** the sidecar has at least one restricted entry. |
+| **lockdown** | The above + a real OS sandbox with deny-read on `data/` | The **only** genuine containment boundary in the system. |
+
+The skill verifies the redactor is really registered before claiming `strict` protection, rather than reporting a level it cannot deliver.
+
+Lockdown has a sharp edge worth planning around: `denyRead` on `data/` blocks **all** reads of that directory — *including the sanctioned LOCAL_MODE `Rscript`/`python3` loader*. Either run your analysis first and lock down afterwards, or generate the config with `--allow-escalation` so human-approved unsandboxed commands can still run.
+
+Everything below lockdown is evadable in principle — by another interpreter (`ruby`, `node`), by an encoding (`base64`, `gzip`, hex), by assembling the path from shell variables, or by copying the file to a benign path and reading that. The suite documents this openly rather than pretending otherwise. Design your workflow so that the *honest* path is also the *easy* path, and reserve lockdown for data where the DUA genuinely requires containment.
+
+### 6.7 The scripts you can run yourself
+
+Every gate is a plain shell or Python script. You do not need Claude in the loop to use them, and running them by hand is the fastest way to build trust in the system:
+
+| Script | Purpose |
+|---|---|
+| `scripts/init-project.sh [opts] <slug> [inputs…]` | The whole project bootstrap, standalone |
+| `scripts/gates/safety-scan.sh <file>` | GREEN/YELLOW/RED scan; exit 0 / 2 / 1 |
+| `scripts/gates/anonymize-presidio.py {scan\|keygen\|anonymize\|verify} <file>` | Presidio PII detection and anonymization |
+| `scripts/gates/generate-lockdown-config.sh <proj> [--host auto] [--allow-escalation]` | Emit the OS sandbox config for lockdown |
+| `scripts/gates/sidecar-schema.sh` | Validate the sidecar against the status vocabulary |
+| `scripts/gates/pretooluse-data-guard.sh` | The guard itself — feed it a crafted JSON payload on stdin to test |
+
+### 6.8 Inspect
+
+1. **`logs/init-report.md`** — the ingested-files table, the scan-level counts, and the append-only Decision history.
+2. **`.claude/safety-status.json`** — every key an absolute path, every value one of the seven status strings.
+3. **`README.md`** — auto-generated, and genuinely worth reading once: it contains the decision-flow diagram and the effects table for each status.
+4. **`CLAUDE.md`** — confirm the auto-managed block is present and says `v2-lean` (or `v2-full` after an orchestrator run).
+
+**Stop and check.** Point at one file marked LOCAL_MODE and say, out loud, (a) why it was flagged, (b) what a script may still compute from it, and (c) what would happen if you asked Claude to `head` it. If you cannot answer all three, do not brainstorm yet.
 
 ## 7. `scholar-brainstorm` — widen the question menu
 
@@ -1884,12 +2231,33 @@ This is **not** hypothesis derivation (`/scholar-hypothesis` does that), and **n
 
 ### 8B.1 Two modes
 
+```yaml
+argument-hint: "[theorize|diagram] [topic], e.g., 'theorize a framework for
+                digital labor precarity' or 'diagram mechanism model for
+                segregation and health'"
+```
+
 | Mode | Trigger | Output |
 |---|---|---|
 | **THEORIZE** | "theorize," "build theory," "construct framework," "synthesize," "typology" | A 3–5-page memo with named definitions, scope conditions, mechanisms, rivals, and limitations |
 | **DIAGRAM** | "diagram," "figure," "mechanism diagram," "concept map," "tikz" | A standalone `.tex` (TikZ) compiled to `.pdf`, plus optional `.mmd`/`.svg`/`.png` Mermaid version |
+| **Both** | Both keywords present, or `full` / "framework with figure" | THEORIZE then DIAGRAM, in sequence |
+
+```
+> /scholar-conceptual theorize a typology of immigrant civic incorporation
+> /scholar-conceptual diagram multi-level model for algorithmic management
+> /scholar-conceptual full framework with figure for cumulative disadvantage
+```
 
 THEORIZE further classifies the task into eight types — typology construction (Lazarsfeld property-space), process theorizing, mechanism specification (Coleman's boat / Hedström DBO), scope-condition mapping, multi-level model, abductive theory-from-anomaly, synthetic framework, concept clarification.
+
+Two things this skill deliberately does **not** do. It will not make identification claims — those route to `/scholar-causal`. And it is the only skill in this part of the suite that dispatches **no subagents at all**: it has a narrow tool list and no verification panel, so its output is checked by you, or by `/scholar-auto-improve observe` afterwards.
+
+> **The HARKing disclosure gate.** `scholar-conceptual` carries the suite's theoretical-pivot protocol, which fires when all three conditions hold: (a) the project has pre-registered hypotheses, (b) at least one focal hypothesis came back null or opposite-signed, and (c) the Discussion now introduces a theoretical concept that was not in the original account list — or uses reframe-signal phrases like "reinterpret as," "post-hoc explanation," or "in retrospect."
+>
+> When it fires, you must produce `design/theoretical-pivot.md` recording the pre-registered account and its status per hypothesis, the pivot account and its inferential status, what changed and what did not, and guidance for the reader — and tag the affected manuscript sections `[REGISTERED]` or `[EXPLORATORY]`.
+>
+> Note carefully what this is **not**: it is not a prohibition on post-hoc reframing, which is a normal and often valuable part of research. It is a requirement to *disclose and bound* it. Reframing after a null result is legitimate; presenting the reframe as though you had predicted it is not.
 
 ### 8B.2 Run (the digital-divide example)
 
@@ -2526,33 +2894,202 @@ Before moving to §9, open the three artifacts and ask:
 
 **Stop and check.** If the identification memo lists `causal_status: descriptive`, read §9.3's "Forbidden claims" block before you start drafting — the language ceiling is now binding.
 
+## 8E. `scholar-lit-review` and `scholar-hypothesis` — when you want them separately
+
+§8A showed the integrated skill. Both halves also exist on their own, and there are good reasons to reach for them individually: a literature landscape you are not yet ready to turn into hypotheses, or hypotheses derived from a literature you already know.
+
+### 8E.1 `scholar-lit-review` — three depths
+
+```yaml
+argument-hint: "[topic or research question] [optional: landscape|targeted|rapid]
+                [optional: target journal] [optional: population, time period,
+                geographic scope]"
+```
+
+| Mode | Triggers | Search waves | Papers | Words |
+|---|---|---|---|---|
+| **Full landscape** (default) | `landscape`, `map`, `comprehensive`, `state of the field` | 5+ | **50–100** | 3,000–10,000 |
+| **Targeted** | `targeted`, `focused`, `for paper`, `intro` | 3 | **15–30** | 1,000–3,000 |
+| **Rapid scoping** | `rapid`, `scoping`, `quick`, `preliminary` | 2 | **10–20** | 500–1,500 |
+
+```
+> /scholar-lit-review "digital divide in China" landscape "Social Forces" 2010-2025
+> /scholar-lit-review "remote work and the gender wage gap" rapid
+```
+
+The waves are cumulative: Wave 1 core topic · Wave 2 mechanisms and theories · Wave 3 methods and data (targeted and full) · Wave 4 recent frontier (full only) · Wave 5 contested terrain and null findings (full only).
+
+Three features distinguish it from "search and summarize":
+
+- **The Annual Reviews checkpoint always runs.** The skill searches `site:annualreviews.org`, prioritizes the Annual Review of Sociology, and extracts at least five cited papers from any relevant review. One good review article is worth twenty search results.
+- **Citation-chain expansion** (required in full mode): backward from the reference lists of three to five key papers, then forward via "cited by" for the top foundational works.
+- **Wave 3 hunts for named critics.** Before running methods searches, the skill loads a method-critics reference and searches for each planned method's principal critic by name — Bell & Jones for age-period-cohort, Goodman-Bacon for staggered DiD. Finding the objection to your method *before* you commit to it is much cheaper than finding it in review.
+
+The output is a landscape map along eight dimensions: field-evolution timeline · theoretical landscape (framework, core claim, proponents, predictions, support, status) · established findings · contested findings with a weight-of-evidence table · **null and absent findings, kept distinct from each other** · mechanism inventory (proposed vs. actually tested) · methodological landscape · ranked gap analysis. Full mode also emits a PRISMA flow diagram.
+
+The ninth dimension is a **theory handoff table** — gap → theoretical implication → candidate framework → why the rivals are insufficient — plus a paste-ready paragraph for `/scholar-hypothesis`.
+
+Two hard behaviours: the skill **hard-stops if no local reference library is detected** rather than quietly falling through to web-only search; and it writes the search log to disk *before* the first query and appends after *every* query, because context compaction silently destroys in-memory hit counts.
+
+There is also a **theory gate**: if your prompt mentions hypotheses or theory sections, the skill stops and redirects you to `/scholar-lit-review-hypothesis` (§8A) rather than producing half of what you need.
+
+### 8E.2 `scholar-hypothesis` — formalizing predictions
+
+```yaml
+argument-hint: "[phenomenon or RQ] — optionally: [design type: quant/qual/comp/
+                computational] [journal: ASR/AJS/Demography/NHB/NCS/SciAdv]
+                [theory hint]"
+```
+
+```
+> /scholar-hypothesis "why cumulative disadvantage widens the wealth gap" quant ASR
+> /scholar-hypothesis "language shift among heritage speakers" qualitative \
+                      "Language in Society" Fishman
+```
+
+The eight steps: frame the puzzle (as an anomaly, contradiction, extension, mechanism, or scope condition) → select frameworks (one primary, at most one secondary) → **determine hypothesis placement mode** → specify the mechanism chain → derive and formalize → map competing predictions → build a text DAG → write the theory section.
+
+**Placement mode is dictated by the journal, not by preference:**
+
+| Mode | Journals | Shape |
+|---|---|---|
+| `BLENDED` | ASR, AJS, Social Forces | Each thematic subsection closes with its derived hypothesis |
+| `SEPARATE` | Demography (≤2 hypotheses) | A distinct hypotheses block — escalates to BLENDED at 3+ |
+| `SEPARATE-PREDICTIONS` | NHB, Science Advances, NCS | Natural-language predictions, no H1/H2 labels |
+| `INTEGRATED-RQ` | Language in Society, Journal of Sociolinguistics | No hypothesis labels at all; ends with "The Present Study" |
+| `N/A` | Qualitative | Propositional claims only |
+
+Getting this wrong fails the skill's own pre-save check.
+
+**The derivation chain table is the core mechanism.** Every hypothesis must fill every column:
+
+| H# | Literature gap | Gap type | Framework prediction | Mechanism-chain link | Hypothesis |
+|---|---|---|---|---|---|
+
+**If you cannot fill every column, the hypothesis is dropped.** The named failure mode is a hypothesis that matches the framework's *general* prediction without pointing at a *specific* step in the mechanism — which reads like theory but tests nothing in particular.
+
+Mechanisms are specified through **Coleman's boat** (situational → action-formation → transformational) or **Hedström's DBO** (desires, beliefs, opportunities), classified by Elster's types (cognitive, motivational, interactional, institutional, material), and bounded by a mandatory **scope-condition matrix**.
+
+Seven hypothesis forms are supported: main effect · moderation (fan-spread vs. crossover) · mediation · curvilinear or threshold · comparative/group-level · boundary condition · **null-as-finding**. Intersectional hypotheses have their own required form: stated multiplicatively as an interaction term to be tested, not as two separate main-effect hypotheses.
+
+Every hypothesis also gets a **competing prediction**: what a rival theory predicts, what the data would look like if the rival is right, and the specific test that distinguishes them. Plus an alternative-explanations checklist — selection, reverse causation, omitted variables, measurement artifact, compositional difference — each requiring a sentence of the form "We address [alternative] by [design feature]."
+
+Causal-language calibration is enforced here as everywhere: observational data without an identification strategy gets "is positively associated with" and "predicts," never "causes" or "the effect of."
+
+Theory-section word budgets: ASR/AJS 1,000–1,500 · Demography 600–1,000 · NHB/Science Advances 300–600 (embedded in the introduction) · NCS 200–400.
+
+The skill ships a reference library of 25+ frameworks — stratification, networks and capital, culture, assimilation, life course, Coleman's boat, DBO, racial formation, status characteristics, social movements, signaling, rational choice, contact hypothesis, labeling, intersectionality, neo-institutional theory, organizational ecology, practice theory, feminist standpoint, labor process, actor-network theory, and non-Western traditions including coloniality, world-systems, postcolonial theory, Ubuntu, and Confucian/*guanxi* frameworks — each with its core claim, mechanisms, best-use cases, key papers, and ready sentence starters.
+
+**Stop and check.** Take one hypothesis from your own work and fill in the derivation chain table for it. If the "mechanism-chain link" column is the hard one, that is diagnostic: you have a prediction, not yet a theory.
+
 ## 9. `scholar-design` — design before data
 
 **Goal:** lock the estimand, the model ladder, the sample restrictions, and the forbidden language. After this skill, the analysis script is essentially a template-fill.
 
-### 9.1 Run
+This is the largest skill in the suite (roughly 16,000 words of instructions) and the one that most repays reading its dispatch table before you type.
+
+```yaml
+argument-hint: "[quant|qual|mixed|experiment|power|methods-section|pap|
+                computational|NLP|ML|network|ABM|premortem|blueprint]
+                [research question] [optional: data source, design type,
+                journal target]"
+```
+
+### 9.0 Sixteen design modes
+
+| Mode | Trigger keywords | Steps it runs |
+|---|---|---|
+| Quant / observational | `quant`, `regression`, `survey data`, `panel`, `observational` | 0→1→causal gate→3→4→5→6→7 |
+| Causal | `causal`, `DiD`, `FE`, `RD`, `IV`, `matching`, `natural experiment`, `DAG` | Invokes `/scholar-causal` mid-flow as a gate |
+| Qualitative | `qual`, `interview`, `ethnography`, `case study` | 0→1→4(qual)→7(qual template) |
+| Mixed methods | `mixed`, `mixed-methods`, `multi-method` | All steps; integration point flagged in Step 7 |
+| Experiment | `experiment`, `RCT`, `vignette`, `conjoint`, `list experiment` | 0→1→2→3(power)→5→7 |
+| Cluster RCT | `cluster RCT`, `cluster randomized`, `group randomized` | 0→1→2d→3e→5→7 |
+| Audit / correspondence | `audit`, `correspondence`, `resume audit`, `discrimination` | 0→1→2e→3f→5→7 |
+| Stepped-wedge | `stepped-wedge`, `sequential rollout` | 0→1→2f→3g→5→7 |
+| SMART | `SMART`, `adaptive intervention`, `DTR` | 0→1→2g→3h→5→7 |
+| Bayesian | `Bayesian`, `prior elicitation`, `assurance` | 0→1→10→7 |
+| Power only | `power`, `sample size`, `MDES` | Step 2/3 only |
+| Methods only | `methods section`, `write methods` | Step 7/8 only |
+| PAP only | `pap`, `pre-analysis plan`, `preregistration`, `OSF` | Step 6/7 only |
+| Computational | `computational`, `NLP`, `ML`, `network`, `ABM`, `corpus`, `annotation`, `topic model`, `classifier` | 0→1→9→7 (NCS/Science Advances template) |
+| **Pre-mortem** | `premortem`, `design review`, `review blueprint` | Step 11 — reviewer panel against an existing blueprint |
+| **Section blueprint** | `blueprint`, `section blueprint`, `generate blueprint` | Step 12 — deterministic per-section authoring contract |
 
 ```
-> /scholar-design for RQ1, Social Forces, CFPS 2010-2020,
-                 descriptive/decomposition design
+> /scholar-design quant "did hukou/cohort gaps in internet access narrow while
+                  use-hours gaps persisted?" CFPS 2010-2020 "Social Forces"
+                  descriptive/decomposition
+> /scholar-design power "MDES for a 2,000-respondent survey experiment"
+> /scholar-design computational NLP "polarization in news coverage with BERT"
+                  "Science Advances"
+> /scholar-design premortem digital-divide-china-cfps
+> /scholar-design blueprint digital-divide-china-cfps
 ```
+
+### 9.1 The twelve steps
+
+**Step 0 — Setup.** Derives the project root, opens the RAO trace, confirms RQ, data constraints, and target journal with you.
+
+**Step 1 — Design selection decision tree.** A fourteen-row table mapping (goal × data structure × assignment) to a recommended design and journal fit. Any DiD / FE / RD / IV / matching / mediation / natural-experiment claim triggers the **causal gate**, which hands off to `/scholar-causal` (§8D) and comes back with an identification strategy.
+
+**Step 1.5 — Multi-comparison policy declaration.** Mandatory whenever a pre-registered hypothesis family carries **K ≥ 3** tests. It emits a YAML block naming the family, K, the correction method, alpha, and the decision rule — and it makes `peer-reviewer-demographics` a *required* member of every later review panel.
+
+> **Why this step exists.** A real run in this corpus (cohab-fertility-cfps) shipped "PARTIAL support" for a nine-test family with no correction applied. Declaring the correction at *design* time — before you have seen a single p-value — is the only version of this that is not p-hacking.
+
+**Step 1.6 — Data-source requirements.** Emits a `## Data-Source Requirements` YAML block (`unit_of_analysis`, `geographic_scope`, `time_window`, `design_structure`, `required_n`, `required_constructs[]`, `excluded_designs[]`) that `scholar-data` (§9A) consumes to score candidate datasets.
+
+**Step 2 — Experimental design module.** Seven sub-modules, each with a design template, R analysis code, an assumptions checklist, and a write-up template: 2a RCT · 2b survey/vignette · 2c list experiment · 2d cluster RCT · 2e audit/correspondence · 2f stepped-wedge · 2g SMART.
+
+**Step 3 — Power analysis.** Eleven sub-modules:
+
+| Sub-step | Design | Tooling |
+|---|---|---|
+| 3a | Standard tests | `pwr` (t, r, χ², ANOVA), `WebPower::wp.logistic` |
+| 3b | Multilevel / HLM | `simr::powerSim`, `powerCurve` |
+| 3c | **MDES for fixed-N secondary data** | The one you need for CFPS/GSS work |
+| 3e | Cluster RCT | `clusterPower`, `CRTSize::n4means`, manual DEFF |
+| 3f | Audit / correspondence | McNemar exact power, `pwr.2p.test`, simulation |
+| 3g | Stepped-wedge | `swCRTdesign::swPwr`, Hussey-Hughes, Woertman DEFF |
+| 3h | SMART | Oetting formula, Nahum-Shani rules of thumb |
+| 3i | Three-level multilevel | `simr`, ICC sensitivity at 0.01 / 0.05 / 0.10 |
+| 3j | DiD / RD / mediation | `DeclareDesign`, `rdpower`, `pwr2ppl::medjs` |
+| 3k | SEM / CFA | N ≥ 200; N ≥ 10 × parameters |
+
+For secondary data your N is fixed, so **3c is the honest step**: you are not choosing a sample size, you are reporting the smallest effect your fixed sample could have detected.
+
+**Step 4 — Variable specification.** The variable dictionary table (Role · Name · Construct · Operationalization · Source · Type · Range · Notes), a measurement-validity checklist, and a DAG sketch.
+
+**Step 5 — Analytic strategy.** Model selection by outcome type; SE and clustering choices; the presentation sequence (Model 1→4 plus appendix robustness). Note the sociology-journal rule the skill enforces: **always report average marginal effects, not odds ratios or raw log-odds**, for any binary, ordinal, or GLMM outcome in ASR/AJS-style venues.
+
+**Step 6 — Robustness plan.** A **pre-committed sensitivity registry**. Each entry becomes blocking at analysis time unless marked `optional: true` with a rationale. A limitations-section bullet does *not* satisfy this gate — only a `spec_id` that later shows up in the spec registry does.
+
+**Step 7 — Pre-analysis plan.** Ten sections — RQ and hypotheses, design, primary outcome, covariates, primary analysis, subgroup/heterogeneity, robustness, **multiple-comparisons correction**, deviations policy, sample size — plus an OSF registration checklist.
+
+**Step 8 — Write the Data and Methods section**, calibrated to the target journal's word budget and structure.
+
+**Step 9 — Computational methods design.** Claim-type taxonomy (measurement / description / prediction / causal); corpus and sampling design with minimum-N-by-method tables; annotation design with a codebook template and inter-rater-reliability targets (**κ ≥ 0.70 minimum, ≥ 0.80 preferred**, plus Krippendorff's α and ICC); train/test/validation splits with the no-peek rule; pre-specified evaluation metrics; network-boundary specification and ERGM/SAOM data requirements; ABM design under the ODD protocol with SALib Sobol/Morris sensitivity analysis.
+
+**Step 10 — Bayesian design.** Prior elicitation, `brms` fitting, convergence diagnostics, Bayesian sample size and assurance, reporting template.
 
 ### 9.2 What appears in `design/`
 
+From the real CFPS run — note that some of these are written by `scholar-design` and some by the orchestrator's later phases, which is why the folder accumulates:
+
 ```
 design/
-├── coef-map.csv
-├── data-blueprint-digital-divide-china-cfps-2026-05-04.md
-├── design-blueprint-digital-divide-china-cfps-2026-05-04.md
-├── limitations-accepted.md
-├── model-specs.json
+├── design-blueprint-digital-divide-china-cfps-2026-05-04.md  ← scholar-design
+├── data-blueprint-digital-divide-china-cfps-2026-05-04.md    ← scholar-data
+├── pre-mortem-quant-2026-05-04.md                            ← Step 11 panel
 ├── pre-mortem-demographics-2026-05-04.md
-├── pre-mortem-quant-2026-05-04.md
 ├── pre-mortem-senior-2026-05-04.md
-├── project-brief.md
-├── results-lock-2026-05-04.md
+├── limitations-accepted.md         ← RED dimensions you accepted, with reasons
+├── variable-dictionary.csv
+├── model-specs.json
+├── coef-map.csv
 ├── test-inventory.json
-└── variable-dictionary.csv
+├── project-brief.md
+└── results-lock-2026-05-04.md      ← written later, at the results-lock phase
 ```
 
 ### 9.3 The estimand and model ladder (from the real blueprint)
@@ -2592,23 +3129,208 @@ focal outcome for the headline table and abstract sentence.
 - No third-level (returns) claim in this paper
 ```
 
-### 9.4 The pre-mortem panel
+One line in this blueprint is load-bearing and easy to skip past:
 
-`scholar-design` dispatches a **peer-reviewer panel before any data is touched** — the agent set depends on the design type. This quantitative design, carrying a K≥3 (race×sex×cohort) heterogeneity family, drew three:
+```yaml
+outcome_mechanism_alignment: prevalence-stock
+```
 
-- `peer-reviewer-quant` — the quantitative methods reviewer
-- `peer-reviewer-demographics` — the population/measurement reviewer (added because the design carries a K≥3 hypothesis family)
-- `peer-reviewer-senior` — the editorial-fit reviewer
+The permitted values are `entry-process`, `prevalence-stock`, `dissolution`, and `multi-state`. **If this line is missing, design verification fails.** It exists because an April 2026 audit found a design applying an *entry-process* mechanism story to a *prevalence-stock* outcome — a silent mismatch that produces a coherent-sounding paper answering a question the data cannot address.
 
-The panel is mandatory to dispatch but **advisory** in adjudication: it writes a traffic-light memo, you accept or revise each RED dimension (max 3 iterations), and `design-review-check.sh` blocks Phase 4 on any un-accepted RED.
+### 9.4 Step 11 — the pre-mortem panel
+
+`scholar-design` dispatches a **peer-reviewer panel before any data is touched.** The roster is chosen by design type:
+
+| Design type | Agents dispatched |
+|---|---|
+| Quant / observational | `peer-reviewer-quant`, `peer-reviewer-theory`, `peer-reviewer-senior` (+ `peer-reviewer-demographics` if population claims or a K ≥ 3 family) |
+| Qualitative | `peer-reviewer-qual`, `peer-reviewer-theory`, `peer-reviewer-senior`, `peer-reviewer-ethics` |
+| Mixed methods | `peer-reviewer-mixed-methods`, `peer-reviewer-quant`, `peer-reviewer-qual`, `peer-reviewer-senior` |
+| Computational | `peer-reviewer-computational`, `peer-reviewer-quant`, `peer-reviewer-theory`, `peer-reviewer-senior` |
+| Sociolinguistic | `peer-reviewer-ling`, `peer-reviewer-theory`, `peer-reviewer-senior` |
+| Human subjects | add `peer-reviewer-ethics` |
+
+Each reviewer scores **thirteen dimensions** RED / YELLOW / GREEN with a justification: RQ clarity · theory↔hypothesis linkage · operationalization validity · identification strategy · sample adequacy · internal validity · external validity · ethics · measurement and missingness · analytic-plan specificity · feasibility · journal fit · multi-comparison policy. Each memo closes with `OVERALL:`, `TOP-3 FATAL CONCERNS:`, and `RECOMMENDED ACTIONS:`.
+
+The panel is **mandatory to dispatch but advisory in adjudication**: you accept or revise each RED dimension, up to **three iterations**, and `design-review-check.sh` blocks the next phase on any un-accepted RED. Exit codes: `0` GREEN proceed, `1` RED un-accepted → halt, `2` YELLOW → may proceed with approval. After three iterations it hard-halts, on the theory that persistent RED is a structural design problem needing human judgment, not more auto-critique.
+
+> **The provenance requirement — this is the one to internalize.** Every pre-mortem memo must carry a **Reviewer Provenance table** with real columns: `reviewer_agent | task_invocation_id | dispatched_at | model`. Placeholders like `TBD` or `—` fail the gate, and `design-review-check.sh` cross-checks the process log for zero `peer-reviewer-*` dispatches. The skill names inline-roleplayed reviewers — the model writing a "review" in its own voice instead of dispatching a real subagent — as **the #1 silent failure** of the whole pipeline. A post-mortem traced roughly 71% of manuscript defects to skipped or simulated review. §13's surrogate disclosure is this same failure mode, caught and declared.
 
 In our actual run, the senior reviewer flagged: *"Y1 (binary access) is the wrong headline outcome. Y2 (use intensity) is the theoretically distinctive contribution and should be the abstract-target sentence."* That single comment changed the focal outcome **before any analysis ran**, saving an entire revision cycle.
 
-**Stop and check.** Open `limitations-accepted.md` and `model-specs.json`. Can you name the focal outcome, the focal table, the focal sample? If not, do not proceed.
+### 9.5 Step 12 — the section blueprint
+
+Run late — after the results lock, before drafting — and notable because it is **deterministic**: `generate-section-blueprint.sh` reads the results lock, the design blueprint, and the hypotheses, and emits the contract with **no LLM in the loop**. The drafting skill cannot negotiate with it.
+
+```
+> /scholar-design blueprint digital-divide-china-cfps
+```
+
+Writes `drafts/section-blueprint.json` (canonical, schema v5) plus a human-readable `.md` companion whose footer says, accurately, *"Hand-edits will be overwritten."*
+
+Per section — abstract, introduction, theory, methods, results, discussion — the contract carries `target_words_min/max`, `required_hypotheses[]`, `required_tokens[]`, `reader_outcomes[]`, `exemplar_paths[]`, `derived_moves`, `structural_moves[]`, and `forbidden_patterns[]`. Those fields sit in a **precedence ladder** that `scholar-write` must obey:
+
+| Tier | Fields | Status |
+|---|---|---|
+| **1** | `target_words_min/max`, `required_hypotheses[]`, `reader_outcomes[]` | **Binding** |
+| **1.5** | `reader_outcomes_verifiers[]` | **Binding, machine-verified** |
+| **2** | `exemplar_paths[]`, `derived_moves` | Primary source of prose rhythm |
+| **3** | `structural_moves[]` | Advisory fallback |
+| **4** | `forbidden_patterns[]` | **Hard constraint** |
+
+Exit codes: `0` GREEN (JSON and MD written), `1` RED (missing `results-locked/LATEST.txt`, manifest, or design blueprint). Downstream, `blueprint-completeness-check.sh` re-validates the schema before drafting may start.
+
+### 9.6 Inspect
+
+- `limitations-accepted.md` — every RED you accepted, in the form `[RED-N: dimension] rationale`. If this file is empty and the panel raised REDs, something was waved through.
+- `model-specs.json` — the focal outcome, focal table, focal sample.
+- The pre-mortem memos — read the `TOP-3 FATAL CONCERNS` of each, and check the provenance table has real invocation IDs.
+- The `outcome_mechanism_alignment` line — does the mechanism story match the outcome type?
+
+**Stop and check.** Name the focal outcome, the focal table, and the focal sample without looking. Then name one thing the design says you may **not** claim. If you cannot do both, do not proceed.
+
+## 9A. `scholar-data` — find, fetch, and govern the data
+
+**Goal:** locate a dataset that actually fits the design, download it where possible, and produce the variable dictionary, IRB materials, and management plan the rest of the pipeline assumes exist.
+
+This skill is invisible in the CFPS walkthrough because we arrived with data in hand. For most participants starting a *new* project it is the single most useful skill in the suite: it ships a directory of **100+ datasets across 14 categories**, of which 57 are machine-scored and **42 can be downloaded automatically**.
+
+```yaml
+argument-hint: "[dataset|survey|interview|irb|manage|vignette|scrape|web|api|
+                social media] [topic or research question]
+                [optional: population, journal, design]"
+```
+
+### 9A.1 Eight workflows
+
+| Workflow | Triggers | What you get |
+|---|---|---|
+| **0 — Secondary data directory** | `dataset`, `find data`, `what data`, `secondary` | Topic → dataset matching, fit verification, scored suggestions, auto-fetch |
+| **1 — Variable dictionary** | `variable`, `measure`, `operationalize`, `construct`, `blueprint` | Variable table, measurement-validity checklist, one-page data blueprint |
+| **2 — Survey instrument** | `survey`, `questionnaire`, `scale`, `Qualtrics`, `Prolific`, `vignette`, `conjoint`, `list experiment` | Question construction, established scales, sampling plan, pilot protocol, experimental modules |
+| **3 — Interview protocol** | `interview`, `qualitative`, `protocol`, `ethnography`, `focus group` | Protocol architecture, question sequence, sensitive-topics handling, multilingual fieldwork |
+| **4 — Administrative data** | `admin`, `records`, `linkage`, `Census`, `IPUMS` | Access routes, documentation review, record linkage, spatial data |
+| **5 — IRB and ethics** | `IRB`, `ethics`, `consent`, `CITI`, `human subjects` | Exemption categories, waiver criteria, application components, security standards |
+| **6 — Data management** | `manage`, `codebook`, `clean`, `pipeline`, `DMP`, `git` | Directory scaffold, git hygiene, codebook, data-management plan |
+| **7 — Web and digital data** | `scrape`, `crawl`, `API`, `social media`, `Twitter`, `Reddit`, `news` | Legal/ethical framework, API-first strategy, scraping code, storage and provenance |
+
+```
+> /scholar-data dataset "childhood poverty and adult health" US NHB
+> /scholar-data survey "hiring discrimination by race and record" vignette
+> /scholar-data irb "web scraping public tweets on immigration policy"
+> /scholar-data manage "codebook and DMP for an NSF proposal"
+```
+
+### 9A.2 The dataset directory
+
+Fourteen categories, each a table of datasets with coverage, unit, N, key variables, and access tier:
+
+1. **Sociology / stratification / labor** — GSS, PSID, NLSY79/97, Add Health, SIPP, ACS, CPS
+2. **Demography / family / health** — HRS, NHANES, NHIS, NCHS Vital Statistics, CDC PLACES, UN World Population Prospects
+3. **Education** — NELS/ELS/HSLS, NAEP, College Scorecard, IPEDS
+4. **Political behavior** — ANES, CCES, Pew datasets
+5. **Immigration / ethnicity / language** — CPS-ASEC, New Immigrant Survey, ISSP, WVS/EVS, Luxembourg Income Study
+6. **Neighborhoods / spatial / administrative** — Census tract, HMDA, TIGER/Line, HOLC redlining maps, Opportunity Atlas
+7. **Text / digital / computational** — Congressional Record, Common Crawl, Google Trends, Twitter/X historical
+8. **Crime and criminal justice** — NCVS, UCR/NIBRS, NSDUH, NCRP, Sentencing Commission
+9. **International surveys** — WVS/EVS, ISSP, ESS, Eurobarometer, Afrobarometer, Latinobarómetro, Asian Barometer, LIS/LWS, PISA, TIMSS/PIRLS, DHS, MICS
+10. **Economic / labor / macro** — FRED, Penn World Table, EU-KLEMS, LEHD, OECD, Eurostat, ILO
+11. **Global health / environment** — WHO GHO, Global Burden of Disease, IPUMS International, NASA SEDAC, FAOSTAT
+12. **Science of science** — OpenAlex, Semantic Scholar, Dimensions, ORCID, NSF SED, Crossref, Web of Science
+13. **General repositories** — Harvard Dataverse, ICPSR, Zenodo, OSF, Figshare, QDR, Roper iPoll, Data.gov, UK Data Service, GESIS, Google Dataset Search, Kaggle
+14. **Restricted federal / linked** — SSA earnings via FSRDC, IRS/Treasury linked microdata, state administrative records, CMS claims
+
+Plus an international/longitudinal supplement: UKHLS, German SOEP, IHDS, **CFPS**, EVS, UK Biobank, Fragile Families.
+
+### 9A.3 The dataset scorer — how a recommendation is actually made
+
+Step 0c.5 runs a deterministic Python scorer, not a vibe:
+
+```bash
+$ python3 scripts/gates/dataset-suggester.py "$PROJ" --top 3 --auto
+```
+
+It reads `design/data-requirements.yml` (the YAML `scholar-design` Step 1.6 emitted), falls back to the blueprint and then to `project-state.md`, and scores every entry in `references/datasets-index.json` — 57 datasets with fields `unit_of_analysis`, `geographic_scope`, `time_window`, `design_structure`, `key_constructs[]`, `access_tier`, `auto_fetch{}`.
+
+| Criterion | Weight |
+|---|---|
+| Unit of analysis exact match | **+3.0** |
+| Unit off by one hierarchy level | +1.5 |
+| Unit off by more than one level | **hard REJECT** |
+| Geographic overlap | +2.0 |
+| Time window ≥ 50% covered | +1.5 |
+| Each matched construct | +2.5 (capped at 7.5) |
+| Access tier | 0 – 1.0 |
+| Keyword tie-breaker | +0.5 |
+
+The decision rule: **≥ 6.0 auto-select · < 6.0 needs user confirmation · zero candidates passing the hard filters exits 3**, at which point the orchestrator must ask you to relax a constraint or add a dataset to the directory. There is also an *existing-data audit mode*: if you brought your own dataset and something in the directory outscores it, you get a YELLOW flag telling you so.
+
+### 9A.4 Auto-fetch
+
+Step 0d runs real downloads for anything in the "Immediate" access tier — 18 datasets via an R package, 24 via direct URL. Sources that need **no key at all**, and are therefore the fastest path to a working project: World Bank, NHANES, CDC PLACES, GSS, Google Trends, BLS v1, College Scorecard, Opportunity Atlas, GDELT, OpenAlex, Eurostat, WHO GHO, Penn World Table, FAOSTAT, Harvard Dataverse, Zenodo, Semantic Scholar, Crossref, Data.gov.
+
+Keys and registrations you may need:
+
+| Env var | Unlocks |
+|---|---|
+| `CENSUS_API_KEY` | ACS, CPS via `tidycensus` / `ipumsr` |
+| `FRED_API_KEY` | FRED macro series via `fredr` |
+| `CDC_APP_TOKEN` | Higher PLACES/Socrata rate limits (optional) |
+| `FBI_API_KEY` | Crime Data Explorer |
+| `S2_API_KEY` | Semantic Scholar (optional) |
+| `TWITTER_BEARER` | X API v2 |
+| `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` | Reddit via PRAW |
+| `SCHOLAR_CROSSREF_EMAIL` | OpenAlex/Crossref polite pool, scraper User-Agent |
+
+Store them in `.Renviron` or `.env`, both gitignored. **Never** in a script.
+
+On a successful fetch the skill writes `data/raw/download-manifest.md` (File · Source · Date fetched · N rows · Variables) and flips PROJECT STATE from `data-status: no-data` to `existing-data`, which unlocks data-available mode downstream. If an API key is missing, the skill is required to **ask you for it** rather than silently degrading to a code template.
+
+### 9A.5 Workflow 7 — the web-data rules that matter
+
+The legal and ethical framework comes before any code: robots.txt, terms of service, rate limits, CFAA, GDPR, IRB. The web-data IRB decision table maps public tweets → Exempt, Reddit → Exempt/Expedited, private groups → Full board. The governing principle is AoIR 2019, quoted in the skill: **legal accessibility ≠ ethical appropriateness.**
+
+Platform realities the skill documents, current as of this build:
+
+- **Twitter/X** — the Academic Research track was discontinued in January 2025. Full-archive search now needs Pro (~$5K/month) or Enterprise; the free Basic tier caps at 10,000 tweet reads per month. For new projects, consider **Bluesky** (AT Protocol, free firehose) or the **Meta Content Library**.
+- **Reddit** — Pushshift archive access was restricted in 2023; use PRAW against the live API.
+- **Never share raw tweet text.** Share tweet IDs only.
+
+The API-first order is: platform API → GDELT / MediaCloud / Internet Archive → `rvest` + `polite` (R) or `requests` + `BeautifulSoup` (Python) → `chromote` / `playwright` for JavaScript pages. Everything gets logged to `docs/scraping-log.md` with robots.txt status, ToS review, IRB determination, rate limiting, and record counts.
+
+### 9A.6 Files written
+
+```
+output/<slug>/data/scholar-data-<topic>-<date>.md   ← the data plan
+<proj>/data/dataset-selection.json                  ← scorer output + fetch params
+data/raw/download-manifest.md                       ← what was fetched, when
+data/raw/<source>-<params>.{rds,csv,parquet}        ← the actual data
+data/codebooks/                                     ← var_name | var_label | type |
+                                                       values | missing_codes | source
+docs/scraping-log.md · docs/data_cleaning_log.md
+.gitignore                                          ← raw data, credentials excluded
+```
+
+The directory scaffold sets `data/raw/` **read-only** (`chmod -w`). Raw data is an input, never an output.
+
+### 9A.7 Gotchas
+
+- `scholar-data` is a **Tier B** skill: it checks the safety sidecar but does not implement the full LOCAL_MODE dispatch contract. A `LOCAL_MODE` file must be routed to `/scholar-analyze` or `/scholar-eda` instead.
+- List experiments are statistically inefficient — plan **N ≥ 500 per arm**.
+- Conjoint designs need roughly **N ≥ 500 × 5 tasks** to detect an AMCE of 0.05.
+- Probabilistic record linkage (`fastLink`) must report match rates and characterize matched vs. unmatched cases; selective linkage is itself a validity threat.
+
+**Stop and check.** Run `/scholar-data dataset` on your own research question. Look at the top three scored candidates and the score breakdown. If the top score is under 6.0, the honest reading is that your design and the available data are not yet aligned — fix that now, not at Phase 5.
 
 ## 10. `scholar-eda` — look before you leap
 
 **Goal:** build the analytic sample, diagnose missingness, produce Table 1, and check distributional assumptions — *before* running any model.
+
+```yaml
+argument-hint: "[dataset path or 'paste data below'] [outcome variable(s)]
+                [optional: key predictor, causal design, journal,
+                panel/cross-sectional]"
+```
 
 ### 10.1 Run
 
@@ -2616,16 +3338,79 @@ In our actual run, the senior reviewer flagged: *"Y1 (binary access) is the wron
 > /scholar-eda data/processed/cfps-panel-long.rds
               outcomes=y1_access,y2_hours,y3_breadth
               focal=hukou_rural,cohort,female,eduy
+              panel
+              journal="Social Forces"
 ```
 
-The skill writes `scripts/01-build-sample.R` (which you already saw the header of in §1) and `scripts/02-eda.R`, runs them, and produces:
+More examples across the input modes:
 
-- `tables/table1-descriptives.csv`
-- `tables/missing-by-wave.csv`
-- `eda/distributions/*.pdf`
-- `logs/02-eda-<timestamp>.log`
+```
+> /scholar-eda data/gss2022.dta happiness education income
+> /scholar-eda NHANES 2017-2018 systolic_bp age race cross-sectional
+> /scholar-eda paste data below wage education, tenure for ASR panel
+```
 
-### 10.2 Real Table 1 (truncated)
+### 10.2 Three input modes, and the gate in front of all of them
+
+| Mode | Trigger | Behaviour |
+|---|---|---|
+| **1 — Local file** | a path to `.csv` / `.dta` / `.rds` / `.parquet` / `.xlsx` | Standard in-context loader if the file is `CLEARED`/`ANONYMIZED`/`OVERRIDE`; a single summary-only `Rscript`/`python3` heredoc if `LOCAL_MODE` |
+| **2 — Pasted data** | `paste data below` | Reads inline. Note the honest warning the skill gives: pasted data is *already in your context by definition*, so it offers to write it to a temp file, re-gate it, and continue under LOCAL_MODE |
+| **3 — Online source** | `NHANES 2017-2018`, `GSS`, a `tidycensus`/`WDI` reference | Fetches via the R package or API |
+
+Before any of that, **Phase 0a — the Data Safety Gate** runs `safety-scan.sh` on every input, sets `SAFETY_STATUS`, and blocks on YELLOW or RED until you choose. If `scholar-full-paper` already set a status at Phase −1, `scholar-eda` **inherits it and never downgrades it**.
+
+**Phase 0c is the causal gate.** The skill scans your prompt for `DiD`, `difference-in-differences`, `FE`, `RD`, `regression discontinuity`, `IV`, `instrumental variable`, `matching`, `synthetic control`, `mediation`, `propensity score`. On a hit it prints a redirect to `/scholar-causal` (§8D) before resuming at Phase 1. This is advisory, not a hard stop — but taking the redirect is nearly always right, because covariate choice depends on the DAG.
+
+### 10.3 The eleven phases
+
+| Phase | What happens | The decision it forces |
+|---|---|---|
+| **1** Orientation | `skim()`/`glimpse()`, unit-of-analysis and ID-uniqueness check, `plm::pdim` for panels | Is the unit of analysis what you think it is? |
+| **2** Sample construction | Sequential filters printing N-before/N-after, exclusion-flow table, survey-weight design object | Does every exclusion have a reason you would print? |
+| **3** Missing data | `naniar` summaries and upset plots, Little's MCAR test, shadow-matrix logit | <5% listwise · 5–20% MICE · >20% flag + sensitivity · >50% consider dropping |
+| **4** Univariate | Distributions against `theme_Publication()`, transform decision table, sparse-category flag (<5%) | log · reflect+log · winsorize · logit · leave alone |
+| **5** Bivariate | Scatter + LOESS, violin + box, correlation heatmap | Which relationships are real enough to model? |
+| **6** Collinearity | Pairwise *r* > 0.8, `car::vif`, condition number | VIF <5 fine · 5–10 investigate · >10 must address |
+| **6b** Measurement *(conditional)* | CFA via `lavaan`, invariance (configural/metric/scalar, ΔCFI < .01), reliability (`psych::alpha`/`omega`), classifier precision/recall/F1 + κ / Krippendorff's α | Does the construct hold across groups? |
+| **7** Panel *(conditional)* | `pdim`, between/within SD, attrition *t*-test | Is attrition selective? |
+| **8** Outliers | Cook's D > 4/N, leverage, \|std resid\| > 3, DFBETAS, Mahalanobis | Keep them — see the rule below |
+| **8b** Panel/time-series | Durbin-Watson, `pbgtest`, ACF/PACF, ADF/KPSS, `pcdtest` (Driscoll-Kraay if CD detected), Breusch-Pagan | Which SE do you owe the reviewer? |
+| **8c** Distribution tests | Shapiro-Wilk, Anderson-Darling, Jarque-Bera, Hartigan's dip | Is that bimodality real? |
+| **9** Pre-analysis memo | The 10-section decision memo | Written **before** you see a model |
+| **10** Table 1 | `gtsummary::tbl_summary` → HTML/TeX/docx | The table a reviewer reads first |
+
+> **The outlier rule, stated in the skill itself:** *never delete outliers solely because they weaken your result — that is p-hacking.* Run the primary analysis with them in; show the without-outliers version as an appendix robustness check.
+
+### 10.4 What gets written
+
+```
+output/<slug>/
+├── eda/
+│   ├── figures/fig-missing-by-var.pdf|.png       ← 300 DPI, cairo_pdf
+│   │           fig-missing-upset · fig-dist-outcome · fig-qq-outcome
+│   │           fig-scatter-y-x · fig-violin-outcome-by-group
+│   │           fig-corr-heatmap · fig-cooks-d
+│   └── tables/table1-descriptives.html|.tex|.docx
+├── scripts/
+│   ├── E01-load-data.R … E07-table1.R           ← version-checked, never overwritten
+│   ├── E06b-measurement-validation.R            ← only if Phase 6b ran
+│   ├── viz_setting.R                            ← copied in on first use
+│   ├── coding-decisions-log.md
+│   └── script-index.md
+└── logs/
+    ├── trace-scholar-eda-<date>.ndjson          ← the RAO trace (source of truth)
+    └── process-log-scholar-eda-<date>.md        ← rendered from the trace
+```
+
+Two log files are worth opening every time:
+
+- **`coding-decisions-log.md`** — columns `Timestamp, Step, Decision, Alternatives Considered, Rationale, Variables, Script`. This is the file that answers "why is the sample 108,509 and not 108,526?" six months from now.
+- **`script-index.md`** — columns `Order, Script, Description, Input, Output, Produces`. This is what `scholar-replication` turns into `run-all.sh`.
+
+Scripts are **version-checked, never overwritten**: a second run writes `E03-...-v2.R`. Your first draft of a decision stays on disk next to the one that replaced it.
+
+### 10.5 Real Table 1 (truncated)
 
 | Stratum | n | age_mean | female | hukou_rural | eduy_mean | y1_access | y2_hours_mean |
 |---|---|---|---|---|---|---|---|
@@ -2639,17 +3424,44 @@ The skill writes `scripts/01-build-sample.R` (which you already saw the header o
 | Hukou: Rural | 119,259 | 42.8 | 0.501 | 1 | 6.49 | 0.243 | 11.45 |
 | Hukou: Urban | 35,762 | 42.6 | 0.488 | 0 | 10.33 | 0.492 | 12.51 |
 
-### 10.3 Read this table like a reviewer
+### 10.6 Read this table like a reviewer
 
 - **Y1 (access) is missing in 2012 and Y2 (hours) is missing in 2010, 2012, 2020.** That is a **measurement window** problem. If you ignore it, your "2010–2020 trend" claim will be an over-claim. The verification stage will catch this — but you will save yourself two days by noticing it now.
 - **Hukou rural fraction shifts from 0.84 → 0.70 → 0.82.** That is sample weighting / sampling-frame variation, not population change. It needs a wave fixed effect, which the design blueprint already specified.
 - **Education years rises 7.28 → 8.57.** Cohort replacement signal — consistent with H2.
+
+### 10.7 The verification pass
+
+At the end of the run, `scholar-eda` optionally dispatches a single `general-purpose` verification subagent against the EDA summary. It checks seven fixed items and returns PASS or FAIL with fixes:
+
+1. VIF > 10 left unresolved.
+2. More than 20% missing with no MI and no sensitivity analysis.
+3. No pre-analysis decisions memo.
+4. A transformation applied without justification.
+5. Outlier exclusions that were never documented.
+6. **Post-treatment controls sitting in the specification.**
+7. Table 1 not actually saved to disk.
+
+Item 6 is the one that quietly ruins papers. Read the memo for it specifically.
+
+### 10.8 Gotchas the skill documents about itself
+
+- **`str(df)` is forbidden under LOCAL_MODE** even though it looks like "classes only." A June 2026 audit found it prints sample column values — a row-level leak. The safe substitute is a hand-built `data.frame(variable, class)`.
+- **Do not re-append the slug to output paths.** Under `scholar-full-paper`, `OUTPUT_ROOT` is already `output/<slug>`; scripts that append it again produce `output/<slug>/<slug>/eda`.
+- **Post-treatment covariates must be flagged explicitly**, never silently included.
+- Shell state does not persist between Bash calls, so scripts re-derive `SCRIPT_PATH` on every call rather than trusting a variable set earlier.
 
 **Stop and check.** Write down, in two sentences, what window of waves your Y2 analysis can actually use. (Answer: 2014–2018. This is the central teaching moment of the workshop.)
 
 ## 11. `scholar-analyze` — produce the headline table
 
 **Goal:** run every model on the design ladder, save tables and figures, and write a "results lock" so later skills cannot drift.
+
+```yaml
+argument-hint: "[data source + model spec, e.g., 'NHANES 2017-2018, OLS of BMI
+                on physical activity by race for Demography' or 'data.csv,
+                fixed effects of education on earnings for ASR']"
+```
 
 ### 11.1 Run
 
@@ -2660,48 +3472,92 @@ The skill writes `scripts/01-build-sample.R` (which you already saw the header o
                               household_size,coresident_yng_adult
                   fe=province_x_wave
                   models=M1,M2,M3,M4,M5
-                  journal=Social Forces
+                  journal="Social Forces"
 ```
 
 The skill writes scripts in `scripts/`, executes them under LOCAL_MODE, and saves outputs in `tables/`, `figures/`, and `analysis/`. About 8–15 minutes for the full run.
 
-### 11.2 What gets written
+### 11.2 Five modes
+
+| Mode | Trigger | Behaviour |
+|---|---|---|
+| **1 — File path** | a local `.csv`/`.dta`/`.rds`/`.parquet` | Standard analysis run |
+| **2 — Pasted data** | inline data block | Written to a temp file, then analyzed |
+| **3 — Online source** | `NHANES 2017-2018`, `GSS`, `WDI`… | Fetches via R package or API first |
+| **4 — Revise figure** | `revise`, `fix`, `adjust`, `resize`, `relabel`, `rotate labels`, `add reference line`, `change colors`, `refacet`, `restyle` | Skips analysis entirely; locates the figure, reads the existing PNG and script, applies one revision from a fixed catalog, re-renders, version-saves |
+| **5 — Pre-mortem** | `premortem`, `pre-mortem`, `analysis review` | Touches no data; dispatches reviewer agents against the drafted scripts on a 14-dimension rubric |
+
+```
+> /scholar-analyze revise fig-coef-plot.pdf: rotate x-axis labels 45 degrees
+> /scholar-analyze premortem output/digital-divide-china-cfps/scripts
+```
+
+Mode 5's gate (`analysis-review-check.sh`) returns `0` GREEN, `1` RED (halt), `2` YELLOW (advance if approved), capped at **three iterations**. `--skip-premortem` works standalone but is **ignored** under `scholar-full-paper`, where the gate is always routed through.
+
+Mode 4 has a subtlety worth knowing: if a results lock already exists, revising a figure emits a **lock-drift reminder** telling you to re-lock and re-run `scholar-verify stage2`. A prettier figure is still a changed artifact.
+
+### 11.3 The design router — why the ladder differs by project
+
+Before choosing estimators, `scholar-analyze` reads the `Design Type:` line from `logs/project-state.md` and routes to one of six ladder definitions:
+
+| Design type | Ladder |
+|---|---|
+| `observational-descriptive` | Descriptive ladder — this is the CFPS route |
+| `observational-causal` | Causal ladder (requires `identification-strategy.json`) |
+| `rct` | Randomized ladder |
+| `quasi-experimental` | DiD / RD / IV / synth / FDID sub-types |
+| `decomposition` | Oaxaca / Kitagawa / KHB / APC |
+| `predictive-ml` | Prediction ladder |
+
+Fallbacks are deliberately noisy: a missing design type defaults to `observational-descriptive` **with a WARN**; an unrecognized one is a **hard error**; and `observational-causal-with-DAG` without an `identification-strategy.json` is a **hard error**. You cannot accidentally run a causal ladder without having committed to an identification strategy.
+
+### 11.4 Three components
+
+**Component A — analysis.** Data loading under the safety gate; Table 1; multiple imputation (`mice`, m = 20); the regression ladder (OLS with HC3, `fixest::feols` fixed effects, `plm` random effects, Arellano-Bond GMM, logit/probit, ordered logit, mixed and crossed random effects, Cox PH, negative binomial); **average marginal effects via `marginaleffects::avg_slopes`**; diagnostics (VIF, Breusch-Pagan, Cook's D, Hosmer-Lemeshow, AUC, Hausman, Schoenfeld, RESET); export; robustness (Oster δ via `sensemakr`, E-values via `EValue`); then a long tail of specialized methods — Oaxaca-Blinder, Kitagawa, latent class, quantile regression, zero-inflated and hurdle models, Tobit, beta regression, competing risks, RI-CLPM, sequence analysis, full SEM/CFA, multiple-testing correction, GAMLSS, DML and causal forests, growth curves, multilevel SEM, finite mixture regression, specification curves, and BART.
+
+**Component B — visualization.** 25 ggplot2 templates mirrored by 25 Python equivalents, all rendered through `viz_setting.R`'s `theme_Publication()` with the Wong-2011 colorblind-safe palette, `cairo_pdf` plus 300-DPI PNG, and journal dimension presets (`asr`, `ajs`, `demography`, `nhb_single`, `nhb_double`, `ncs_single`, `ncs_double`, `sciadv`, `pnas`). Two gates sit inside this component:
+
+- **B0b — Figure Brief.** Before generating any figure code, the skill states what the figure will show and waits for your confirmation. (Auto-confirmed under `scholar-full-paper`.)
+- **B0c — Inspect and Revise.** After every `save_fig()`, the skill **reads the rendered PNG back**, checks eight defect classes, auto-fixes, and repeats — up to **three iterations per figure**, each logged. This is why the figures come out publication-ready rather than merely produced.
+
+**Component C — Results prose** (standalone mode only). A four-paragraph structure with journal-specific sentence templates per model type, a mandatory within-group vs. between-group interpretation check whenever two or more groups are compared, and hypothesis verdicts bound to a coded adjudication vocabulary — the writer may not invent synonyms for "supported."
+
+Under `scholar-full-paper`, Component C does **not** run: Phase 7 drafts Results directly from the results lock, removing one hop where numbers could drift.
+
+### 11.5 What gets written
 
 ```
 scripts/
-├── 01-build-sample.R       # Phase 5A: harmonized panel
-├── 02-eda.R                # Phase 5A: Table 1 + missing
-├── 03-models-Y1.R          # Phase 5B: logit ladder for access
-├── 04-models-Y2.R          # Phase 5B: linear/Tobit ladder for hours
-├── 05-decomposition.R      # Phase 5B: Oaxaca-Blinder, intersection cells
-├── 05b-h3-corrected.R      # Phase 7b: corrected H3 row extraction
-├── 06-figures.R            # Phase 5B: all 6 figures
-├── render-pub-tables.py    # Phase 5C: publication tables
-└── viz_setting.R           # ggplot theme
+├── 01-data-loading.R · 03-descriptives-table1.R · 04-main-models.R
+├── 05-marginal-effects.R · 06-diagnostics.R · 07-export-tables.R
+├── 08-robustness.R · 09-decomposition.R (…09a–09p specialized)
+├── 10-viz-setup.R … 19-viz-diagrams.R
+├── viz_setting.R · coding-decisions-log.md · script-index.md
 
 tables/
-├── table-Y1-models.csv / .html / .tex / -pub.md
-├── table-Y2-models.csv / .html / .tex / -pub.md
-├── table1-descriptives.csv
-├── oaxaca-decomp.csv
-├── intersection-cells.csv
-├── results-registry.csv
-├── spec-registry-Y1.csv / -Y2.csv
-└── adjudication-log.csv     # H1/H2/H3/H4 verdicts with p-values
+├── table1-descriptives.{html,tex,docx,csv}
+├── table2-regression.{html,tex,docx,csv,-pub.md}
+├── table2-ame.{html,tex,docx,csv}     ← mandatory for every logit/probit/ologit
+├── results-registry.csv · adjudication-log.csv · spec-registry.csv
+├── ame-<model>.csv · coefficients-<model>.csv
+├── group-period-means.csv · period-definitions.csv
+└── manifest.json                       ← SHA-256 hash + provenance per artifact
 
 figures/
-├── fig1-access-trend.pdf
-├── fig2-Y2-by-cohort.pdf
-├── fig3-hukou-coef-trajectory.pdf
-├── fig4-Y2-by-hukou-cohort.pdf
-├── fig5-oaxaca-decomp.pdf
-└── fig6-intersection-cells.pdf
-
-analysis/
-└── limitations-accepted.md
+└── fig-*.pdf|.png (+ -gs grayscale variants, .mmd/.tex/.svg for diagrams)
 ```
 
-### 11.3 Real headline result (Y1 access ladder)
+The registries are the spine of everything downstream, so learn their columns:
+
+**`results-registry.csv`** — `hypothesis_id, model_id, table_ref, figure_ref, focal_coef_name, beta, se, ci_low, ci_high, p_raw, p_adj, ame, ame_ci_low, ame_ci_high, n_obs, n_clusters, estimator, se_type, script, notes`
+
+**`adjudication-log.csv`** — `hypothesis_id, family_id, statement, direction_hypothesized, model, focal_coef_name, beta, se, p_raw, p_adj, ci_low, ci_high, ame, alpha, adjudication_code, prose_verb, table_ref, figure_ref, script, notes`
+
+**`spec-registry.csv`** — `spec_id, description, estimator, se_type, sample, ladder_file, ladder_section, design_type, status, notes`, where `status ∈ {focal, robustness, exploratory}` and **at least one `focal` row is required**.
+
+Note the `prose_verb` column in the adjudication log. That is the exact verb `scholar-write` is permitted to use for that hypothesis. The chain from p-value to sentence is mechanical by design.
+
+### 11.6 Real headline result (Y1 access ladder)
 
 From `tables/table-Y1-models-pub.md`:
 
@@ -2727,11 +3583,324 @@ The Y2 (use intensity) table tells the second-level story. The headline finding 
 
 That is a real number from a real script. The Oaxaca decomposition (`tables/oaxaca-decomp.csv`) showed the **coefficients** component (1.151 hours) dominated the **endowments** component (−0.395) — supporting the institutional sorting account, not the pure resource account.
 
-### 11.4 But "result exists" ≠ "result is valid"
+### 11.7 The gates that fire without being asked
+
+These are the checks that turn a plausible analysis into a defensible one. Each is a real script that returns a colour.
+
+| Gate | What it enforces |
+|---|---|
+| **`regression-table-export-check.sh`** | Regression tables must be **rendered** (HTML/TeX/docx/`-pub.md`), never CSV-only. Failure is **RED**, marked a contract violation |
+| `spec-status-check.sh` | Every spec-registry row has a status; at least one is `focal` |
+| `control-set-coverage-check.sh` | RED on **R-MISSING** (a pre-committed control silently dropped), **R-FISHING** (an undisclosed control added), **R-FORBIDDEN** (adjusting for a mediator or collider) |
+| `ladder-identification-distinctness-check.sh` | YELLOW when every "robustness" spec shares a single identifying assumption — that is estimator robustness, not triangulation |
+| `multiple-testing-budget-check.sh` | YELLOW when a family has ≥3 tests and no correction artifact exists |
+| `model-spec-lint.sh` | RED on marginality violations — an interaction term without its lower-order main effects |
+| `phase-5-depth-check.sh` | Under the orchestrator: ≥3 specs, ≥2 robustness specs, ≥4 figures |
+
+When a hypothesis family carries K ≥ 3 sub-tests, the skill must also emit `verify/family-correction-<HID>.csv` with columns `family_id, k, raw_p, adj_method, adj_p, alpha, n_survive`.
+
+### 11.8 A9 and B9 — the verification subagents
+
+Two `general-purpose` subagents run before the analysis is considered done, each returning **PASS** or **NEEDS REVISION** with a numbered fix list.
+
+**A9 (analysis)** checks: correct model family for the outcome type; a progressive ladder; multiple-testing correction when there are more than five tests; SE specification (HC3, clustered, `lmerTest`); **AMEs computed via `avg_slopes` for every non-linear model rather than reported as raw log-odds**; diagnostics (VIF < 10, Breusch-Pagan, Hausman, Schoenfeld); journal reporting standards, including the ban on "trend toward significance"; sensitivity (Oster δ, specification curve if more than three alternative specs); cell-by-cell table verification; and whether the files are actually on disk.
+
+**B9 (visualization)** checks: file export; colorblind safety; label legibility; journal-specific requirements (AME plots for ASR/AJS, uppercase panel labels for Science Advances, violin + jitter for NHB when n < 30); figure-type correctness; files on disk.
+
+### 11.9 The audits behind the gates
+
+Every gate in §11.7 exists because a real run failed. The skill documents them by name, and they are the best short course in how AI-assisted analysis actually goes wrong:
+
+- **Stars stripped from tables (May 2026, two projects).** A homemade CSV→Markdown converter dropped the significance stars. The fix is the absolute rule: embed `-pub.md`, never post-process the CSV.
+- **A two-row summary posing as Table 4 (May 2026).** The manuscript's "Table 4" was an AME summary, not the full M1–R2 coefficient ladder. This is what `regression-table-export-check.sh` now blocks.
+- **Five tests, raw p-values (April 2026).** The one "significant" cohort finding (p = .029) survived neither Bonferroni nor BH.
+- **Fake triangulation (April 2026).** Three estimators — M3, AIPTW, entropy balancing — presented as convergent evidence, all resting on the *same* selection-on-observables assumption. Agreement between them is mathematical aliasing, not independent identification.
+- **A missing main effect (digital-divide v2).** Interaction terms shipped without the `wave` main effect. This marginality violation flipped the H1 verdict — and **all fifteen LLM reviewers missed it.** A linter caught it. Prefer the linter.
+
+That last one is the honest summary of this whole section: language models are unreliable at exactly the mechanical checks that a ten-line script does perfectly. Use each for what it is good at.
+
+### 11.10 But "result exists" ≠ "result is valid"
 
 **This is where the real workshop lesson lives.** When the analysis reports a beautiful number, *do not believe it yet*. Run §13 (`scholar-code-review`) and §15 (`scholar-verify`) first.
 
 **Stop and check.** Open `tables/results-registry.csv`. Can you trace the headline number `−1.306` back to (a) the script that produced it, (b) the table cell that holds it, (c) the sample size used? If any link is missing, the result is not yet usable.
+
+## 11A. `scholar-compute` — computational social science
+
+**Goal:** run text-as-data, machine learning, network, computer-vision, LLM, geospatial, audio, or life-sequence analyses with the same discipline the regression pipeline gets.
+
+```yaml
+argument-hint: "[text|network|ml|reproduce|spatial|bayesian|dsl|audio|life2vec]
+                [description of data and research question]"
+```
+
+```
+> /scholar-compute text "STM topic model of 50k news articles on immigration
+                        policy, 2015-2023, covariates: outlet + year"
+> /scholar-compute ml   "predict recidivism, gradient boosting vs logistic,
+                        Optuna-tuned, SHAP interpretation"
+> /scholar-compute network "ERGM on a high-school friendship edgelist,
+                           homophily on race + education, GOF check"
+> /scholar-compute spatial "county opioid mortality vs poverty, Moran's I,
+                           spatial lag model"
+```
+
+### 11A.1 The module map
+
+| Module | Methods | Key packages |
+|---|---|---|
+| **1 Text-as-data** | Preprocessing decisions · **STM** · **BERTopic** · Wordfish/Wordscores scaling · multilingual NLP · NER · coreference · fine-tuned BERT · Word2Vec + Procrustes semantic change · **conText** embedding regression · LLM annotation · **DSL** | R `stm`, `quanteda`, `conText`, `dsl`; Py `spacy`, `bertopic`, `sentence-transformers`, `gensim`, `transformers` |
+| **2 Machine learning** | sklearn pipelines · Optuna tuning · **Double ML** (PLR/PLIV/IRM/IIVM) · **causal forests** · Chernozhukov sensitivity · Bayesian regression · **conformal prediction** · SHAP | R `DoubleML`, `mlr3`, `grf`, `brms`; Py `econml`, `sklearn`, `optuna`, `mapie`, `shap` |
+| **3 Networks** | Centrality · **GNNs** (node2vec, GCN, GraphSAGE, link prediction) · Leiden/Louvain · **ERGM** and temporal ERGM · stochastic block models · ego-networks · **SAOM/RSiena** · relational event models | R `ergm`, `btergm`, `RSiena`, `igraph`, `goldfish`; Py `networkx`, `torch_geometric` |
+| **5 Reproducibility** | Project layout · lockfiles · Makefiles · Docker/Singularity/Code Ocean | `renv`, `rocker/verse`, Docker |
+| **6 Computer vision** | DINOv2 (unsupervised) · CLIP (zero-shot) · ConvNeXt/ViT fine-tuning · multimodal LLM annotation · VideoMAE · multimodal fusion | `transformers`, `timm`, `open_clip_torch` |
+| **7 LLM-powered analysis** | Structured extraction · chain-of-thought coding · computational grounded theory · **prompt optimization** · RAG | `anthropic`, `pydantic`, `dspy`, `textgrad`, `faiss` |
+| **9 Geospatial** | `sf` + `tidycensus` · spatial weights · **Moran's I** and LISA · LM tests selecting SAR/SEM/SARAR/Durbin · direct and indirect impacts · spatial panels | `sf`, `spdep`, `spatialreg`, `tmap`, `splm` |
+| **10 Audio** | Whisper transcription · **pyannote** diarization · Essentia/librosa features · LLM-native audio · classification | `faster_whisper`, `pyannote.audio`, `essentia`, `librosa` |
+| **11 Life2Vec** | Life-event sequence transformer (Savcisens et al. 2024, *Nature Computational Science*) with Time2Vec encoding, ScaleNorm, ReZero residuals, hybrid Performer attention, SOP + MLM pretraining, PU-learning finetuning, TCAV interpretability | `torch`, `pytorch_lightning`, `performer_pytorch`, `pacmap` |
+
+Three gates fire before any module loads: a **causal-keyword gate** (routes to `/scholar-causal` first), a **premortem gate**, and a **simulation gate** — about 25 keywords (`abm`, `schelling`, `mesa`, `netlogo`, `opinion dynamics`, `silicon sampling`, `homo silicus`…) redirect to `/scholar-simulate`, because ABM and synthetic respondents moved there.
+
+### 11A.2 The validation floor
+
+The rule that matters most across every module: **automated annotation requires human validation at κ ≥ 0.70**, benchmarked on 200 human-coded items. Below 0.60, do not proceed LLM-only. Between 0.60 and 0.70, use it as an assistant with human review.
+
+Other module-specific floors:
+
+- **Geospatial:** Moran's I on **OLS residuals** is mandatory *before* fitting any spatial model; LM tests then choose between SAR, SEM, SARAR, and Durbin.
+- **Bayesian:** R̂ ≤ 1.01, bulk and tail ESS > 400, a saved posterior predictive check, LOO-CV for comparison.
+- **Conformal prediction:** empirical coverage within ±2% of nominal, checked by subgroup.
+- **DSL:** expert sample must be random (or probability-corrected), N ≥ 200 expert labels.
+- **LLM annotation:** `temperature = 0`, prompts archived verbatim, and all four Lin & Zhang (2025) risks — validity, reliability, replicability, transparency — explicitly addressed.
+- **Everything:** seed 42, held-out test performance only, never training-set numbers.
+
+> **The DSL warning worth repeating.** Substituting predicted labels for measured ones biases downstream regression **even at 90%+ classifier accuracy**, because the errors are not random. Design-based supervised learning corrects for this; using raw predicted labels as if they were data does not.
+
+### 11A.3 Prompt optimization — a genuinely useful demo
+
+Module 7 ships a runnable demonstration that requires **no API key and costs nothing** — it runs against a local Ollama model:
+
+```bash
+$ cd references/prompt-optimization-demo/dspy-demo
+$ pip install -r requirements.txt && python dspy_demo.py      # ~4 minutes
+$ cd ../textgrad-demo
+$ pip install -r requirements.txt && python make_data.py && python optimize_prompt.py
+```
+
+The result is a small, clarifying lesson about how prompt optimizers differ. On a 20-item annotation task, baseline κ = 0.667:
+
+| Optimizer | κ | Δ |
+|---|---|---|
+| Baseline prompt | 0.667 | — |
+| `BootstrapFewShot` | 0.667 | **+0.000** |
+| `MIPROv2` / TextGrad | 0.750 | **+0.083** |
+
+`BootstrapFewShot` only bootstraps examples the model *already gets right*, so it cannot fix the hard cases. `MIPROv2` and TextGrad rewrote the *instruction* — which was the actual bottleneck. When your prompt is the problem, adding examples of what already works will not help.
+
+The full DSPy optimizer menu is documented: `LabeledFewShot`, `BootstrapFewShot`, `BootstrapFewShotWithRandomSearch`, `KNNFewShot`, `COPRO`, **`MIPROv2`** (the workhorse), `GEPA`, `SIMBA`, `InferRules`, `BootstrapFinetune`, `BetterTogether`, `Ensemble`.
+
+## 11B. `scholar-simulate` — LLM-powered social simulation, with a hard validation gate
+
+**Goal:** run silicon sampling, generative agent-based models, and simulated experiments at scale — and prove, before claiming anything, that the synthetic data resembles human data.
+
+```yaml
+argument-hint: "[design|personas|silicon-survey|generative-abm|experiment|
+                interactive|validate|calibrate|run|report]
+                [research question | manifest path]"
+```
+
+**The cardinal rule, stated in the skill:** synthetic data is not a substitute for human data. Any synthetic result entering a publication **must** be validated against a held-out human benchmark, and distributional mismatch (Bisbee et al. 2023) must be disclosed.
+
+### 11B.1 Ten modes
+
+| Mode | What it does |
+|---|---|
+| **design** | Paradigm selection, persona spec, provider choice, **validation plan naming its benchmark**, cost and power estimate, ethics gate. No run starts without this |
+| **personas** | Iterative proportional fitting of marginal tables (Census, GSS, ANES) → joint distribution → sampled persona pool |
+| **silicon-survey** | Thousands of personas answer survey, vignette, or conjoint items |
+| **generative-abm** | Stateful multi-turn agents over a network — opinion dynamics, diffusion, deliberation — plus mechanistic ABM via Mesa or NetLogo |
+| **experiment** | Randomize personas to conditions; report AMEs with within-persona clustering |
+| **validate** | **The hard gate.** KS, mean difference, JSD, subgroup correlation, coverage against a held-out human benchmark |
+| **calibrate** | Sweep temperature, anchors, persona richness — on a **calibration** sample disjoint from validation |
+| **run** | The batch/async/local engine with caching, checkpointing, and a cost ledger |
+| **report** | Methods text, journal reporting block, mandatory limitations |
+| **interactive** | Small-N multi-agent *conversations* — focus groups, deliberation, negotiation |
+
+```
+> /scholar-simulate design "silicon-sample GSS trust-in-government items by party ID"
+> /scholar-simulate personas --spec output/simulate/design/persona-spec.json --n 2000
+> /scholar-simulate validate --responses output/simulate/runs/trust/responses.jsonl \
+                             --benchmark data/raw/gss-2022-trust.csv
+```
+
+Choose the paradigm by what you are claiming: a static cross-sectional distribution → silicon sampling; emergence or diffusion over time → generative ABM; a causal contrast under manipulation → simulated experiment; **a real-world causal effect from observational data → this is the wrong skill**, go to `/scholar-causal`.
+
+The skill also names what it will not do: replace human survey data in published findings; make claims about marginalized populations without matched human data; predict future social behaviour.
+
+### 11B.2 The validation gate in detail
+
+`assets/validate.py` computes, per key variable and per subgroup:
+
+| Metric | Threshold |
+|---|---|
+| KS statistic | `ks_max: 0.20` in the shipped code (the prose documentation says 0.10 — the code is what runs) |
+| Jensen–Shannon divergence | < 0.10 |
+| Absolute mean difference | < 0.50 |
+| Subgroup correlation *r* | ≥ 0.70 |
+| Coverage | ≥ 0.80 of items whose synthetic mean falls within the human mean ± 2 SE |
+| Item pass rate | ≥ 0.80 |
+
+**PASS requires all three**: coverage clears, subgroup correlation is met, and ≥80% of key items clear KS, mean-difference, and JSD. A **missing subgroup correlation fails by default** unless you explicitly pass `--allow-missing-subgroup`, which is logged. A separate `homogenized` flag fires when synthetic SD < 0.85 × real SD — the characteristic failure mode where the model produces a population more uniform than the real one.
+
+Verification is done by an independent subagent, never self-certified.
+
+**Interactive mode is different and weaker.** Without a held-out human-transcript benchmark, its verdict is always `UNVALIDATED-EXPLORATORY` — good for protocol design and hypothesis generation, supporting **no substantive claim**. With a benchmark it can reach `DESCRIPTIVE-BENCHMARK-PASS`, which compares interaction statistics (turns per agent, message length, turn-taking entropy), not distributional fidelity. Do not upgrade this verdict.
+
+**Calibration and validation samples must be disjoint.** Tuning on validation data is leakage.
+
+Six disclosures are mandatory in the Limitations section and may not be omitted: homogenization bias · uneven demographic steerability · training recency · intersectionality gaps in thin cells · rare-population unreliability · (interactive only) synthetic-conversation artifacts, since agents over-produce agreeable consensus and under-produce conflict, interruption, and silence.
+
+### 11B.3 Providers and honest scale
+
+| Provider | Batch API | Env |
+|---|---|---|
+| `anthropic` | Yes (≤24 h, ~50% cheaper) | `ANTHROPIC_API_KEY` |
+| `openai` | Yes (≤24 h, ~50% cheaper) | `OPENAI_API_KEY` |
+| `openai-compatible` | No — use async | `OPENAI_BASE_URL`, `OPENAI_API_KEY` |
+| `ollama` | Local | `OLLAMA_HOST` |
+
+Note the deliberate default: `temperature = 0.7`, not 0. This skill models response *distributions*; the annotation skills extract single labels and use 0.
+
+> **What "thousands of agents" actually means.** Thousands of *batched persona calls* with state in a checkpoint store — **not** thousands of live concurrent threads. Live concurrency ceilings are around 20–25. The skill says this plainly so you do not write a Methods sentence you cannot defend.
+
+Everything runs through the engine, which you can also drive directly:
+
+```bash
+$ python3 assets/simulate_engine.py run --manifest run-manifest.json --dry-run
+$ python3 assets/simulate_engine.py validate --responses responses.jsonl \
+                                             --benchmark human.csv --out fidelity.json
+```
+
+## 11C. `scholar-qual` — coding, thematic analysis, and the anonymization gate
+
+**Goal:** codebook development, grounded-theory coding, reflexive thematic analysis, content analysis, LLM-assisted coding with human validation, and inter-coder reliability — with CAQDAS export.
+
+```yaml
+argument-hint: "[workflow: codebook|open-coding|axial|selective|thematic|
+                content|llm-coding|mixed|reliability]
+                [data: transcript path or 'paste below']
+                [optional: approach, codebook path, target journal]"
+```
+
+| Workflow | Method |
+|---|---|
+| `codebook` | Inductive/deductive/hybrid; three-level hierarchy; seven-field code definitions; exports to Markdown, CSV, NVivo XML |
+| `open-coding` | Grounded theory line-by-line — in-vivo, descriptive, and process codes; constant comparison; three memo types |
+| `axial` | Strauss & Corbin paradigm model; category relationships; saturation assessment |
+| `selective` | Core-category identification; the storyline technique; conditional matrix; grounded theory statement |
+| `thematic` | Braun & Clarke reflexive TA — familiarization, coding, theme search, two-level review, theme map, write-up |
+| `content` | Krippendorff systematic content analysis; manifest vs. latent; pilot on 10–15% |
+| `llm-coding` | Lin & Zhang (2025) framework: task design, prompt templates, gold-standard pilot, confidence calibration, stratified human validation, adjudication, **bias audit** |
+| `mixed` | Integration strategy, case selection from residuals, joint displays, typology development |
+| `reliability` | Cohen's κ, weighted κ, Krippendorff's α, Fleiss' κ, Gwet's AC1 |
+
+```
+> /scholar-qual codebook "interviews with formerly incarcerated men on re-entry" grounded theory
+> /scholar-qual thematic data/focus-groups/ "vaccine hesitancy among rural parents"
+> /scholar-qual llm-coding output/qual/anonymized/ANON_interview-01.txt codebook.csv
+```
+
+### 11C.1 The anonymization gate comes first
+
+Before **any** workflow sends text to a model, a mandatory five-step gate runs: scan → generate a pseudonym key (P01, LOC01, ORG01) → user reviews the key → anonymize → re-scan to verify → swap the path to the `ANON_` file. Presidio is the preferred backend; a regex fallback always exists.
+
+Two files are created that Claude must **never read**: `pii-scan-detail-DO-NOT-SHARE.txt` (mode 0600) and `pseudonym-key-DO-NOT-SHARE.csv` (gitignore it). And once an anonymized copy exists, the original is not read again.
+
+The reason is stated plainly: IRB consent typically does not cover sending identifiable interview data to a cloud AI service.
+
+> **`LOCAL_MODE` is fundamentally incompatible with `scholar-qual`.** Coding requires *reading the text*; LOCAL_MODE forbids exactly that. The skill halts and tells you to downgrade to `ANONYMIZED` via `/scholar-init review`, or to use `/scholar-compute` for aggregate-only text analytics. This is one of the clearest cases in the suite where a constraint is honoured rather than worked around.
+
+### 11C.2 Reliability benchmarks
+
+| κ | Reading |
+|---|---|
+| > 0.80 | Excellent |
+| 0.60–0.79 | Substantial — the acceptable minimum |
+| 0.40–0.59 | Moderate |
+| < 0.40 | Not usable |
+
+Krippendorff's α: ≥ 0.667 tentative, ≥ 0.800 reliable. Choose the metric by design: two coders on nominal data → Cohen's κ; more than two → Fleiss' κ; missing data → Krippendorff's α; skewed margins → Gwet's AC1; LLM vs. human → Cohen's κ plus per-code F1.
+
+The reliability sample must be at least 10–20% of the corpus, stratified — or the whole corpus if you have fewer than 100 segments.
+
+For LLM coding specifically: iterate the prompt until κ ≥ 0.70 against human coding; validate on a random 10% (minimum 100 segments) plus **all** low-confidence cases plus an oversample of rare codes (≥20 each); and run the bias audit — positional, verbosity, anchoring, and majority-class bias, tested with χ².
+
+## 11D. `scholar-ling` — sociolinguistics and language variation
+
+**Goal:** variationist analysis, acoustic phonetics, discourse analysis, corpus linguistics, computational sociolinguistics, and experimental sociolinguistics, calibrated to Language in Society, Journal of Sociolinguistics, and Language.
+
+```yaml
+argument-hint: "[variation|acoustic|corpus|CA|CDA|attitudes|contact|
+                computational|experimental|MDA|TTS-guise]
+                [linguistic phenomenon, population, and data type]"
+```
+
+```
+> /scholar-ling variation "/t/-deletion in African American English,
+                          sociolinguistic interviews, Rbrul"
+> /scholar-ling acoustic "vowel shift in Southern US English, Parselmouth
+                         formant extraction + Lobanov normalization"
+> /scholar-ling computational "semantic change of immigration terms in
+                              congressional speech, conText"
+> /scholar-ling MDA "register comparison of academic vs conversational
+                    English, Biber 67 features"
+```
+
+| Module | Covers |
+|---|---|
+| **1 Theory** | Variationist/Labovian foundations, apparent-time change, Silverstein's indexical orders, communities of practice, raciolinguistics, language ideologies (iconization, fractal recursivity, erasure), Bourdieu's linguistic capital, contact (GIDS, Matrix Language Frame, heritage attrition) |
+| **2 Quantitative** | **Rbrul / Goldvarb / VARBRUL** variable-rule analysis · acoustic phonetics (formants, VOT, F0, jitter/shimmer/HNR, forced alignment via FAVE/MFA/WebMAUS) · mixed-effects models · power analysis |
+| **3 Qualitative** | Conversation Analysis (Jefferson notation, adjacency pairs, repair, deviant-case analysis) · interactional sociolinguistics · Labov–Waletzky narrative analysis |
+| **4 Attitudes** | Matched Guise Technique (status/solidarity/dynamism) · IAT · LEAP-Q |
+| **5 Corpus/discourse** | Corpus building · **keyness** (G², preferred over χ²) · collocation and KWIC · semantic prosody · STM |
+| **6 Computational** | **conText** ALC embedding regression · LLM annotation · BERT classification · Word2Vec + Procrustes semantic change |
+| **7 Experimental** | Factorial vignettes (D-optimal designs) · IAT D-scores · reaction-time paradigms · priming · ordinal CLMM for Likert data |
+| **8 Biber MDA** | 67 features across 14 categories; the six canonical dimensions; factor analysis with promax rotation; MANOVA register comparison |
+| **9 TTS matched guise** | Synthesized guises, Praat pitch/formant manipulation, ≥30% natural-speech fillers, Latin-square counterbalancing |
+
+### 11D.1 The numbers you need before collecting data
+
+| Method | Minimum |
+|---|---|
+| Rbrul | ≥200 tokens total, ≥20 per cell |
+| Acoustic mixed-effects | ≥20 speakers per group, ≥10 tokens per vowel per speaker |
+| Keyness (log-likelihood) | ≥50,000 tokens per corpus |
+| STM | ≥1,000 documents |
+| Word embeddings | ≥1,000,000 tokens |
+| BERT fine-tuning | ≥500 labeled examples per class |
+| conText | ≥100 contexts per group per target term |
+| CA collection | ≥10 instances of the phenomenon, with 2–3 turns of context each |
+
+Keyness thresholds: G² > 3.84 (p < .05), G² > 10.83 (p < .001). Log-likelihood is preferred over chi-square.
+
+Two method-choice rules that prevent the most common error: **categorical** linguistic variables go to Rbrul; **continuous** acoustic outcomes (F1, F2, VOT, duration, F0) go to `lmer` and **never** to Rbrul. And report average marginal effects, not raw coefficients.
+
+Causal language is calibrated the same way as everywhere else: variationist and corpus studies are observational, so write "is associated with," "patterns with," or "favors [variant]" — never "causes" — unless the design is genuinely experimental, such as a randomized matched-guise study.
+
+### 11D.2 The strictest safety defaults in the suite
+
+`scholar-ling` treats voice as an identifier, because it is:
+
+- Interview audio and transcripts default to **`LOCAL_MODE`**.
+- Matched-guise stimuli are `CLEARED` only if synthesized; human recordings are `LOCAL_MODE`.
+- Public corpora (COCA, COHA, BNC, Congressional Record) are `CLEARED`.
+- **No `OVERRIDE` option is offered for audio files or interview transcripts** — only LOCAL_MODE, ANONYMIZE, or HALT. A voiceprint cannot be un-shared.
+- Student elicitations and classroom recordings default to `LOCAL_MODE` as vulnerable-participant data.
+- Conversation Analysis halts entirely under LOCAL_MODE unless the data is anonymized first or you switch to a public corpus.
+
+One subtle rule worth internalizing: **do not print KWIC concordances under LOCAL_MODE.** The concordance line *is* the sensitive sentence. A tool that shows five words either side of a target term has just shown you the utterance.
+
+Finally, for non-English data, every example needs the original, a morpheme-by-morpheme gloss, and a translation — the standard the target journals actually enforce.
 
 ## 12. Reading three figures like a reviewer
 
@@ -2770,31 +3939,65 @@ The coefficients (returns) component dominates, which the *institutional-sorting
 
 **Goal:** before believing any number, dispatch six specialized reviewers to audit the scripts.
 
+```yaml
+argument-hint: "[full|correctness|robustness|statistics|reproducibility|style|
+                data-handling] [optional: script-dir-or-file]
+                [optional: design-doc-path]"
+```
+
 ### 13.1 Run
 
 ```
-> /scholar-code-review scripts/
-                       tables=tables/table-Y1-models.csv,
-                              tables/table-Y2-models.csv,
-                              tables/oaxaca-decomp.csv
-                       figures=figures/fig1-access-trend.pdf,
-                               figures/fig2-Y2-by-cohort.pdf
+> /scholar-code-review full output/digital-divide-china-cfps/scripts/
+> /scholar-code-review data-handling output/scripts/01-clean.R
+> /scholar-code-review statistics output/scripts/04-main-models.R \
+                      output/design/design-blueprint-2026-05-04.md
 ```
 
-> **Surrogate disclosure (read before §13.2 and §13.3).** In the run that produced this handbook artifact, the six `review-code-*` agents could not be dispatched as real Task subagent calls from the orchestrator's execution thread. The reports shown below were therefore authored as **orchestrator-internal surrogates** rather than as outputs of real Task dispatches. Per `CLAUDE.md` "Real-agent dispatch heuristic," surrogate-authored reports do not satisfy the Phase 5.5 gate; the scorecard in §13.3 is included as a *template of what the real output looks like*, not as a passing gate record. The disclosure also appears in Appendix E. When you run `scholar-code-review` yourself in a session with Task-dispatch enabled, the real outputs replace this surrogate.
+Passing the design document as the third argument matters: for the statistics and data-handling reviewers, **the design blueprint is ground truth**. Without it they can only check internal consistency, not fidelity to what you committed to.
+
+> **Surrogate disclosure (read before §13.3 and §13.4).** In the run that produced this handbook artifact, the six `review-code-*` agents could not be dispatched as real Task subagent calls from the orchestrator's execution thread. The reports shown below were therefore authored as **orchestrator-internal surrogates** rather than as outputs of real Task dispatches. Per `CLAUDE.md` "Real-agent dispatch heuristic," surrogate-authored reports do not satisfy the Phase 5.5 gate; the scorecard in §13.4 is included as a *template of what the real output looks like*, not as a passing gate record. The disclosure also appears in Appendix E. When you run `scholar-code-review` yourself in a session with Task-dispatch enabled, the real outputs replace this surrogate. This is the same failure mode §9.4 names as the pipeline's #1 silent failure — declared rather than hidden.
 
 ### 13.2 What runs
 
-Six review agents in parallel (when Task dispatch is available — see §13 disclosure above), each writing its own report into `reports/`:
+Step 0 discovers the scripts (your path, or a glob over `output/scripts/*.{R,py,do,jl}`), locates codebooks, design docs, and the manuscript, and assembles one **code review package** handed identically to all six agents. Then they run **in parallel**:
 
-1. `review-code-correctness` — logical errors, off-by-one, wrong variable references
-2. `review-code-data-handling` — recoding against codebook, missing-value codes, sample restrictions
-3. `review-code-statistics` — estimator-design alignment, SE choices, FDR
-4. `review-code-reproducibility` — paths, seeds, dependencies, end-to-end runnability
-5. `review-code-robustness` — edge cases, NA handling, silent failures
-6. `review-code-style` — DRY, naming, AI anti-patterns
+| Agent | Audits for |
+|---|---|
+| `review-code-correctness` | Merge/join errors, filter logic (`!=` silently dropping NA), wrong model family, wrong SE spec, stale variable references, `Inf`/`NaN` from `log(0)` surviving into `mean`/`sd`/`cor` |
+| `review-code-data-handling` | Category mapping vs. codebook, dataset-specific missing codes (GSS `.d/.i/.n`; NHANES 7/9/77/99; PSID 0/9/99/999), reverse-coding, scale construction, sample restrictions, **hardcoded absolute paths** |
+| `review-code-statistics` | Estimator↔design match, **principle of marginality**, SE and clustering choice, per-method causal checks (DiD parallel trends, IV first-stage F, RD bandwidth and McCrary, matching balance, DML cross-fitting), **multiple-comparison correction**, AME reporting |
+| `review-code-reproducibility` | Pipeline completeness, dependency pinning, path portability, seeds, environment spec, documentation — issues an overall **A–F reproducibility grade** |
+| `review-code-robustness` | Hardcoded assumptions, silent failures (`suppressWarnings` around model fitting, broad `tryCatch`), data-boundary cases (empty df after filter, single-level factor, perfect separation), missing seeds |
+| `review-code-style` | Hallucinated function arguments and packages, deprecated APIs (`aes_string()`, `gather()`), DRY violations, dead code, R (`T/F`, `attach()`, `setwd()`, `1:length(x)`) and Python (mutable defaults, bare `except:`, `os.chdir()`) anti-patterns |
 
-### 13.3 Real consolidated scorecard
+Three properties make this trustworthy rather than decorative:
+
+- **The review is code-only.** No agent may `Read`, `Grep`, or `Glob` a data file — *even one marked `CLEARED`*. When a recode cannot be checked without the data, the verdict is **UNVERIFIABLE**, never "resolved by opening the data." The PreToolUse guard is the mechanical backstop.
+- **Every finding cites file, line, and snippet.** There is zero tolerance for false positives: "better to miss a minor issue than cry wolf."
+- **The Objectivity Mandate is inlined into every agent.** No opening praise, no softening a CRITICAL to a WARNING, no "minor revisions" over a real problem. A report that hedges issues into invisibility violates the mandate even if it technically produced output.
+
+### 13.3 Severity, agreement, and grades
+
+Each agent reports `CRITICAL` (must fix before trusting results) / `WARNING` (fix before submission) / `INFO` (may fix), with IDs like `CRIT-CORR-001`. The synthesis step dedupes across agents and marks anything two or more agents flagged with **★★**.
+
+| Per-script grade | Condition |
+|---|---|
+| **A** | 0 CRITICAL, ≤1 WARNING |
+| **B** | 0 CRITICAL, 2–3 WARNING |
+| **C** | 1 CRITICAL, or >3 WARNING |
+| **D** | 2–3 CRITICAL |
+| **F** | >3 CRITICAL |
+
+| Overall verdict | Condition |
+|---|---|
+| **CLEAN — READY TO USE** | 0 CRITICAL and ≤5 WARNING total |
+| **FIXES NEEDED** | 1–5 CRITICAL, or >5 WARNING |
+| **MAJOR ISSUES — DO NOT TRUST RESULTS** | >5 CRITICAL, or **any ★★ CRITICAL** |
+
+Some calibrations worth memorizing, because they are the difference between a real audit and a lint pass. These are **CRITICAL**, not warnings: a wrong model family; a merge that changes N; a missing clustering or weighting specification; a missing-value code treated as valid data; a reverse-coded item never flipped; **a hardcoded absolute path** (it blocks replication); a hallucinated function argument (it will error or be silently ignored); an interaction term without its main effects; and — since a recent revision — **a missing multiple-comparison correction when K ≥ 3**, upgraded from WARNING to CRITICAL.
+
+### 13.4 Real consolidated scorecard
 
 From `reports/code-review-2026-05-04.md`:
 
@@ -2810,11 +4013,36 @@ From `reports/code-review-2026-05-04.md`:
 
 The review found **no CRITICAL issues**, but it **did** correctly flag that the H3 three-way interaction p-value reported in the script comments was the wrong row of the regression output. That same finding will reappear in §15 — the agent that catches it costs about $0.30; the reviewer who would have caught it after submission would cost you a desk reject.
 
-**Stop and check.** Read `reports/code-review-statistics-2026-05-04-iter1.md`. Find one issue marked WARN. Decide whether you would (a) fix it now, (b) accept it in `analysis/limitations-accepted.md`, or (c) demote it to "discussion".
+### 13.5 Two artifacts you should actually read
+
+Beyond the scorecard, two sections of the consolidated report are unique to this skill and repay attention:
+
+- **The variable lineage map** (from the data-handling agent): `Analytic Variable | Raw Source | Transformations | Scripts | Verified?`. This is the only place in the whole pipeline where you can see, in one table, how `hukou_rural` got from a raw CFPS column to a model term.
+- **The pipeline map and dependency audit** (from the reproducibility agent): which script produces which table or figure, what it depends on, and what is missing. If a manuscript table has no producing script, this is where it shows up.
+
+### 13.6 Where it blocks
+
+`scholar-code-review` never modifies a script — it is strictly read-only, diagnostic. But its verdict gates two pipelines:
+
+| Context | Effect |
+|---|---|
+| `scholar-full-paper` Phase 5.5 | **MAJOR ISSUES blocks Phase 7** (drafting) |
+| `scholar-grant` Phase 5G.0 | **MAJOR ISSUES blocks Phase 6** (mock review panel) |
+| After `scholar-analyze` / `scholar-compute` / `scholar-eda` standalone | Recommended, not gating |
+
+It is deliberately independent of `scholar-verify` (§15): this skill checks whether the **code** is right; `scholar-verify` checks whether the **manuscript matches the outputs**. Neither substitutes for the other, and neither calls the other.
+
+**Stop and check.** Read `reports/code-review-statistics-2026-05-04-iter1.md`. Find one issue marked WARN. Decide whether you would (a) fix it now, (b) accept it in `analysis/limitations-accepted.md`, or (c) demote it to "discussion". Then find one marked UNVERIFIABLE and ask yourself what document — not what data file — would have made it verifiable.
 
 ## 14. `scholar-write` — draft from locked results, not from imagination
 
 **Goal:** produce a manuscript draft in which **every number** traces to a locked CSV cell, **every citation** is marked for verification, and **every figure reference** matches the actual rendered figure.
+
+```yaml
+argument-hint: "[draft|revise|polish] [section] on [topic] for [journal],
+                e.g., 'draft Introduction on redlining and activity-space
+                segregation for ASR'"
+```
 
 ### 14.1 Run
 
@@ -2822,13 +4050,107 @@ The review found **no CRITICAL issues**, but it **did** correctly flag that the 
 > /scholar-write draft section=full-paper
                  results-lock=design/results-lock-2026-05-04.md
                  blueprint=drafts/section-blueprint.json
-                 journal=Social Forces
+                 journal="Social Forces"
                  word-target=10000
 ```
 
-`scholar-write` reads in this order: results-lock → section blueprint → journal profile → exemplars → forbidden-pattern rules → only then does it draft.
+Sections it knows: `introduction`, `theory`, `data_methods`, `results`, `discussion`, `abstract`, `full`, `book-chapter`.
 
-### 14.2 Real abstract (from `drafts/manuscript-final-...md`)
+| Mode | When |
+|---|---|
+| **draft** | No existing text — write the section |
+| **revise** | You paste existing text plus feedback; every substantive change is annotated `[REVISED: reason]` and summarized |
+| **polish** | Text is structurally fine; vocabulary, tense, abbreviation, hedging, and citation-format audit only |
+| **expansion** *(internal)* | Auto-detected from a Phase 11.5 word-budget directive or a Phase 7b `route_back_to` block — splices new content into named targets, never redrafts |
+
+### 14.2 What it reads, in what order — and what wins
+
+This is the most important thing to understand about the skill. `scholar-write` runs a long Step 0 before writing a word:
+
+| Step | Reads | Effect |
+|---|---|---|
+| **0a-lock** | `results-locked/LATEST.txt` | Verifies the lock; **refuses to draft (exit 1) if verification fails**; pins tables and figures to the locked snapshot |
+| **0a-safety** | `.claude/safety-status.json` | Halts on `NEEDS_REVIEW` / `HALTED` / `LOCAL_MODE` |
+| **0a-blueprint** | `drafts/section-blueprint.json` | The per-section authoring contract from §9.5 |
+| **0a-revision-directive** | Phase 11.5 / 7b directives | Switches to expansion or patch mode; directives older than 24 h are ignored |
+| **0a-exemplars** | The curated exemplar library (§20E) | Real paragraphs from your target journal, for **shape only** |
+| **0a-outcomes** | `reader_outcomes[]` | What the reader must be able to *do* after reading |
+| **0a-lrh** | `drafts/scholar-lrh-*.md` | **Binding for Theory sections** |
+| **0b** | The writing protocol and register guide | Builds the article knowledge base and verified citation pool |
+
+When these conflict, the precedence ladder decides:
+
+| Tier | What | Status |
+|---|---|---|
+| 1 | Word budget · required hypotheses · **reader outcomes** | **Binding** |
+| 1.5 | Reader-outcome verifiers | **Binding, machine-checked** |
+| 2 | Exemplar paths, derived moves | Primary source of prose rhythm |
+| 3 | Structural moves | Advisory fallback |
+| 4 | Forbidden patterns | **Hard constraint** |
+
+Two of these deserve emphasis:
+
+**The Theory section is bound to the literature review.** When drafting Theory, the skill locates the Phase 2 `scholar-lrh-*.md` file and treats it as canonical. **At least 70% of the citations named there must carry forward** into the Theory prose or the `.bib`, enforced by `lit-review-carry-forward-check.sh`. Dropping one requires a logged justification (`superseded` / `duplicate` / `low-quality` / `out-of-scope`). The skill must not re-derive citations from its training data. This single rule is why the drafted theory section cites the literature you actually reviewed rather than the literature the model vaguely remembers.
+
+**Exemplars are studied for shape, never copied.** `expansion-quality-check.sh` detects 10-gram overlap with an exemplar and fails the run.
+
+### 14.3 The eighteen forbidden patterns
+
+Step 0d loads a table of eighteen classes of **pipeline machinery** that must never appear in body prose. This is the difference between a manuscript and a pipeline log:
+
+| # | Forbidden | Write instead |
+|---|---|---|
+| P1 | Limitation IDs (`L-A4`) | Plain prose |
+| P2 | `(spec_id=M3, results-registry.csv)` | `(Table 2, Model 3, β = 0.18, p = .003)` |
+| P3 | Floating `M3` / `R5` | "Model 3 (Table 2)" |
+| P4 | "Read against H2" | A named theory bridge |
+| P5 | Raw method jargon (KHB, IKY) | The method named in words |
+| P6 | Mangled variable names (`raclive_int`) | The concept |
+| P7 | "K=6 primary tests" | "the six primary tests" |
+| P8 | A bulleted `- H1 / - H2` list in Theory | One paragraph with `(H1)` tags |
+| P9 | Heading parentheticals — `(Demoted)`, `(Superseded)` | Remove |
+| P10 | Pre-registration ledger vocabulary outside Methods | Substantive prediction language |
+| P11 | Enumerated `**Limitation: X**` blocks | 1–3 prose sentences grouped by kind |
+| P12 | Visible anchor brackets | HTML comments |
+| P13 | "Pre-registered" with no public registry ID | Plain hypothesis-testing language |
+| P14 | Test statistics inside the **Abstract** | Direction and magnitude in words |
+| P15 | Lexical tics (>5 uses of one AI-fingerprint word) | Vary the diction |
+| P16 | Tournament framing ("adjudicate among the three accounts" ×4) | Continuous-tradition framing |
+| P17 | A four-sentence "Section 2 does… Section 3 does…" roadmap | One sentence, or none |
+| P18 | A trailing future-work caveat in the Abstract | Move it to the Conclusion |
+
+Enforcement is mechanical: `pipeline-machinery-check.sh` at the polish phase and `submission-hygiene.sh` at the submission-hygiene phase.
+
+### 14.4 Word budgets, by journal
+
+| Journal | Total | Abstract | Intro | Theory | Methods | Results | Discussion |
+|---|---|---|---|---|---|---|---|
+| ASR | 9,000–12,000 | 150–200 | 1,000–1,500 | 2,200–3,600 | 1,800–2,800 | 1,800–2,800 | 1,200–2,000 |
+| AJS | 12,000–20,000 | 150 | — | — | — | — | — |
+| Social Forces | 8,000–12,000 | 150 | — | — | — | — | — |
+| Demography | 8,000–12,000 | ~150 | — | 1,500–2,500 (lit merged) | — | — | — |
+| JMF | 7,000–9,000 | 200 | — | — | — | — | — |
+| Science Advances | 5,000–8,000 | ~250 | — | *(no separate Theory; Results before Methods)* | — | — | — |
+| NHB / NCS | 3,000–5,000 | ≤150 | 400–500, no heading | — | — | — | — |
+
+Hard floors on long-form journals: Discussion ≥ 1,200 words, Conclusion ≥ 500. The table is calibrated against a corpus of 53+ published papers — and the skill documents that its own earlier hand-curated table systematically *under*-specified these ranges, since corrected.
+
+### 14.5 The Methods section has a canonical shape
+
+For JMF, ASR, AJS, Demography, and Social Forces:
+
+```
+### 4.1 Data              — source, rationale, sampling frame
+### 4.2 Analytic Sample   — restriction rules + rationale, attrition, effective N
+### 4.3 Measures          — outcome, predictor, control construction and coding
+### 4.4 Analytic Strategy — model ladder, estimand named, SE policy,
+                            robustness plan, identification assumption
+                            (or an explicit associational disclaimer)
+```
+
+Regression tables must embed the **full coefficient ladder** — at least 80% of the source table's rows — never a five-row focal-contrast stub. And a footgun worth memorizing: **never embed a table from the `.csv` when an `.html` exists.** The CSV export flattens the two-row coefficient/SE layout and drops the significance stars, shipping a hollow table that looks complete.
+
+### 14.6 Real abstract (from `drafts/manuscript-final-...md`)
 
 ```
 Internet access in China rose from a minority privilege to a near-universal
@@ -2856,9 +4178,22 @@ agricultural-hukou status is associated with -1.306 weekly hours
 ... total = 0.815 <!--anchor: design total-gap-r4b--> hours/week ...
 ```
 
-These anchors are how `scholar-verify` later checks that every number matches a locked cell. Don't strip them.
+These anchors are how `scholar-verify` later checks that every number matches a locked cell. They are HTML comments precisely so they are invisible in the rendered document, machine-readable to `anchor-verify.sh`, and strippable by `submission-prep.sh` before export. **Don't strip them yourself, and don't let them become visible brackets** — that is forbidden pattern P12.
 
-### 14.3 Stop and check
+### 14.7 What runs before it saves
+
+The tail of every drafting run is a stack of checks:
+
+- **Step 4.5 — citation verification.** A hard stop. Any citation that cannot be verified becomes `[CITATION NEEDED]`.
+- **Step 4.5e — claim-content verification.** Checks that each cited source actually supports the claim, flagging `CLAIM-REVERSED`, `CLAIM-MISCHARACTERIZED`, `CLAIM-OVERCAUSAL`, `CLAIM-UNSUPPORTED`, `CLAIM-WRONG-POPULATION`, `CLAIM-IMPRECISE`, `CLAIM-NOT-CHECKABLE`.
+- **Step 4.6 — reflection diagnostics.** Word count, citation density, hedging calibration, hypothesis-to-result alignment, structural balance — then a self-revision pass.
+- **Step 4.7 — artifact placement audit.** Every table and figure referenced at least once.
+- **Step 5 — the five-agent review panel.** R1 Logic · R2 Rhetoric · R3 Journal Fit · R4 Citations · R5 Clarity → a scorecard → one reviser pass prioritizing items two agents flagged → you accept, edit, or reject.
+- **Step 6 — Source Integrity.** A three-agent panel: Originality Auditor, Claim Verifier, Attribution Analyst.
+
+Then the file is written to exactly one path: `drafts/draft-<section>-<slug>-<YYYY-MM-DD>.md`. Alternate paths are rejected by `draft-path-contract.sh` — because Phase 11 assembly discovers manuscripts by globbing that pattern by modification time, and a file written anywhere else is silently dropped from the final paper. That is not hypothetical; it is the documented cause of a real content-loss incident.
+
+### 14.8 Stop and check
 
 Open `drafts/draft-manuscript-...md`. Find one numeric claim. Confirm:
 
@@ -2874,20 +4209,69 @@ If any of those three fails, the draft is not ready for verification yet.
 
 A pipeline that never fails verification is a pipeline that isn't checking hard enough. Our run found **7 CRITICAL** issues and **6 WARN** issues. That is a successful verification, not an embarrassing one.
 
+```yaml
+argument-hint: "[full|stage1|stage2|numerics|figures|logic|completeness]
+                [manuscript-path] [output-dir] [--lock <id>]
+                [--scope 'Section A,Section B']"
+```
+
 ### 15.1 Run
 
 ```
-> /scholar-verify manuscript.md results/ figures/
+> /scholar-verify full
+> /scholar-verify stage1 --artifacts-dir output/digital-divide-china-cfps/
+> /scholar-verify stage2 draft.md --lock LATEST --scope "Results §3.2"
+> /scholar-verify numerics --no-manuscript          # Phase 6.5 pre-draft mode
 ```
 
-Four agents run in parallel:
+| Mode | Runs |
+|---|---|
+| `full` (default) | All four agents, both stages |
+| `stage1` | Agents 1 + 2 — raw outputs vs. manuscript objects |
+| `stage2` | Agents 3 + 4 — manuscript objects vs. prose |
+| `numerics` / `figures` / `logic` / `completeness` | One agent only |
 
-- `verify-numerics` — every numeric prose claim → locked CSV cell
-- `verify-figures` — every figure mention → actual rendered file (with vision)
-- `verify-logic` — every directional/significance claim → table cell + correct row
-- `verify-completeness` — every claimed object exists, numbered, referenced
+Flags: `--manuscript <path>` skips auto-detection; `--artifacts-dir` overrides where tables and figures come from; `--scope` restricts Stage 2 to named sections; `--no-manuscript` runs Stage 1 before a draft exists.
 
-### 15.2 Real findings — the seven CRITs
+### 15.2 Two stages, four agents
+
+```
+Raw script outputs  ──[Stage 1]──▶  Manuscript tables & figures  ──[Stage 2]──▶  Prose claims
+   (CSV, HTML, PDF)                      (what the reader sees)                (what you assert)
+```
+
+| Agent | Compares | Catches |
+|---|---|---|
+| `verify-numerics` | Raw CSV/HTML → manuscript tables | Transcription slips, rounding, dropped rows or columns, log-odds↔AME conversion errors |
+| `verify-figures` | Rendered figure files → captions and prose | Claims about a figure that the image does not support |
+| `verify-logic` | Manuscript tables/figures → prose | Misquoted numbers, wrong table references, significance and direction errors, hypothesis-adjudication errors, causal overreach |
+| `verify-completeness` | The whole artifact chain | Orphaned outputs, numbering gaps, missing cross-references, variable-name drift, untraceable scripts |
+
+**`verify-figures` must actually look at the picture.** The rule is explicit: it renders or reads every image file and checks counts, identities, colours, presence, and structure against the caption. If it cannot render an image, the verdict is **UNVERIFIABLE** — never a default PASS. This is the agent that caught four of our seven CRITs.
+
+### 15.3 The lock — why verification is not a moving target
+
+By default, when `results-locked/LATEST.txt` exists, `scholar-verify` reads tables and figures **from the lock, not from the live output directories**, and refuses a live read otherwise. To override you must create `.claude/unlock-verify.sentinel` or set `SCHOLAR_VERIFY_UNLOCK=1`; a bare `--no-lock` exits with an error.
+
+Each report also pins `manuscript-sha256:` and `manuscript-path:` in its first 30 lines. This closes a real bug: without SHA pinning, a gate could re-flag a CRITICAL that a later polish pass had already fixed, and the pipeline would loop forever re-routing between phases. That failure was observed on a real project in May 2026.
+
+### 15.4 Severity and verdicts
+
+Findings: **CRITICAL** (must fix) / **WARNING** (should fix) / **INFO** (may fix), plus two special tiers — **UNTRACEABLE** (a number with no provenance; CRITICAL) and **DERIVED-UNVERIFIED** (derivable in principle, not checked; WARNING).
+
+| Verdict | Condition |
+|---|---|
+| **READY FOR SUBMISSION** | 0 CRITICAL, ≤3 WARNING |
+| **REVISIONS NEEDED** | 1–3 CRITICAL, or >3 WARNING |
+| **MAJOR ISSUES — DO NOT SUBMIT** | >3 CRITICAL, any ★★ CRITICAL, **or any DEGRADED agent** |
+
+That last clause is the anti-silent-failure rule. Every agent report must state `SCANNED: <N> artifacts`. If the line is missing or the count is zero, the agent is marked **DEGRADED** and the whole verdict is forced to MAJOR ISSUES — because an agent that scanned nothing and found nothing looks exactly like an agent that scanned everything and found nothing.
+
+Two more guards work the same way. Every agent is dispatched with an explicit `--write-to <path>` and must end its output with `WROTE: <path>`; if the file is not on disk, the orchestrator **fails closed** rather than scraping the agent's chat output for its report. And if any of the four agent profile files is missing, the skill refuses to start at all.
+
+Rounding tolerance, since it comes up constantly: **±1 in the last decimal is a WARNING; ±2 or more is CRITICAL**; inconsistent decimal places within a table, or between a table and the text, is a WARNING.
+
+### 15.5 Real findings — the seven CRITs
 
 From `verify/verification-report-2026-05-04.md`:
 
@@ -2910,7 +4294,25 @@ The seven CRITs (paraphrased):
 6. **CRIT-6 (H3 wrong row).** The H3 p = 0.92 cited in Abstract / Results / Discussion / Conclusion is the *main-effect* row, not the *triple-interaction* row. *Action:* re-extract from `adjudication-log.csv` H3-CORRECTED. (Verdict survives — H3 is still null.)
 7. **CRIT-7 (Y1 M3 N).** Two N values reported (108,526 and 108,509). *Action:* standardize on locked cell.
 
-### 15.3 The pipeline impact
+Four of seven were figure-related. That is not a coincidence: prose about figures is where a language model's fluency most easily outruns the evidence, because nothing forces it to look.
+
+### 15.6 Routing a fix back
+
+Each agent can append a machine-readable `route_back_to` block that `scholar-write` consumes to make a targeted patch instead of a rewrite:
+
+```yaml
+route_back_to:
+  phase: 7
+  section: "Results §3.2"
+  specific_item: "Figure 2 subtitle wave range"
+  action: re-embed-from-source     # or rewrite-paragraph | add-citation |
+                                   # fix-stutter | restore-subsection |
+                                   # extend-paragraph
+  source_artifact: figures/fig2-Y2-by-cohort.pdf
+  severity: MAJOR
+```
+
+### 15.7 The pipeline impact
 
 > **Honest note (read first).** The "fix-up then re-pass verification" pattern shown below is in tension with the project's `feedback_preserve_ai_failure_cases` discipline rule (CLAUDE.md §"Preserve AI failure cases — without conflating with mark-pipeline-done"), which warns against silently rewriting defects + re-passing them as if the original gate had cleared. The honest framing of what happened here: we did not silently rewrite the *artifact*, but we did re-route the *gate state* from a verify-FAIL to a verify-PASS via targeted edits + re-run. Future workshop iterations should either (a) keep the defective verify-FAIL artifact and record the fix as a separate verify-PASS-after-fix-iter2 artifact (so both states are visible), or (b) use `pipeline-state.sh halt 7b --reason "..."` to log the FAIL state explicitly before applying edits.
 
@@ -2933,6 +4335,21 @@ CRITs addressed:
 
 The headline finding (Y1 convergence + Y2 persistence + Oaxaca coefficient-dominance) **survived every CRIT**. The corrections sharpened the manuscript rather than overturned it. **That is what verification is for.**
 
+### 15.8 Where it gates
+
+| Caller | Mode | Effect |
+|---|---|---|
+| `scholar-analyze` | `stage1` | Advisory |
+| `scholar-write` | `stage2` | Conditional gate |
+| `scholar-grant` | `stage2` | CRITICAL blocks |
+| `scholar-respond` (revise) | `full` | CRITICAL blocks |
+| `scholar-journal` | `full` | MAJOR ISSUES halts submission prep |
+| `scholar-full-paper` Phase 7b | `full` | MAJOR ISSUES halts the pipeline |
+
+### 15.9 Statistical red flags it is trained to notice
+
+Beyond mismatches, the skill flags patterns that are individually legal and collectively suspicious: coefficients that are suspiciously round (0.100, 0.200); identical coefficients across supposedly different models; an N that changes between models with no explanation; R² *decreasing* when predictors are added; every result significant; a confidence interval that exactly touches zero; standard errors that are implausibly small. None of these is proof of anything. All of them are worth one more look.
+
 **Stop and check.** Pick one sentence from your own draft. Trace it: prose → table → script → sample → log entry. If any link is missing, you cannot publish that sentence.
 
 ## 16. `scholar-citation` — no citation by vibe
@@ -2941,191 +4358,1006 @@ The headline finding (Y1 convergence + Y2 persistence + Oaxaca coefficient-domin
 
 LLMs hallucinate citations. They are confident and specific. They invent author names, plausible journal volumes, and DOIs that resolve to unrelated papers. **The citation skill exists because of this.**
 
-### 16.1 Run
+```yaml
+argument-hint: "[draft text or section] [journal or style: ASA|APA|Chicago|
+                Nature|NCS|numbered] [mode: insert|audit|convert-style|
+                full-rebuild|verify|export|materialize|retraction-check|
+                reporting-summary (default: insert)]"
+```
+
+### 16.1 Nine modes
+
+| Mode | Produces |
+|---|---|
+| **1 insert** | Citations inserted into uncited draft text; `[SOURCE NEEDED]` where nothing resolves |
+| **2 audit** | Orphan citations, ghost references, year/author mismatches, disambiguation needs, style errors |
+| **3 convert-style** | Reference list and in-text markers reformatted to a target style |
+| **4 full-rebuild** | The ten-step end-to-end pipeline: audit → claim inventory → library search → CrossRef → insert → assemble → verify → claim-verify → final audit → save |
+| **5 verify** | Per-entry field verification **plus** mandatory claim-faithfulness checking, plus three mechanical gates |
+| **6 export** | A `.bib` built from an existing reference list, with fields enriched from canonical sources |
+| **6b materialize** | A `.bib` rebuilt **entirely from canonical sources**, keyed only on in-text cites — the LLM-authored reference list is discarded |
+| **7 retraction-check** | Retracted papers found, with reason, impact tier, and replacement suggestions |
+| **8 reporting-summary** | A pre-filled NHB/NCS Reporting Summary plus a gap checklist |
 
 ```
-> /scholar-citation manuscript.md ASA verify
-> /scholar-citation manuscript.md ASA export
+> /scholar-citation verify drafts/manuscript-final-2026-05-04.md
+> /scholar-citation materialize drafts/manuscript-final-2026-05-04.md --from-intext-cites
+> /scholar-citation audit drafts/draft-methods-2026-05-01.md ASA
+> /scholar-citation retraction-check drafts/manuscript-final-2026-05-04.md
 ```
 
-(Modes per `scholar-citation` argument-hint: `insert | audit | convert-style | full-rebuild | verify | export | materialize | retraction-check | reporting-summary`. `materialize` (MODE 6b) builds the `.bib` from canonical sources keyed on the in-text cites — no LLM transcription. The output of `export` is a BibTeX-ready file; `export-bib` is not a separate mode.)
+### 16.2 The verification tier chain
 
-The skill performs:
+Every mode that resolves a citation walks the same ladder, stopping at the first hit:
 
-- Local library lookup (Zotero / Mendeley / BibTeX files in your reference manager).
-- CrossRef DOI verification.
-- Web search for items not in the local library.
-- Retraction database check (Retraction Watch).
-- Replacement of hallucinated items with `[CITATION NEEDED — verify]` if it cannot resolve them.
+| Tier | Source | Note |
+|---|---|---|
+| **0** | Your `scholar-knowledge` graph | Fastest; no network call |
+| **1** | Local library — Zotero, Mendeley, BibTeX, EndNote | Highest trust: you curated it |
+| **2a** | CrossRef | |
+| **2b** | Semantic Scholar | Preprints, working papers, conference papers CrossRef misses |
+| **2c** | OpenAlex | Broadest (250M+ works): grey literature, dissertations, non-DOI books |
+| **2d** | Google Scholar | Scraped, rate-limited, last-resort API tier |
+| **3** | WebSearch | Genuine last resort; requires an authoritative landing page before acceptance |
 
-### 16.2 What "no citation by vibe" looks like in practice
+This is why §8C (`scholar-knowledge`) pays off: a well-fed graph makes Tier 0 hit, and Tier 0 is free and instant.
+
+### 16.3 `materialize` — the strongest anti-fabrication move
+
+Mode 6 (`export`) trusts a reference list the model wrote and fills in missing fields. Mode 6b (`materialize`) **throws that list away** and rebuilds every entry from a canonical record, keyed only on the in-text `(Author Year)` cites it can find in your prose. It parses `et al.`, ampersands, signal phrases, year-disambiguated `2020a`/`2020b`, and grouped cites — then routes each through the tier chain.
+
+If a cite cannot be resolved after every tier, it does **not** guess. It emits a `[SOURCE NEEDED]` placeholder entry and exits RED.
+
+The governing discipline is seven rules, of which three matter most:
+
+- **D-3 — never synthesize a DOI.** An invented DOI resolves to a real-but-wrong paper, which is worse than no DOI: it produces confusing downstream flags instead of an honest miss. Omit the field and let verification fall back to title + author + year.
+- **D-6 — never invent entries.** If a claim cannot be tied to a real verified source, rewrite the prose or mark it `[SOURCE NEEDED]`.
+- **D-7 — construct from the source, never from memory.** Copy the BetterBibTeX export verbatim, or format directly from the CrossRef/OpenAlex JSON. Transcribing from the model's memory is the fabrication site.
+
+Every entry carries a provenance note: `note = {source: RefLib; zotero-key: ABCD1234}`.
+
+### 16.4 Three mechanical gates — and the two incidents that created them
+
+Prompt instructions alone do not stop fabrication. Three scripts run after materialization and after verification, and a RED on any of them means the run is **not complete**:
+
+| Gate | Catches |
+|---|---|
+| `verify-citation-metadata.sh` | Field-level mismatches against CrossRef. Verdicts: **REAL** (green) / **MISREMEMBERED** (red — blocks the phase) / **UNVERIFIABLE** (yellow) |
+| `verify-rendered-references-against-bib.sh` | A rendered References entry with **no `.bib` counterpart** — a phantom citation |
+| `verify-citation-local-library.sh` | Bib entries that are not in your real reference library — the strongest fabrication signal, because a model cannot retroactively insert a record into your Zotero database |
+
+Both of the first two exist because of documented failures in this corpus:
+
+> **May 24, 2026.** In one project, **13 of 43 bib entries (26%) shipped with hallucinated metadata** — including the project author's own paper, misattributed to a fabricated "Yuanting Zhang" when the real author is Yongjun Zhang. That incident created the metadata gate.
+>
+> **May 25, 2026 — the very next day.** With the metadata gate in place, a regeneration step introduced **six brand-new phantom citations** with no `.bib` counterpart at all. None of the then-existing eleven citation gates caught them, because every one of them iterated the `.bib` *forward* and none reverse-mapped the rendered reference list back against it. That created the second gate.
+
+The lesson generalizes well beyond citations: **a checking system that only walks one direction will miss everything introduced in the other.**
+
+### 16.5 Claim-level checking (Step V-3.5)
+
+Existence is the easy half. A citation can be perfectly real and still be cited for a claim the paper does not make. Step V-3.5 is mandatory in every `verify` and `full-rebuild` run: it extracts every prose claim that attributes a finding to a source, checks it against the knowledge graph and then the paper's actual text, and flags:
+
+`[CLAIM-REVERSED]` · `[CLAIM-MISCHARACTERIZED]` · `[CLAIM-OVERCAUSAL]` · `[CLAIM-UNSUPPORTED]` · `[CLAIM-WRONG-POPULATION]` · `[CLAIM-IMPRECISE]` · `[CLAIM-NOT-CHECKABLE]`
+
+Newly discovered findings feed back into the knowledge graph, so the check gets cheaper each time you run it.
+
+### 16.6 Styles supported
+
+**ASA author-date** (default; sociology and demography — all authors spelled out, no "et al." in the reference list) · **APA 7th** · **Chicago author-date** · **APSA** (APSR/AJPS) · **Unified Linguistics** (Language in Society, Journal of Sociolinguistics) · **Nature/Science/NCS numbered**.
+
+One formatting rule that bites people in Word: in every author-date style, each reference is a **plain paragraph separated by a blank line** — never a markdown bulleted list, which renders as bullet glyphs in the exported document.
+
+### 16.7 What "no citation by vibe" looks like in practice
 
 In a real audit of 26 AI-generated social-science papers (April 2026), even the highest-scoring paper had a reviewer flag a suspicious post-2023 reference. Of the unverified citations the skill flagged in our digital-divide run, **two** turned out to be fabricated when checked against CrossRef — a 2024 paper that didn't exist, and a 2023 paper whose DOI led to an unrelated article. Both were removed from the manuscript.
 
-Write this rule down on a post-it: **No citation by vibe.** Every citation must be verified, flagged, or removed.
+The canonical closing sequence for any drafting skill is:
+
+```
+write the .md  →  /scholar-citation materialize  →  /scholar-citation verify  →  save
+```
+
+Write this rule on a post-it: **No citation by vibe.** Every citation must be verified, flagged, or removed.
 
 ## 17. `scholar-polish` — last, not first
 
 **Goal:** improve flow, register, and authorial voice without changing claims, findings, or causal strength.
 
+```yaml
+argument-hint: "[scan|rewrite|full] [file-path]"
 ```
-> /scholar-polish scan manuscript.md
-> /scholar-polish rewrite manuscript.md  # only after verify PASSed
+
+```
+> /scholar-polish scan drafts/manuscript-final-2026-05-04.md
+> /scholar-polish full drafts/manuscript-final-2026-05-04.md moderate
 ```
 
-Polish modes:
+| Mode | Behaviour |
+|---|---|
+| **scan** | Diagnoses only. Produces a Style Score (0–100), a tell-frequency table, the five worst paragraphs, and an intensity recommendation. Writes no changes |
+| **rewrite** | Applies fixes at the chosen intensity and injects 2–4 human micro-patterns per page |
+| **full** | scan, then rewrite |
 
-- **scan** — diagnoses generic AI prose patterns (formulaic transitions, hedging stacks, methods-list leakage, pseudo-citation density), but writes nothing.
-- **rewrite** — applies targeted edits.
+Intensity: `light` (high-severity tells only) · `moderate` (default) · `aggressive` (everything). Style Score = 5 × HIGH + 2 × MEDIUM + 1 × LOW, capped at 100 — **lower is better.**
 
-What polish must **never** do:
+### 17.1 The twenty-four tells
 
-- Change a number.
-- Strengthen a causal claim.
-- Add a citation.
-- Remove a limitation.
+The skill hunts twenty-four named patterns. Knowing them makes you a better writer even without the tool:
 
-Before accepting polish edits, **diff the manuscript**:
+| | Tell | Signature |
+|---|---|---|
+| T1 | Hedging stacks | Three or more hedges in one sentence |
+| T2 | Formulaic transition openers | "Moreover," "Furthermore," "Importantly," "Notably," "It is worth noting that" |
+| T3 | Symmetrical parallelism | "Not only X but also Y"; identically shaped list items |
+| T4 | The tricolon habit | Everything comes in threes |
+| T5 | Anaphoric "This" | Consecutive sentences opening "This finding… This suggests… This approach…" |
+| T6 | Over-enumeration | "There are several reasons: first… second… third…" |
+| T7 | The definitional opening | A paragraph that begins by defining a term the reader knows |
+| T8 | Empty metacommentary | "In this section, we examine…" |
+| T9 | Uniform sentence length | Everything lands in the same 20–30 word band |
+| T10 | Adjective inflation | "particularly important and highly significant" |
+| T11 | Passive overcorrection | Active voice forced where Methods convention wants passive |
+| T12 | Conclusion echo | The conclusion restates the introduction near-verbatim |
+| T13 | Overused lexis | Tier A: *delve, tapestry, realm, pivotal, meticulous, intricate, underscores, multifaceted*. Tier B: *crucial, foster, leverage, navigate, nuanced, robust, shed light on, cornerstone, holistic, transformative*. Tier C: *elucidate, illuminate, unravel, unveil, bolster, catalyze, resonate, pave the way* |
+| T14 | Performative depth | "This raises important questions about the very fabric of…" |
+| T15 | Connective overload | "Therefore," / "Thus," / "However," on every transition |
+| T16 | Em-dash overuse | >2 per page MEDIUM, >4 per page HIGH — AI writes them at 3–5× human rate |
+| T17 | Terminology inconsistency | The same phenomenon named differently across sections |
+| T18 | **Causal language in a non-causal design** | "shapes," "drives," "the effect of X on Y" in cross-sectional data |
+| T19 | Enumerated-Methods tell | Bulleted model ladders, bulleted robustness batteries, compliance-signaling headers |
+| T20 | **Pipeline-machinery leakage** | `L-A#` IDs, `spec_id=` pseudo-citations, floating `M#`/`R#` |
+| T21 | Section-tour-guide forecasts | Three or more "Section N does…" sentences |
+| T22 | Tricolon as structure | "Three X follow" as a recurring paragraph opener |
+| T23 | Numbered limitations | "First… Second… …Tenth," in lockstep with `L-A1`–`L-A10` |
+| T24 | Abstract pseudo-citation density | `(β = −0.025, p = 0.004; spec_id=M3)` inside the abstract |
+
+Two of these are not stylistic preferences:
+
+- **T18 is a methodological correction.** "Shapes" and "drives" in a cross-sectional design is a claim your data cannot license. The skill checks the Methods section first and skips T18 entirely if the design *is* causal. Reviewer 2 will flag it if you don't.
+- **T20 is the largest real-world defect observed** in this corpus — larger than T1–T19 combined. One May 2026 draft shipped 13 `L-A#` markers, 8 `spec_id` pseudo-citations, and 12 floating `M#`/`R#` references in a single manuscript.
+
+> **A documentation bug worth knowing.** The skill's own quality checklist still says "all 18 tell types (T1–T18) scanned," but the catalog runs to T24. Following the checklist literally under-scans by six categories. Ask for T19–T24 explicitly.
+
+### 17.2 What polish must **never** do
+
+Five absolute rules:
+
+1. Never alter citations, statistics, table references, or figure references.
+2. Never change the argument structure — claim → evidence → interpretation must survive.
+3. Never introduce or remove a claim. This is restyling, not rewriting.
+4. Preserve every `[CITATION NEEDED]` marker and verification label.
+5. Never manufacture hedging where the original was appropriately assertive. The goal is a distinctive voice, not false modesty.
+
+### 17.3 The tooling rule — why this matters more than it sounds
+
+Fixes are applied with the **Edit tool, one call per occurrence.** Bulk `sed -i`, `re.sub`, or one-line regex passes over the manuscript are **forbidden**.
+
+> **Why.** On 2026-05-09, in a real production run, a single regex pass intended to fix em-dashes destroyed a structural sentence in the Results section, which then failed a downstream depth check. A regex does not know which em-dash is holding up an argument.
+
+Expect 30–50 Edit calls for a 9,000-word manuscript with moderate em-dash overuse — roughly 3–5 minutes. The only exception is a pure one-to-one lexical swap (*"delve into"* → *"examine"*), which may use replace-all after a `grep -n` confirms every hit is body prose.
+
+Then it injects 2–4 **"tiny topos"** per page — the micro-patterns that make prose sound human: a mid-sentence qualification, a concessive opening, a self-aware limitation, an aside about the data, a specific detail where a generic one would do, at most one rhetorical question per paper, a tonal break, a deliberately imperfect enumeration, a late-arriving caveat.
+
+### 17.4 Diff before you accept
 
 ```bash
-$ diff drafts/draft-manuscript-...md drafts/draft-manuscript-polished-...md \
-    | head -50
+$ diff drafts/draft-manuscript-...md drafts/draft-manuscript-polished-...md | head -50
 ```
 
-If the diff shows a sentence like `"X is associated with Y"` becoming `"X causes Y"`, **reject the polish run** and reduce its scope.
+If the diff shows `"X is associated with Y"` becoming `"X causes Y"`, **reject the polish run** and reduce its scope. Also confirm the word count stayed within ±5% and that no `[CITATION NEEDED]` marker vanished.
+
+One operational note: when run inside the orchestrator, polish writes a **new versioned** manuscript file rather than overwriting its input. An earlier convention that overwrote the input silently dropped polished prose from final assembly.
+
+**Stop and check.** Run `scan` on something you wrote *without* AI assistance. Most academic prose scores 20–40. If yours scores well above that, the tells are yours, not the model's — which is genuinely useful to know.
 
 ## 18. `scholar-respond` + `scholar-journal` — before submission
 
-**Goal:** simulate reviewers, check journal fit, prepare cover letter and submission package.
+**Goal:** simulate reviewers, check journal fit, prepare the cover letter and submission package — and, when the real reviews arrive, answer them.
+
+### 18.1 `scholar-respond` — five modes
+
+```yaml
+argument-hint: "[simulate|respond|revise|resubmit|cover-letter]
+                [paper file or reviewer comments] [journal] [round:R1|R2|R3]"
+```
+
+| Mode | Trigger | What it does | When |
+|---|---|---|---|
+| **simulate** | `simulate`, `mock review` | Journal-calibrated reviewer panel, severity matrix, revision roadmap. **Advisory only** — never auto-rewrites | Before submission |
+| **respond** | `respond`, `response letter`, `point-by-point` | Triage dashboard + full response letter + changes summary table | Real reviews arrived |
+| **revise** | `revise`, `edit manuscript` | Executes the edits via `/scholar-write revise`, item by item, with diffs | After the letter is planned |
+| **resubmit** | `resubmit`, `rejection`, `desk reject` | Rejection triage → root cause → journal-ladder retargeting → reframed intro → cover letter | After a rejection |
+| **cover-letter** | `cover letter` | Standalone R1 / R2 / minor-revision / new-journal cover letter | Cover letter only |
 
 ```
-> /scholar-respond simulate
-                   manuscript=drafts/manuscript-final-...md
-                   journal=Social Forces
-> /scholar-journal Social Forces drafts/manuscript-final-...md
+> /scholar-respond simulate drafts/manuscript-final-2026-05-04.md "Social Forces"
+> /scholar-respond respond reviewer-comments.txt JMF round:R1
+> /scholar-respond revise round:R2
+> /scholar-respond resubmit
 ```
 
-`scholar-respond simulate` dispatches between three and ten reviewer agents calibrated to the target journal, drawn from the full peer-reviewer inventory (`peer-reviewer-quant`, `peer-reviewer-theory`, `peer-reviewer-senior`, `peer-reviewer-r2-skeptic`, `peer-reviewer-demographics`, `peer-reviewer-qual`, `peer-reviewer-mixed-methods`, `peer-reviewer-computational`, `peer-reviewer-ling`, `peer-reviewer-ethics`); the exact panel depends on paper type and journal:
+#### 18.1.1 How the panel is chosen — and why it matters
 
-- `peer-reviewer-quant` — methodological rigor
-- `peer-reviewer-theory` — conceptual contribution
-- `peer-reviewer-demographics` — representativeness, decomposition
-- `peer-reviewer-senior` — editorial fit, R&R recommendation
+`scholar-respond simulate` dispatches three to five reviewer agents drawn from the full inventory: `peer-reviewer-quant`, `peer-reviewer-theory`, `peer-reviewer-senior`, `peer-reviewer-r2-skeptic`, `peer-reviewer-demographics`, `peer-reviewer-qual`, `peer-reviewer-mixed-methods`, `peer-reviewer-computational`, `peer-reviewer-ling`, `peer-reviewer-ethics`.
 
-It produces a severity matrix and a revision roadmap. Note: **simulated reviewers do not replace real reviewers.** Use them to prepare better questions for the real ones.
+The composition is **journal-aware**, not generic. A lookup table maps nine journal classes — JMF/JFI/JFTR · ASR/AJS/Social Forces · Demography/PDR/Population Studies · Science Advances/NHB/PNAS · NCS/EPJ Data Science · Language in Society/Journal of Sociolinguistics · Qualitative Sociology/Ethnography · Sociological Methods & Research · APSR/AJPS — to the four profiles that should fill R1–R4, plus a fifth slot that is always the skeptic (or the computational reviewer for computational papers).
 
-`scholar-journal` checks: word count vs. cap, abstract structure, IRB/ethics statement, data-availability statement, blind-review compliance, formatting, cover-letter draft.
+> **Why journal-aware selection is mandatory rather than optional.** A JMF simulation run with the generic ASR-style panel missed the union-vs-marriage primacy issue, the gender-asymmetry issue, and the family-process framing issue — all three of which a real JMF reviewer would raise first. The panel you convene determines the blind spots you keep.
+
+Two mechanisms guard against fake consensus:
+
+- **`peer-reviewer-r2-skeptic` is always present.** It reads the packet *without* prior-round RESOLVED stamps, amendment logs, or response letters — because a reviewer who saw the R1 issues will tend to re-validate a packet that carries those same issues marked resolved.
+- **Theme rotation.** Each reviewer gets at most one priming theme, no theme is reused, and the senior reviewer is always unprimed. Priming themes are drawn from four independent sources (Phase 7b warnings, design pre-mortem red-team flags, prior-round unresolved items, lit-review gaps). Without this, several "independent" reviewers converge because they were all pointed at the same thing.
+
+Output is a **Severity × Confidence matrix** — every issue cross-tabulated as CRITICAL/MAJOR/MINOR against HIGH (two or more reviewers) / MEDIUM / LOW — feeding a four-phase revision roadmap, plus a "strengths to preserve" list and an effort estimate.
+
+Note: **simulated reviewers do not replace real reviewers.** Use them to prepare better questions for the real ones.
+
+#### 18.1.2 Responding to real reviews
+
+`respond` mode categorizes every comment into one of eight buckets — `[CRITICAL]`, `[MAJOR-FEASIBLE]`, `[MAJOR-INFEASIBLE]`, `[MINOR-SUBSTANTIVE]`, `[MINOR-EASY]`, `[DISAGREE]`, `[CONFLICT]` (reviewers contradict each other), `[NEW-IN-R2+]` — and produces a two-pane triage dashboard: Pane A is the six-row, thirty-minute author view; Pane B is everything.
+
+It also emits `reports/resolution-state-<slug>-<date>.yaml`, the machine-readable gate record. Three rules govern it: no auto-promoted tag may remain active; every issue at severity 2 or above needs a `status` (`RESOLVED` / `ADDRESSED` / `DEFERRED` / `PENDING-USER` / `NOT-APPLICABLE`); and the tags `title-overclaim`, `desk-reject-risk`, and `data-fabrication` must be `RESOLVED` before the pipeline advances.
+
+The letter itself comes with a phrase bank by situation (full agreement, partial agreement, respectful disagreement, infeasible request, misunderstanding, cross-reviewer overlap), a tone-calibration guide with too-defensive / too-deferential / just-right examples, and tracked-change markers (`[ADDED: R2.3]`, `[REVISED: R1.7]`, `[DELETED]`, `[MOVED]`, `[CONSIST.]`).
+
+#### 18.1.3 The New-Analysis Gate
+
+This is the rule that keeps an R&R honest. If a reviewer asks for a new analysis, you may **not** simply report a number the agent produced in conversation. The re-analysis must:
+
+1. Live in a script under `scripts/rr-NN-*.R`;
+2. Pass `scholar-code-review`;
+3. Emit `rr-results-registry.csv` and `rr-adjudication-log.csv`;
+4. Trigger a re-lock if a results lock exists.
+
+Then the response letter cites the number **by disk location** — `[rr-results-registry.csv row=4 model_id=M3b]` — never as a paraphrase of what an agent said. `verify-numerics` enforces this.
+
+Before finalizing, `revise` mode runs `scholar-verify full` and requires **zero CRITICAL** issues to proceed.
+
+> **The R2+ scope rule.** No new analyses, citations, or arguments beyond what the reviewers actually asked for. The skill names unrequested scope creep as **the #1 cause of R3 rejection.** Round 3 revisions should be surgical.
+
+### 18.2 `scholar-journal` — six modes
+
+```yaml
+argument-hint: "[journal name] [paper type: article/research-note/letter/
+                brief-report] — optionally: mode [FULL-PACKAGE/FORMAT-CHECK/
+                COVER-LETTER/SELECT-JOURNAL/RESUBMIT-PACKAGE]"
+```
+
+| Mode | Trigger | Produces |
+|---|---|---|
+| **SELECT-JOURNAL** | `select`, `which journal`, or no journal named | Ranked fit list |
+| **JOURNAL-BRIEF** | `brief`, `pre-draft` | A pre-draft compliance brief — hard ceilings, section order, abstract template, forbidden patterns, canon authors |
+| **FULL-PACKAGE** | a journal named, or `full`/`prepare` | Everything: audit, requirements, open-science package, cover letter, checklist |
+| **FORMAT-CHECK** | `format`, `check`, `audit` | Compliance audit only |
+| **COVER-LETTER** | `cover letter` | Cover letter only |
+| **RESUBMIT-PACKAGE** | `resubmit`, `R&R` | Re-targeted package for a new venue |
+
+```
+> /scholar-journal "Social Forces" article
+> /scholar-journal                              # → SELECT-JOURNAL
+> /scholar-journal Demography format-check
+> /scholar-journal NHB brief                    # pre-draft profile
+```
+
+**Journal selection** scores eight dimensions 1–5: scope fit, methods fit, theory fit, word-count fit, prestige target, open-science readiness, turnaround priority, audience breadth. It is cross-checked against a quick-selection guide and against **journal ladders** — pre-mapped rejection-routing chains per subfield, so "rejected from ASR" has an answer that is not improvised.
+
+#### 18.2.1 The journal profiles
+
+The skill ships **24 machine-readable profiles** at `references/profiles/*.json`: `ajs`, `annual-review-sociology`, `apsr`, `asr`, `demography`, `du-bois-review`, `gender-society`, `jmf`, `journal-of-sociolinguistics`, `language-in-society`, `mobilization`, `nature`, `nature-computational-science`, `nature-human-behaviour`, `pdr`, `plos-sociology`, `pnas`, `poetics`, `science-advances`, `smr`, `social-forces`, `social-problems`, `social-science-and-medicine`, `sociological-theory`, plus an explicit `default`.
+
+Each profile carries `house_style`, `citation_style`, `total_word_budget`, `section_order`, per-section `min_words`/`max_words`/`structural_moves`/`anchor_artifacts`, a four-part Methods subsection structure (4.1 Data / 4.2 Analytic Sample / 4.3 Measures / 4.4 Analytic Strategy), `canon_authors` with a citation threshold, `forbidden_patterns`, and `display_architecture`.
+
+A slice of the narrative metadata behind those profiles:
+
+| Journal | Word limit | Abstract | Blind | Style | Turnaround | Accept |
+|---|---|---|---|---|---|---|
+| ASR | ~12,000 | 150–200 unstructured | Double | ASA | 3–6 mo | ~5–6% |
+| AJS | 8–15k typical | 150 unstructured | Double | Chicago AD | 3–6 mo | ~5–8% |
+| Demography | ~10,000 | ~150, 4–6 kw | Double | ASA | 3–5 mo | ~10–15% |
+| Social Forces | 10,000–12,000 | 150, 4–6 kw | Double | ASA | 3–5 mo | ~10–12% |
+| Science Advances | 4,000–6,000 + ≤250-char teaser | ~250 | Single (~50% desk-reject) | Numbered | 6–10 wk | ~15% of submitted |
+| Nature Human Behaviour | Articles 3–5k | ≤150, 3-sentence structured | Double | Numbered superscript | 6–12 wk | ~5% |
+| Nature Comp. Science | Articles 3–5k | ≤150 structured | Double | Numbered | 8–12 wk | <10% |
+| JMF | 8,000 | 200, 3–5 kw | Double | APA 7th | 3–6 mo | ~15–20% |
+| Language in Society | 8,000–10,000 | 150, 6–10 kw | Double | APA 7th | 3–6 mo | ~15–20% |
+| APSR | ~12,000 | 150 unstructured | Double | APSA AD | 3–6 mo | ~7–8% |
+| PNAS | ~3,500 + 125-word significance statement | ≤250 | Single | Numbered superscript | 4–8 wk | ~10–15% |
+| SMR | 10,000–15,000 | 200, 5–7 kw | Double | ASA | 3–6 mo | ~15–20% |
+
+> **The regression this guards against.** If you name a journal that has no profile, Step 1.5 scaffolds one from the closest template and refines it by web search. Before that step existed, naming a journal without a profile silently produced a **generic six-section blueprint** instead of the journal's real structure — a run documented in May 2026 where "Social Forces was specified but DEFAULT was used." When a profile genuinely cannot be resolved, the skill falls back to the **ASR** profile explicitly and records the fallback, rather than inventing a generic shape.
+
+#### 18.2.2 The submission checklist and its gates
+
+The universal checklist: anonymous manuscript · word count · line numbers · double spacing · 12pt · abstract format · keywords · citation consistency · complete reference list · **editable-text tables** (not images) · 300+ DPI figures · figure and table counts · CRediT statement · data and code availability · conflict of interest · funding and acknowledgments · IRB. Journal-specific items layer on top, including the full **Nature Reporting Summary** template for the Nature family.
+
+Two hard gates:
+
+- **Step 6b** invokes `scholar-citation` (audit + style conversion) and then `scholar-verify full`. **MAJOR ISSUES halts submission prep.**
+- **Step 7.0** is a blind-review prose scrub. RED (identifying disclosures present) exits with an error; for genuinely single-blind venues (Nature family, Science Advances, PNAS, PDR, SMR) it downgrades to YELLOW.
+
+Author identity is handled through canonical placeholder tokens — `[AUTHOR_NAME]`, `[AUTHOR_AFFIL]`, `[AUTHOR_EMAIL]`, `[AUTHOR_ORCID]`, `[IRB_PROTOCOL]`, `[FUNDING_SOURCE]` and friends — substituted in one shot at the very end by `substitute-author-placeholders.sh`, which refuses to write any unrecognized bracket token. Under a lock, the submission package sources tables and figures from `results-locked/`, never from live `output/tables/`.
+
+## 18A. `scholar-ethics` — the disclosure you will be asked for
+
+**Goal:** produce the actual disclosure text journals now require, plus an honest self-audit of AI use, originality, and research integrity.
+
+This skill is easy to skip and increasingly not optional: every major journal family now asks what AI tools touched the manuscript and what data they saw. It writes text you can paste, not warnings you can nod at.
+
+```yaml
+argument-hint: "[ai-audit|plagiarism|integrity|general|full]
+                [manuscript or data file path]
+                [optional: journal target, tool list, concern description]"
+```
+
+| Mode | Produces |
+|---|---|
+| **ai-audit** | AI tool inventory table; privacy-framework compliance check (IRB / GDPR / HIPAA / DUA / institutional); risk rating; **the journal AI-use disclosure paragraph** |
+| **plagiarism** | Section-by-section originality review; self-plagiarism decision tree; AI-generated-text classification; similarity-score interpretation; originality statement |
+| **integrity** | QRP screening (Wicherts et al. 2016, categories A/B/C); p-hacking diagnostic with runnable multiverse and `specr` code; fabrication cross-check protocol; misinterpretation audit; self-certification |
+| **general** | IRB determination; the eight consent elements; CRediT table; COI disclosure; data-availability statement; per-journal ethics checklist |
+| **full** | All four, in order |
+
+```
+> /scholar-ethics ai-audit "Claude Code, Codex CLI" "Social Forces"
+> /scholar-ethics integrity tables/results-registry.csv
+> /scholar-ethics full drafts/manuscript-final-2026-05-04.md Demography
+```
+
+### 18A.1 The disclosure text it writes
+
+The AI-use declaration, ready to adapt:
+
+> "The authors used [Tool Name] ([Provider], [Year]) for [task]. No personally identifiable participant data were processed by AI tools. All substantive intellectual contributions — research design, interpretation, and conclusions — were made by the authors. All AI-assisted content was reviewed and verified by the authors prior to inclusion."
+
+For our CFPS project the honest version of that first sentence names Claude Code and Codex CLI, names the tasks (script generation, table formatting, prose drafting, verification), and — critically — can truthfully say no participant-level data was processed by a cloud model, **because LOCAL_MODE was enforced from §6 onward.** The safety discipline in Part II §6 is what makes this sentence true rather than aspirational.
+
+It also generates the IRB statement, the CRediT contribution statement across the fourteen roles, COI text (both the "no competing interests" and the disclosed-financial-interest variants), and four variants of the data-availability statement (fully public / replication package / restricted with access instructions / a mix).
+
+### 18A.2 The integrity audit is a self-check, not an accusation
+
+The skill says this explicitly and repeatedly. Mode 3 screens for the documented QRP taxonomy — optional stopping, selective exclusion, post-hoc design change, undisclosed attrition, specification searching, covariate fishing, outcome switching, transformation p-hacking, subgroup fishing, outlier manipulation, HARKing, selective reporting, misleading significance language — and supplies p-curve, z-curve, and GRIM-test code so you can check yourself before someone else does.
+
+Two things it flags as *red flags rather than virtues*, which surprises people: **perfect inter-rater reliability (κ = 1.0)** and **zero missing values in a survey.** Real data is messier than that.
+
+### 18A.3 The verdict file and the Phase 9b gate
+
+Alongside the human-readable report, the skill writes a machine-readable verdict:
+
+```json
+{
+  "overall_status": "CLEAR",          // CLEAR | MINOR | CRITICAL | UNRESOLVED
+  "critical_count": 0,
+  "minor_count": 2,
+  "unresolved_blockers": [],
+  "dimensions": {
+    "irb": "...", "consent": "...", "vulnerable_populations": "...",
+    "data_handling": "...", "ai_transparency": "...",
+    "positionality": "...", "coi": "..."
+  }
+}
+```
+
+`ethics-verdict-check.sh` reads this at orchestrator Phase 9b. A status of CRITICAL, UNRESOLVED, or UNKNOWN — or any non-empty `unresolved_blockers` — REDs the phase and blocks Phase 10. The skill is explicitly forbidden from inventing a clean verdict: the JSON must reflect the same flags recorded in the human report.
+
+Files land at `<proj>/ethics/scholar-ethics-log-*.md` (the per-item audit trail), `<proj>/ethics/scholar-ethics-report-*.md` (the report, ending in "Declarations ready to paste into submission"), and `<proj>/ethics/ethics-verdict.json`.
+
+**Stop and check.** Run `/scholar-ethics ai-audit` on this workshop's own project. Read the generated disclosure paragraph and ask: is every sentence in it true of what you actually did today? If one is not, that is the sentence to fix — in your practice, not in the paragraph.
 
 ## 19. `scholar-replication` + `scholar-open` — reproducibility is a habit, not a deadline
 
-**Goal:** assemble a reproducible package and prepare open-science statements.
+**Goal:** assemble a package someone else can actually run, and prepare the open-science statements journals now require.
+
+The division of labour: **`scholar-open` writes declarations, templates, and checklists. `scholar-replication` builds the directory on disk, copies and renumbers the scripts, generates the docs, runs the clean-run test, and audits paper-to-code correspondence.**
+
+### 19.1 `scholar-replication` — six modes
+
+```yaml
+argument-hint: "[BUILD|DOCUMENT|TEST|VERIFY|ARCHIVE|FULL]
+                [project description or journal name]"
+```
+
+| Mode | What it does |
+|---|---|
+| **BUILD** | Assembles `replication-package/` on disk: copies and renumbers scripts, copies tables/figures/EDA output/registries, applies the data-handling decision tree, captures the environment, generates `run-all.sh`, LICENSE, CITATION.cff, Makefile, and (conditionally) a Dockerfile |
+| **DOCUMENT** | Generates the nine-section AEA README, the codebook, `COMPUTATIONAL-REQUIREMENTS.md`, the dependency graph, and `check_inputs.R` |
+| **TEST** | Six pre-flight checks, then a clean-environment run in an isolated copy, then output comparison against tolerances → `TEST-REPORT.md` |
+| **VERIFY** | Paper-to-code correspondence audit: every table, figure, and in-text statistic mapped to a producing script → `VERIFICATION-REPORT.md` |
+| **ARCHIVE** | Cleanup, `.gitignore`, size check, repository selection, `git init`/`commit`/`tag`, deposit metadata, post-deposit checklist |
+| **FULL** | All five in sequence — mandatory when dispatched from the orchestrator's Phase 12 |
 
 ```
-> /scholar-replication build output/digital-divide-china-cfps
-> /scholar-open prepare output/digital-divide-china-cfps
+> /scholar-replication BUILD
+> /scholar-replication test
+> /scholar-replication verify Demography
+> /scholar-replication full "Social Forces"
 ```
 
-The replication package includes:
+### 19.2 What BUILD produces
 
-- All scripts in execution order, with one master orchestrator `run-all.sh` (which drives the R controller `00_master.R`).
+```
+replication-package/
+├── README.md                 ← 9-section AEA template
+├── LICENSE                   ← dual: MIT (code) + CC-BY-4.0 (data/docs)
+├── CITATION.cff
+├── DECISIONS.md              ← from your coding-decisions log
+├── Makefile
+├── renv.lock / environment.yml
+├── .Rprofile
+├── Dockerfile                ← only for NCS targets, computational methods, or on request
+├── scripts/run-all.sh        ← the single entry point
+├── data/{raw,processed,codebook}/
+├── code/00_master.R · 01_clean.R · 02_construct.R · 03_analysis.R
+│       04_robustness.R · 05_figures.R · utils/
+├── output/{tables,figures,models}/ · eda/ · artifact-registry.md
+└── paper/
+```
+
+Two of those are **mandatory**, and both exist because of a documented failure:
+
+- **A working `renv.lock` / `environment.yml`.** AEA and JMF open-materials reviewers reject prose install instructions. An earlier version of this skill ran `renv::init()` inside the package *before* the scripts had been copied there, producing a near-empty lockfile — and the error was hidden by a `2>/dev/null`. The skill now sanity-checks that the lockfile actually contains packages and fails loudly if not.
+- **`scripts/run-all.sh`.** One shell entry point. It restores the environment, discovers `code/*.{R,py,do,jl}`, and runs each script in order — exiting with code 3 (`RUNNER MISSING`) if an interpreter is not on PATH, rather than silently skipping a language. It is written in Bash-3.2-safe style (no `mapfile`) because macOS still ships Bash 3.2.
+
+A third detail worth copying into your own practice: BUILD is **lock-aware**. When `results-locked/LATEST.txt` exists, it copies tables and figures from the lock rather than from the live output directory, so the package matches what the manuscript was actually drafted against.
+
+The README's §4a carries a **SHA-256 integrity check** in pure R (no second runtime required) that walks the lock manifest and prints `OK=N DRIFT=0 TOTAL=N`, exiting non-zero on any mismatch — CI-suitable, and the fastest way for a replicator to know whether they got what you shipped.
+
+### 19.3 TEST — the five levels of "it reproduces"
+
+The skill defines an explicit ladder, and each journal has a floor:
+
+| Level | What it means |
+|---|---|
+| 1 | It runs on your machine |
+| 2 | The environment is documented |
+| 3 | It runs in a **fresh environment on your machine** — the minimum for submission |
+| 4 | **Someone else** runs it successfully |
+| 5 | It runs in Docker or a VM from scratch |
+
+| Journal | Minimum | Recommended |
+|---|---|---|
+| ASR / AJS / Demography | Level 2 | Level 3 |
+| Science Advances / NHB | Level 3 | Level 4 |
+| APSR / AJPS | Level 3 | Level 4 |
+| Nature Computational Science | Level 4 | **Level 5 (Docker)** |
+| AEA journals | Level 4 (external verification is mandatory) | Level 5 |
+
+Numerical reproducibility tolerances, so "it reproduced" has a definition: coefficients ±0.001 · SEs ±0.002 · p-values ±0.005 · CIs ±0.005 · bootstrap ±0.05 · MCMC ±0.01 · figures visual match.
+
+The six pre-flight checks run before any of that: every backtick path in the README exists; all scripts parse; **no absolute paths** (`abs-path-scan.sh`, where RED blocks ARCHIVE); script headers present; every random draw paired with a `set.seed`; README has all nine sections.
+
+### 19.4 VERIFY — does every claim have a producing script?
+
+VERIFY extracts every Table, Figure, and in-text statistic reference from the manuscript — coefficients, N, p-values, percentages, confidence intervals — and maps each to the script that produced it, marking each **MAPPED / PARTIAL / UNMAPPED / SUPPLEMENT**. It distinguishes two failure directions: **ORPHAN** (a file exists but nothing references it) and **MISSING** (something is referenced but no file exists). The completeness score is N/M; the quality bar is ≥80% of in-text statistics traceable.
+
+### 19.5 ARCHIVE — where to deposit
+
+| Journal | Recommended | Alternative |
+|---|---|---|
+| ASR, AJS | AJS Dataverse / Zenodo | Harvard Dataverse |
+| Demography | Zenodo / Harvard Dataverse | ICPSR |
+| Science Advances | Zenodo + Code Ocean | Dryad |
+| NHB | Zenodo | figshare |
+| Nature Computational Science | Zenodo + Code Ocean | GitHub + Zenodo |
+| APSR | Harvard Dataverse | ICPSR |
+| AJPS | AJPS Dataverse | Harvard Dataverse |
+| AEA journals | openICPSR | — |
+
+Size limits to plan around: GitHub 100 MB per file · Zenodo 50 GB · Dataverse 2.5 GB per file · ICPSR 30 GB.
+
+The DOI flow is: `git tag v1.0.0` → push to GitHub → enable the Zenodo GitHub webhook → create a GitHub release, which mints the DOI → add the DOI badge to the README.
+
+### 19.6 Restricted data — what our CFPS package actually shares
+
+CFPS microdata cannot be redistributed, which is the common case in this field. The decision tree routes restricted data to **access instructions plus synthetic data** (`fabricatr` or `synthpop`), never to a silent bundling. Our package therefore contains:
+
+- All scripts in execution order, driven by `run-all.sh` and the R controller `00_master.R`.
 - An `environment.yml` / `renv.lock` lockfile.
 - A README following the AEA template.
-- A `data-availability.md` explaining what is shared and what is not (CFPS raw data is restricted; we share derived tables, code, mock data, and access instructions).
-- Expected outputs hashed (SHA256) so anyone re-running the pipeline can confirm bit-identity of the locked tables.
+- A `data-availability.md` explaining what is shared and what is not — derived tables, code, mock data, and instructions for obtaining CFPS access.
+- Expected outputs hashed with SHA-256 so anyone re-running can confirm bit-identity of the locked tables.
 
 If you wait until submission week to do this, reproducibility becomes archaeology.
 
-## 20. `scholar-presentation` and `scholar-grant` — downstream products
+### 19.7 `scholar-open` — five modes of declaration
 
-Once the paper is verified, the same skill suite produces downstream artifacts.
-
-**Conference talk / job talk:**
-
-```
-> /scholar-presentation talk output/digital-divide-china-cfps
-                         manuscript.md figures/
-                         target=ASA 15min
+```yaml
+argument-hint: "[PREREGISTER|DATA-SHARE|CODE-SHARE|FULL-PACKAGE|
+                REPLICATION-PACKAGE] [study description or journal name]"
 ```
 
-Outputs: `slides.pptx`, `slides.pdf`, speaker notes, backup slides, timing notes, simplified figure variants.
+| Mode | Produces |
+|---|---|
+| **PREREGISTER** | Preregistration document; Registered Report Stage 1/2 structure; OSF workflow; secondary-data preregistration language; deviation-reporting template |
+| **DATA-SHARE** | FAIR checklist; sensitivity decision tree; repository guide; de-identification (k-anonymity k=5 via `sdcMicro`); platform-policy handling; **data-availability statements** |
+| **CODE-SHARE** | Minimum vs. gold-standard package structure; README; `renv`/conda/Docker; CITATION.cff; the Zenodo-via-GitHub DOI flow |
+| **FULL-PACKAGE** | Data management plan (NSF SBE six-section / NIH DMSP ≤2 pages); CRediT 14-role table; COI; IRB statements; open-access and APC strategy |
+| **REPLICATION-PACKAGE** | An audit checklist for an existing package |
+
+```
+> /scholar-open PREREGISTER survey experiment on political trust, target Science Advances
+> /scholar-open DATA-SHARE secondary analysis of CFPS data for Social Forces
+> /scholar-open FULL-PACKAGE DMP for an NSF-funded study
+```
+
+**Preregistration registries** it supports: OSF Preregistrations (the full template — Study Information, Design Plan, Sampling Plan, Variables, Analysis Plan, Software and Versions, Other), AsPredicted's nine questions, EGAP, the AEA RCT Registry, and OSF Registered Reports.
+
+Two rules worth stating plainly, because they trip people:
+
+- **An OSF registration, once locked, cannot be modified.** Embargo up to four years is available; changes afterwards exist only as *disclosed deviations*. That is the point of the mechanism.
+- **Every deviation must be disclosed**, using the skill's template. A preregistration you quietly departed from is worse than none.
+
+The data-availability statement templates cover the situations you will actually face: fully open · restricted via DUA · public secondary data with an archived derived dataset · qualitative data that cannot be shared · social-media data whose ToS forbids redistribution (share IDs only). The last is not hypothetical: Twitter/X, Reddit, Meta, TikTok, and LinkedIn all forbid redistributing raw content, and both Pushshift (2023) and CrowdTangle (August 2024) have shut down since these workflows were designed.
+
+**Preprint servers** covered: SocArXiv, SSRN, arXiv (`cs.SI`, `cs.CY`, `stat.AP`), PsyArXiv, medRxiv. ASR, AJS, and Demography permit preprints at any stage; NHB and NCS permit them before or after review; Science Advances permits them with a post-publication DOI update.
+
+**Stop and check.** Delete your `renv/` directory, run `bash scripts/run-all.sh`, and see what happens. That is Level 3, and it is the lowest bar any journal will accept.
+
+## 20. `scholar-presentation` — talks and print posters
+
+Once the paper is verified, the same skill suite produces downstream artifacts. The general rule for all of them: every downstream product must trace back to a locked result, a verified citation, or an accepted limitation. **Presentation is claim selection under time pressure, not decoration.**
+
+### 20.1 Eight modes, including print posters
+
+```yaml
+argument-hint: "[talk-type: conference|job-talk|colloquium|dissertation|
+                guest-lecture|poster-lightning|workshop|conference-poster]
+                [topic or paper] [time in minutes, or poster dims like 48x36]
+                [audience level] [optional: target journal]
+                [output: slides-only|pptx|pptx+pdf]"
+```
+
+| Mode | Length | Shape |
+|---|---|---|
+| **1 Conference talk** | 10–20 min | One contribution, fast — 8–18 slides |
+| **2 Job talk** | 45–60 min | Research identity + design defense + agenda — 28–45 slides |
+| **3 Colloquium** | 40–60 min | Mixed-audience framing |
+| **4 Dissertation talk** | 45–75 min | Chapter coherence around one anchor chapter |
+| **5 Guest lecture** | 30–75 min | Teaching plus a live research example |
+| **6 Poster lightning** | 3–5 min | Max 5 slides, one figure, hook and call to action |
+| **7 Workshop** | 60–120 min | Hands-on, with exercise breaks budgeted at 1.5× |
+| **8 Conference poster** | one page | Print poster — Parser → Planner → Renderer |
+| **R Revise** | — | Read an existing deck, diagnose, fix |
+
+```
+> /scholar-presentation conference talk on "Access convergence, use divergence",
+                        15 minutes, mixed audience, pptx
+> /scholar-presentation job-talk on digital inequality, 55 minutes, pptx+pdf
+> /scholar-presentation conference-poster from drafts/manuscript-final.md,
+                        48x36 landscape, 3 columns, pptx+pdf
+```
+
+A bare `poster` is ambiguous between mode 6 and mode 8, and the skill will ask rather than guess.
+
+Slide budget is computed, not eyeballed: `slides = floor(minutes × slides_per_minute) − buffer`. And there is one content rule that improves decks more than any other single change:
+
+> **Content-slide titles must be complete claim sentences, ≤70 characters — not topic labels.** "Rural–urban use gap persists as access converges" beats "Results."
+
+#### 20.1.1 Generation, and the two gates
+
+Slides are produced by a pre-built module, not by generated code: a JSON manifest goes in, a PPTX comes out.
+
+```bash
+$ python3 references/pptx_layouts.py slides.json out.pptx
+$ python3 references/pptx_layouts.py poster.json poster.pptx   # type: "poster"
+```
+
+The module ships **45 slide layouts** — title, TOC, content-bullets, content-figure, two-column, section-divider, card-grid, highlight-rows, code-block, closing-summary, executive-summary, backup, process-flow, funnel, matrix, timeline, comparison-table, stat-callout, waterfall, pillar, split-comparison, pyramid, hub-spoke, concentric, cycle, venn, swim-lane, quote, status-matrix, staircase, decision-tree, three-panel, annotated-figure, SWOT, pros-cons, data-callout, roadmap, risk-matrix, equation, thank-you, agenda, icon-text-list, horizontal-bar, donut, assumption-check. If `python-pptx` is unavailable, it falls back to pandoc.
+
+Two gates keep the output usable:
+
+- **The content-fit gate.** Every slide type has hard limits (`max_bullets`, `max_body_words`, `max_chars`, `max_title_chars`, `max_caption_words`). Overflow is fixed in a fixed order — tighten language, auto-split into "(1/2)"/"(2/2)", break long lines, shorten captions, shorten titles — and if it still overflows, the pipeline **stops**. A slide nobody can read is not a deliverable.
+- **The PDF gate.** After conversion, the file must exist, be non-empty, and start with a `%PDF` header. The skill fails loudly rather than reporting success on a zero-byte file.
+
+For posters (mode 8) there is a third: a **VLM render-and-critique loop**. The poster is rendered to PNG at 150 DPI, the model *reads the image back*, applies a ten-criterion critique, fixes the top three high-severity problems in `poster.json`, and re-renders — up to three iterations, with each iteration snapshotted to `vlm-preview/iter-N/`. Poster defaults: 48×36 inches, three columns, Georgia Bold 72–96pt title, Arial 22–28pt body with a 16pt hard floor, ≤60 words per section, ≤600 words total.
 
 **Box-style PPTX layouts** (per user preference): the layout uses bordered boxes around content blocks rather than horizontal divider lines, which presents better on conference projectors.
 
-**Pilot → grant:**
+Outputs land in `output/presentation/`: the full plan, the slide plan, speaker notes, the PPTX, the PDF, and the JSON manifest — the manifest being the thing to keep, since it regenerates everything else.
+
+## 20A. `scholar-image` — decorative figures only, and a hard refusal
+
+```yaml
+argument-hint: "[generate|prompt|preview|list-venues] [venue] [freeform intent]"
+```
+
+Four modes: `generate` (compose prompt, save it, produce the image), `prompt` (save the prompt JSON only), `preview` (compose and print, save nothing), `list-venues`.
+
+Seven venue profiles: `neurips` (NeurIPS/ICML/ICLR), `acl` (ACL/EMNLP/NAACL), `chi` (CHI/UIST/CSCW), `nature` (Nature family incl. NHB, NCS, Science Advances), `generic-poster`, `generic-slide`, `generic-figure-panel` — each with style directives, a palette, and the invariant typography policy: **no rendered text inside the image**; labels are overlaid externally.
+
+Generation goes through the Codex CLI (`codex exec`, using your ChatGPT session — no API key), with an OpenAI SDK fallback (`gpt-image-2`, needs `OPENAI_API_KEY`). Every run saves a prompt JSON to `output/images/prompts/` — the reproducibility receipt.
+
+**What it refuses, and where it sends you instead.** A scope gate runs *before* any prompt is composed:
+
+| You asked for | Routed to |
+|---|---|
+| A DAG or causal diagram | `/scholar-conceptual diagram dag` or `/scholar-causal` |
+| Results, effect sizes, coefficients | `/scholar-analyze` |
+| Bar chart, scatter, boxplot, forest plot, heatmap, histogram | `/scholar-analyze` |
+| Architecture or labeled model diagram | `/scholar-conceptual` (TikZ) |
+| Flowchart or methodology diagram | `/scholar-conceptual` (Mermaid) |
+| Confusion matrix, attention map, saliency map | `/scholar-compute` |
+| A typeset equation | LaTeX in the document |
+| A UI mockup | Figma or a screenshot |
+
+There is also a global negative-prompt floor that cannot be removed: *no rendered text, no fake data, no hallucinated numerical values, no fake axis labels, no fabricated plots, no logos.* This skill will make you a nice poster header. It will not make you evidence.
+
+## 20B. `scholar-grant` — from pilot to proposal
+
+```yaml
+argument-hint: "[nsf|nih|rsf|spencer|aims|budget|data-plan|review|compare|
+                resubmit|biosketch|letters] [research topic or file]"
+```
 
 ```
-> /scholar-grant NSF sociology concept-note
-                 digital divide aging China
-                 using CFPS pilot findings
+> /scholar-grant nsf digital divide and aging in China using CFPS pilot findings
+> /scholar-grant aims computational text analysis of policy discourse
+> /scholar-grant review drafts/proposal-draft.md
+> /scholar-grant resubmit nih-a0-reviewer-comments.pdf
 ```
 
-Outputs: aims, significance, broader impacts, data management plan, draft budget narrative, mock review.
+The full pipeline is deep — it invokes `scholar-idea` for the research question, `scholar-lit-review-hypothesis` for the literature, `scholar-design` plus `scholar-causal` for the design, optionally `scholar-compute` or `scholar-ling`, then drafts, then reviews.
 
-The general rule: every downstream product must trace back to a locked result, a verified citation, or an accepted limitation. **Presentation is claim selection under time pressure, not decoration.**
+**What it produces per funder:**
+
+| Funder | Core document | Structure |
+|---|---|---|
+| **NSF** | 15-page Project Description | Problem & Significance (2–3 pp) → Theory & Hypotheses (2–3) → Data & Methods (4–5) → Preliminary Evidence (1–2) → Feasibility & Timeline (1) → **Broader Impacts** (1–2). Plus the 1-page 3-paragraph Project Summary, SciENcv biosketch, budget, facilities, ≤2-page DMP |
+| **NIH** | 12-page Research Strategy (R01) | Significance (2–3) → Innovation (1–2) → Approach, per aim (3–4 × 3 aims) → Timeline → **Rigor & Reproducibility**. Plus the 1-page Specific Aims, human-subjects section, 5-page SciENcv biosketch |
+| **RSF** | 8–15 pages | Problem → Literature & Theory → RQs & Hypotheses → Data & Methods → Feasibility → **Products & Dissemination** (policy-facing required) |
+| **Spencer** | 5–25 pages | Education Problem → Prior Evidence & Framework → RQs & Design → **Research-Practice Relevance** → Feasibility → Expected Outputs |
+
+Three mechanisms are worth borrowing even if you never write a grant:
+
+- **The framing panel.** Three agents draft competing framings of the same project — theory-forward, methods-innovation, impact-forward — and *you* pick. Most proposals are written in whichever framing occurred to the author first.
+- **The mock panel.** Five personality-calibrated reviewers (methods-skeptical, compliance-perfectionist, significance-constructive, approach-skeptical, program-fit-pragmatic) score against real funder criteria — NSF's Intellectual Merit / Broader Impacts on the E/VG/G/F/P scale, NIH's five criteria on 1–9 plus Overall Impact.
+- **The prior-awards search.** Shipped scripts search actual funded awards, so "does this look like something they fund?" has an evidence-based answer:
+
+```bash
+$ bash assets/find_nsf_sbe_awards.sh "digital divide aging" 20
+$ bash assets/find_nih_awards.sh "social determinants mortality" 20
+$ bash assets/find_rsf_grants.sh "immigration labor market" 20
+$ bash assets/find_spencer_grants.sh "education inequality" 20
+```
+
+Gates: a budget cannot be drafted before the aims are final; a pre-panel gate blocks any remaining `[CLAIM-*]` or `[CITATION NEEDED]` markers; and a `scholar-code-review` pass with zero CRITICAL issues is required if the proposal carries analysis scripts.
+
+## 20C. `scholar-teach` — syllabus-first course materials
+
+**Goal:** turn your research into teaching materials that are actually aligned to a course, not free-floating handouts.
+
+```yaml
+argument-hint: "[syllabus|lecture|discussion|assignment|exam|reading-list|
+                slides|rubric|adapt] [topic or paper]
+                [optional: level, course, weeks]"
+```
+
+The architecture is **syllabus-first**: the syllabus is the persistent scaffold every other artifact is generated against. Run any other workflow without one and the skill warns you and offers to proceed standalone.
+
+| Workflow | Produces |
+|---|---|
+| `syllabus` | Full course syllabus via a four-agent design panel |
+| `lecture` | Lecture notes for one session (50- or 75-minute structures) |
+| `discussion` | 8–12 scaffolded prompts, small-group activities, Socratic chains, devil's-advocate prompts |
+| `assignment` | Prompt + rubric + peer-review worksheet |
+| `exam` | Questions by type + answer key + a tagged question bank |
+| `reading-list` | Annotated list, verified through the full citation tier chain |
+| `slides` | Slide-by-slide outline plus a fill-in-the-blank handout |
+| `rubric` | Analytic, holistic, or single-point rubric with calibration notes |
+| `adapt` | A published paper → lecture summary, discussion questions, glossary, methods explainer, policy implications |
+
+```
+> /scholar-teach syllabus social stratification and inequality level=intermediate weeks=15
+> /scholar-teach lecture residential segregation week=5 format=75min
+> /scholar-teach adapt output/papers/digital-divide-china-cfps.pdf
+```
+
+The multi-agent panels here are **blocking by design**: the syllabus workflow's four agents (curriculum architect using backward design, disciplinary expert, student-centered/UDL, DEI/critical pedagogy) present competing designs in a comparison table and **wait for you to choose**. Same for the three-agent assignment panel and the three-agent exam review panel (content validity, psychometric, accessibility/fairness). This is the right shape for teaching: the pedagogical choice is yours, and the agents' job is to make the alternatives visible.
+
+Every reading is tagged `[VERIFIED-LOCAL]`, `[VERIFIED-CROSSREF]`, `[VERIFIED-WEB]`, or `[UNVERIFIED]`, and lecture content citing specific findings passes a claim-faithfulness gate. A syllabus with a hallucinated reading is a bad first day.
+
+Note that `lecture` and `slides` produce *outlines*; hand them to `/scholar-presentation` (§20.1) for actual PPTX files.
+
+## 20D. `scholar-book` — the long form
+
+**Goal:** plan, draft, revise, and assemble a book — with the argument threading intact across chapters.
+
+```yaml
+argument-hint: "[proposal|outline|chapter|revise|assemble|diss2book|full]
+                [book-type] [topic or file]"
+```
+
+Four book-type profiles: **monograph** (70–100k words, 8–12 chapters) · **edited volume** (80–120k, 12–18) · **textbook** (100–150k, 15–20) · **trade/crossover** (60–80k, 8–10).
+
+```
+> /scholar-book proposal monograph on the Chinese digital divide for Princeton UP
+> /scholar-book outline monograph on digital inequality
+> /scholar-book chapter 3
+> /scholar-book diss2book ~/dissertation/final.pdf
+> /scholar-book assemble digital-divide-book
+```
+
+Four features distinguish this from "write me eight long documents":
+
+- **The voice-calibration read.** Before drafting chapter 2 or later, the skill reads the voice fingerprint plus the last 2,000 characters of the previous chapter and the first 2,000 of chapter 1. This is what stops chapter 6 from sounding like a different author than chapter 1.
+- **The outline hard gate.** Chapter drafting refuses to start unless an outline exists, is non-trivial, and contains at least three chapter cards. No chapter gets written into a vacuum.
+- **The edited-volume asymmetry.** For an edited volume, only chapter 1 (introduction) and the final chapter (conclusion) get full AI drafts. Everything in between produces a **contributor brief** — because auto-drafting someone else's chapter is a workflow collision, not a feature.
+- **The style-score gate.** After polishing, a chapter that fails the style ceiling (`SCHOLAR_BOOK_STYLE_MAX`, default 30, three retries) is moved to `chapters/_blocked/` and **blocks assembly** until you deal with it.
+
+The `diss2book` mode is the one most readers of this handbook will want. It runs a candid assessment protocol — find the book's argument (which is usually not the dissertation's), audit the usable yield per chapter, then execute six restructuring steps: rewrite the introduction from scratch, dissolve the literature review into the argument, cut the methods chapter in half, restructure the empirical chapters, rewrite the conclusion, and develop a voice fingerprint.
+
+One mechanical caution the skill documents about itself: sub-skills write to their own directories (`scholar-write` → `output/drafts/`, `scholar-polish` → `output/<slug>/polish/`), so the book pipeline relocates each output back into `output/<slug>/book/` after every delegation. And numeric fidelity in empirical chapters must be re-checked **after** polishing, because style editing has been observed to corrupt numbers (`0.15` → `0.051`).
+
+## 20E. `scholar-collaborate` — CRediT, tasks, and difficult conversations
+
+**Goal:** the administrative scaffolding of multi-author work, written down before it becomes a dispute.
+
+```yaml
+argument-hint: "[credit|tasks|communication|contributions|mentor|team-setup|
+                conflict|meeting] [project name or context]
+                [optional: team size, roles]"
+```
+
+| Workflow | Produces |
+|---|---|
+| `credit` | An author × role matrix across the **14 CRediT roles**, conflict detection (no lead for a role, solo claims, ghost authorship, ICMJE minimum), and the statement formatted four ways (Nature narrative, Science Advances role-first, PLOS CSV, ASA acknowledgment) |
+| `tasks` | Phase breakdown, assignment table with dependencies, critical path, ASCII Gantt |
+| `communication` | Eight email templates, meeting agendas, and — usefully — **difficult-conversation templates** for authorship order, removing a co-author, and scope disagreements |
+| `contributions` | Contribution log, version history with attribution, NIH/NSF compliance statements |
+| `mentor` | Skill assessment across 11 areas, a training plan, five-stage milestone check-ins, a feedback framework, and documented authorship expectations |
+| `team-setup` | Roster, shared infrastructure, DUA template, IRB coordination (including the sIRB requirement for NIH since 2020), communication norms, **an authorship agreement signed before work begins**, folder structure |
+| `conflict` | The ICMJE + ASA five-step dispute protocol, an escalation tree, mediation guide, withdrawal protocol |
+| `meeting` | Agendas, minutes, action items, summary emails |
+
+```
+> /scholar-collaborate credit multi-site digital divide study team size=5
+> /scholar-collaborate team-setup multi-institution demography collaboration
+> /scholar-collaborate mentor training plan for a PhD student on causal inference
+```
+
+The highest-value item is the one people skip: **the authorship agreement in `team-setup`, signed before work begins.** Almost every authorship dispute this workflow's `conflict` mode exists to resolve would have been prevented by the document its `team-setup` mode produces.
+
+Unlike its siblings, this skill spawns no subagents and writes markdown only — no PDF conversion. These are working documents, not deliverables.
+
+## 20F. `scholar-monitor` — staying current without drowning
+
+**Goal:** a delta-based digest of new work in your area, delivered on a schedule, ingested into your knowledge graph.
+
+```yaml
+argument-hint: "[source_id | all | preview | init | list | status | add |
+                remove | configure delivery | digest [date-range]]"
+```
+
+```
+> /scholar-monitor init
+> /scholar-monitor preview               # what would be fetched — no network calls
+> /scholar-monitor                       # fetch everything due
+> /scholar-monitor add
+> /scholar-monitor configure delivery
+> /scholar-monitor schedule daily 08:00
+> /scholar-monitor digest last-7
+```
+
+Three sources are enabled out of the box — **ASR** (weekly), **Nature Human Behaviour** (weekly), and an **arXiv cs.CL LLM query** (daily) — with 19 more shipped but disabled: AJS, Social Forces, Social Problems, Annual Review of Sociology, Demography, PDR, Gender & Society, Sociology of Education, JMF, Ethnic and Racial Studies, Du Bois Review, Social Science Research, SMR, Science Advances, Nature Computational Science, APSR, PNAS, arXiv cs.CY, arXiv econ.GN. Enable what you will actually read.
+
+The delta mechanism is per-source state: a `last_seen_date` cursor plus the last 200 seen IDs, with a 14-day first-run lookback. **The cursor only advances on success** — a failed fetch does not silently skip a week of papers.
+
+Delivery goes to a file (always, as the audit trail) and optionally Telegram, ntfy, or email. The discipline here is worth noting: a configured-but-broken channel **RED-fails the run** rather than silently skipping, and the digest is still written.
+
+For a durable daily digest, use the skill's own scheduler:
+
+```
+> /scholar-monitor schedule daily 08:00
+```
+
+This installs a macOS `launchd` job. The skill is explicit that the alternatives do not work for this: `/loop` is session-bound and dies when you close the terminal, and `/schedule` runs on remote cloud infrastructure with no access to your local config, secrets, or knowledge graph. On Linux, use crontab.
+
+**The absolute rule:** no fabricated papers, ever. If the fetch returns zero, the digest reports zero — it never pads. An empty abstract is reported as "no abstract available," never inferred.
+
+New papers flow into the `scholar-knowledge` graph (§8C) at `extraction_tier: abstract_only`; run `/scholar-knowledge re-extract` later to deepen them once you have PDFs.
+
+## 20G. `scholar-exemplar-curate` — teaching the writer what good looks like
+
+**Goal:** build the annotated paragraph library that `scholar-write` reads when it drafts.
+
+This closes a loop most people never notice. `scholar-write` produces better prose when it has *exemplars* — real paragraphs from real papers in your target journal, annotated with what they do well. This skill builds that library.
+
+Three sourcing modes plus a review gate:
+
+| Mode | Source |
+|---|---|
+| `zotero` | Auto-extract from your Zotero library, filtered by journal × time window |
+| `top50` | A list you maintain of the 50 papers worth imitating most |
+| `user-work` | Your own publications, via the Zotero My Publications tag |
+| `review` | Walk the staged candidates and approve or reject each |
+
+```
+> /scholar-exemplar-curate zotero "Social Forces" methods --since 2020
+> /scholar-exemplar-curate review
+```
+
+Nothing enters the live library automatically. Each candidate is staged in `_staging/`, annotated by the `extract-section-exemplar` subagent (which pulls the strongest 1–3 paragraphs plus a "what it does well" block and caveats), and held until you run `review`. Approved exemplars promote to `scholar-journal/exemplars/<journal-slug>/<section>/`; rejected ones go to `_rejected/` so they are never proposed again.
+
+The library is **cross-project**: curate once, and every future paper you write for that journal drafts against it.
 
 # PART III — ORCHESTRATORS
 
-So far we've run skills one at a time. For a real paper, you want the entire chain in a single, resumable, gated workflow. That is what `scholar-full-paper` and `scholar-auto-research` provide.
+So far we've run skills one at a time. For a real paper, you want the entire chain in a single, resumable, gated workflow. That is what `scholar-full-paper` and `scholar-auto-research` provide — plus `scholar-resume` to tell you where you are, `scholar-loop` to run a queue of ideas unattended, and `scholar-auto-improve` to audit the suite itself.
+
+An orchestrator adds exactly three things the individual skills do not have: **ordering**, **gates**, and **resumable state**. It adds no new research capability. If you understand those three things, you can use it well — and, more importantly, you can tell when it is lying to you.
 
 ## 21. `scholar-full-paper` — the canonical heavy chain
 
 **Goal:** one command takes you from data + research question to a verified, polished, submission-clean draft.
 
+```yaml
+argument-hint: "[research idea OR data/codebook file paths | resume [slug] |
+                relock [slug] [--cosmetic] | --slug <name> <research idea> |
+                --validate-signal <research idea> <data files>]"
+```
+
+### 21.1 The invocation forms
+
 ```
 > /scholar-full-paper --slug digital-divide-china-cfps
   "RQ: In CFPS 2010-2020, did hukou/cohort gaps in internet access narrow
    while gaps in weekly use hours persisted? Target Social Forces."
+
+> /scholar-full-paper data/raw/cfps2020.dta materials/cfps-codebook.pdf
+> /scholar-full-paper resume digital-divide-china-cfps
+> /scholar-full-paper relock digital-divide-china-cfps --cosmetic
+> /scholar-full-paper --validate-signal --slug gss-polarization \
+                      "Has affective polarization risen?" data/raw/gss.dta
 ```
 
-The active linear route (defined by `scripts/gates/pipeline-state.sh`):
+Arguments are parsed in a fixed order: `resume` and `relock` keywords first, then `--slug`, then `--validate-signal`. A slug must match `^[a-z][a-z0-9-]{1,63}$`. Handing it data files with no research question routes into Phase 0-PRE (brainstorm); `--validate-signal` forces the brainstorm's empirical signal tests to run even when you *do* have a question.
+
+### 21.2 The complete phase route
+
+The canonical sequence is defined in `scripts/gates/pipeline-state.sh` as 28 entries:
+
+```
+-1  0-PRE  0  1  2  3  3.5  4  5  5A.5  5A.7  5.5  5C  6  6.5  7  7b  7c  7c.5
+ 8  9  9b  10  10.5  11  11b  11.5  12
+```
 
 | Phase | What happens | Gate |
 |---|---|---|
 | **−1** | Safety scan | All files CLEARED / LOCAL_MODE |
-| **0-PRE** | (Optional) brainstorm | Top-5 RQ list |
-| **0** | Idea selection | One focal RQ |
-| **1** | Research brief | Project brief written |
-| **2** | Lit review + theory | Hypotheses derived |
-| **3** | Design blueprint | Estimand + model ladder locked |
-| **3.5** | Design pre-mortem | 3 reviewer agents pass |
-| **4** | Data blueprint | Variable dictionary frozen |
-| **5** | EDA + analysis plan | Table 1 + missingness map |
-| **5A.5** | Pre-execution code review | Scripts pass review before running |
-| **5A.7** | Analysis pre-mortem | Reviewer panel approves plan |
-| **5B** | Execute analysis (inside Phase 5; no separate state gate) | Tables + figures rendered |
-| **5.5** | Full code review | 6-agent scorecard PASS |
-| **5C** | Runtime sanity | Numbers reproduce |
-| **6** | Compute / linguistic branch (Conditional) | Branch-specific outputs |
-| **6.2** | Compute pre-mortem (only if Phase 6 active) | Reviewer panel approves compute plan |
-| **6.5** | Results lock + pre-draft verify | SHA256 manifest written |
-| **6.8** | Section blueprint | Per-section authoring contract written |
-| **7** | Manuscript drafting | Full draft against blueprint |
-| **7b** | Verification gate | 4-agent panel PASS |
-| **7c** | Style polish | Diff reviewed |
-| **7c.5** | Prose quality review | Codex cross-model prose panel + Claude holistic reviewer PASS |
-| **8** | Citation harmonization | Every cite verified |
-| **9** | Submission package | Cover letter + journal-format submission |
-| **9b** | Ethics compliance | IRB / AI-use disclosure |
-| **10** | Pre-submission review simulation | R&R-style severity matrix (advisory) |
-| **10.5** | Manuscript quality gate (dual-pass) | Hard gate before assembly |
-| **11** | Final publication-ready assembly | docx/pdf/tex archive |
-| **11b** | Submission prep — reviewer handoff | Reviewer-facing manuscript |
-| **11.5** | Submission hygiene | No path leaks, no pipeline-jargon |
-| **12** | Replication package (relocated from 9c in v5.13) | Pre-flight check + build/document/test/verify; SHA256 lockfile |
+| **0-PRE** | Brainstorm *(conditional)* | Top-10 ranked RQs; auto-excused if materials absent or an RQ exists |
+| **0** | Idea selection | One focal RQ; writes the full project `CLAUDE.md` |
+| **0.D** | Auto-infer data status | `Data Status: no-data \| materials-only \| existing-data` |
+| **1** | Research brief | Journal, word limit, scope; project state initialized |
+| **2** | Lit review + theory | **≥50 papers (RED floor), ≥70 for GREEN**, ≥2,000 words, mechanism chain, ≥95% verification rate |
+| **3** | Design blueprint | DAG, `identification-strategy.json`, `model-specs.json`, `test-inventory.json` |
+| **3.5** | Design pre-mortem | ≥3 real reviewer dispatches with provenance |
+| **4** | Data blueprint | Variable dictionary, IRB determination, CRediT draft |
+| **5** | EDA + analysis | **≥3 model specs, ≥2 robustness checks, ≥4 figures** |
+| **5A.5** | Pre-execution code review | Universal — **never auto-excused** |
+| **5A.7** | Analysis pre-mortem | Reviewer panel; a RED-headline-contingent finding cannot be waved through |
+| **5B** | Execute analysis | *(no separate gate — implicit via 5.5)* |
+| **5.5** | Full code review | Six separate agent dispatches, counted by unique agent ID |
+| **5C** | Runtime sanity | `Overall verdict: PASS`; any CRITICAL halts |
+| **6** | Compute / linguistic branch *(conditional)* | Auto-excused if not a compute or linguistics project |
+| **6.2** | Compute pre-mortem *(if 6 active)* | Reviewer panel |
+| **6.5** | Results lock + pre-draft verify | SHA-256 manifest; state must record `lock_manifest_sha:` |
+| **6.8** | Section blueprint | Per-section authoring contract |
+| **7** | Manuscript drafting | Reads **only** from the lock; each section ≥60% of budget |
+| **7b** | Verification gate | Four real verify-agent dispatches; halts at >3 CRITICAL |
+| **7c** | Style polish | Em-dash density RED above 2.5/page; shape checks S1–S4 |
+| **7c.5** | Prose quality review | Codex cross-model panel + a holistic Claude reader |
+| **8** | Citation harmonization | `.bib` present, zero `[CITATION NEEDED]`, ≥10 rendered entries |
+| **9** | Submission package | Cover letter, open-science declarations |
+| **9b** | Ethics compliance | `ethics-verdict.json`; any flag blocks Phase 10 |
+| **10** | Review simulation | ≥3 real `peer-reviewer-*` dispatches; revisions **advisory** by default |
+| **10.5a** | Cross-phase reviewer synthesis | Every Bucket A resolved, every Bucket B disclosed |
+| **10.5b** | Independent editorial panel | ≥4 fresh reviewers, senior **unprimed** |
+| **11** | Final assembly | **All four formats** — md, docx, tex, pdf |
+| **11b** | Submission prep | Reviewer-facing manuscript; fails closed |
+| **11.5** | Submission hygiene | Three stages: A hygiene → A.5 Codex prose → B semantic read |
+| **12** | Replication package | Terminal. Every contract clause is RED, not YELLOW |
 
-The mandatory "do not skip" gates are highlighted in the route: **Phase 3.5, 5A.5, 5A.7, 5.5, 5C, 6.2 (when compute branch active), 6.5, 7b, 7c.5, 9b, 10, 10.5, 11.5, 12**. The Phase 7 drafting cannot start until `results-locked/LATEST.txt` exists and `results-lock-verify.sh` exits 0.
+Every phase gate is a **hard gate** unless marked advisory. Phase 5B is the one execution step with no gate of its own.
 
-These gates cannot be waved through. Since the **Layer-3 hard-blocks** (2026-05-18), trying to force-complete past a RED gate (`SCHOLAR_PSTATE_FORCE_REASON`, "HB3") or to cap the pipeline past a RED phase (`set-authorized-through`, "HB1") is refused *at the call site*, logged to `logs/hardblock-refusal-audit.md`, and recorded as `phases_force_complete_blocked`. The only honest way past a RED gate is to fix the defect or `pipeline-state.sh halt <phase>`. Which rule governs which such decision is codified in the **decision-trigger memory map** inlined into your `CLAUDE.md`.
+### 21.3 The state machine
 
-**Resume any time:**
+State lives in `output/<slug>/logs/project-state.md`, in two layers: an **auto-managed** `=== PIPELINE STATE ===` block that you must never hand-edit, and a human-readable `=== PROJECT STATE ===` audit log below it.
+
+```
+=== PIPELINE STATE ===
+phases_completed: -1,0,1,2,3,3.5,4,5,5A.5,5A.7,5.5,5C
+current_phase: 6.5
+current_phase_status: in_progress
+relock_count: 0
+started_at: 2026-05-04T09:12:33Z
+last_updated: 2026-05-04T16:41:07Z
+```
+
+`current_phase_status` is one of `not_started`, `in_progress`, `completed`, or `halted-RED-at-<phase>`.
+
+There is also a `body_checksum` — a hash over every non-blank line *outside* the block. If you hand-edit the markdown log, the checksum goes stale, and the next resume returns `STALE_BLOCK_REQUIRES_REBUILD` rather than guessing. This is a feature: the system notices that a human edited its state file.
+
+**Do not append a second `## Phase N` heading by hand.** It duplicates the heading *and* staleness-flags the checksum. Use `pipeline-state.sh note` instead.
+
+The operator surface:
+
+```bash
+$ bash scripts/gates/pipeline-state.sh status "$PROJ"
+$ bash scripts/gates/pipeline-state.sh next "$PROJ"
+$ bash scripts/gates/pipeline-state.sh halt 7b --reason "verify found 4 CRITs"
+$ bash scripts/gates/pipeline-state.sh rebuild "$PROJ"
+$ bash scripts/gates/phase-verify.sh 7b "$PROJ"
+```
+
+Three other scripts do most of the real work: **`results-lock.sh`** snapshots tables, figures, EDA output, and verify reports into `results-locked/<LOCK_ID>/` with a SHA-256 manifest, then makes them read-only; **`results-lock-verify.sh`** re-hashes every file against that manifest; and **`phase-verify.sh`** runs the per-phase gate battery — 123 distinct gate scripts across the pipeline.
+
+### 21.4 Session seams — why it stops and asks
+
+Long runs blow through context. The pipeline therefore marks **cluster seams** at Phases 5C, 6.5, 8, and 10.5 — the boundaries between Plan-and-Execute, Lock, Draft-and-Verify, Ethics-and-Replication, and Final-Assembly — plus lighter advisory seams after Phases 2, 7, 7b, and 10.
+
+At a cluster seam the orchestrator stops the turn and hands you a resume command. That is not a failure; it is the design. You are expected to `/clear` and resume.
+
+The skill is candid about why: it **has no harness API to measure remaining context**, so "I was running low on context" is explicitly inadmissible as a reason to skip a phase.
+
+### 21.5 Back-routing — when a downstream gate blames an upstream phase
+
+When Phase 7b's verification finds that the prose misstates a table, the fix belongs at Phase 7, not 7b. The gates emit a **back-route directive**:
+
+```
+BACK_ROUTE=7:fix-verify-findings
+BACK_ROUTE_COUNT=1
+BACK_ROUTE_FINDINGS_DIGEST=a3f9c21b7e40d8ff
+```
+
+Back-routes are emitted from the RED arms of Phases 5C, 7b, 8, and 11.5. When several fire, the **most upstream target wins**. Two brakes prevent infinite loops: a numeric cap of **9** (dropping to **2** under an autonomous loop), and a **same-signature cap of 3** — if the identical set of findings routes back three times, the pipeline escalates rather than trying a fourth time. The counter resets only on genuine forward progress.
+
+### 21.6 Hard blocks — the honest part
+
+These gates cannot be waved through. Three hard blocks refuse *at the call site*:
+
+| Block | Refuses | Exit |
+|---|---|---|
+| **HB1** | Capping `user_authorized_through_phase` at a phase whose gate is currently RED | 5 |
+| **HB2** | Bypassing heterogeneous-review coverage | gate RED |
+| **HB3** | **Any** attempt to mark a phase complete while its gate is non-zero — *for any reason* | 3 |
+
+HB3 is the important one. `SCHOLAR_PSTATE_FORCE_REASON` **no longer bypasses it**; the force-handling code below the refusal is dead code kept for git history. Every refusal is logged to `logs/hardblock-refusal-audit.md` with the reason and the last 20 lines of gate output, and recorded in the state block as `phases_force_complete_blocked`.
+
+**The only two legitimate ways forward from a RED gate:**
+
+1. Fix the defect the gate surfaced.
+2. `pipeline-state.sh halt <phase> --reason "<text>"` — which records the failure honestly rather than erasing it.
+
+Every mutating command is also logged to `logs/state-mutations.md` with a timestamp, the arguments, and the parent process — so the audit trail survives even if the markdown is later edited.
+
+> **The disclaimer that makes this trustworthy.** The suite ships a document, `structural-bypass-limits.md`, stating plainly that these provenance gates are **a speed-bump, not a structural barrier**. The residual bypass is a three-file consistent forgery: the artifact, the process log, and the dispatch manifest are all files a language model can write. Closing that hole would need runtime-signed manifest entries or a non-writable sink, and neither exists in Claude Code today.
+>
+> Read that twice. A system that documents its own defeat conditions is more trustworthy than one that claims to be airtight — but it also means **the gates protect you from an agent taking shortcuts, not from an agent that has decided to fabricate.** The human reading the artifacts is still the last line.
+
+### 21.7 Provenance — how the pipeline knows a reviewer was real
+
+The single largest failure mode in this whole system is an agent *writing a review in its own voice* instead of dispatching a real subagent. The countermeasure is a dispatch manifest:
+
+```bash
+$ bash scripts/gates/emit-task-dispatch.sh --proj "$PROJ" \
+      --subagent peer-reviewer-quant --purpose design-premortem \
+      --phase 3.5 --agentId a7f3c9e21b884
+```
+
+Every gated dispatch appends a row to `logs/dispatch-manifest.jsonl`, and the gates cross-check three ways: the agent ID must appear in the artifact, the process log, **and** the manifest; the purpose is bound on first record; duplicates are first-seen-wins. Invocation IDs must match `^[a-z][a-z0-9_]{12,}$` — placeholders fail. And a project whose process log shows **zero** dispatches while its memo claims three reviewer rows is REDed as "inline-simulation suspected."
+
+This is exactly the check that §13's surrogate disclosure failed, honestly and in public.
+
+### 21.8 Resume
 
 ```
 > /scholar-full-paper resume digital-divide-china-cfps
 ```
 
-This reads `output/<slug>/logs/project-state.md` (the canonical state-block location per `scripts/gates/pipeline-state.sh`), identifies the last completed phase, and continues. If verification finds a problem at Phase 7b, the orchestrator routes back to Phase 5 (analysis) or Phase 7 (drafting), not forward.
+This reads the state block, identifies the last completed phase, and continues. If verification finds a problem at Phase 7b, the orchestrator routes back to Phase 5 or 7 — never forward.
 
-### 21.1 Empirical baseline — scoring the example corpus
+### 21.9 Empirical baseline — scoring the example corpus
 
 > **Source and caveat.** The head-to-head table below comes from `workshop/workshop-papers-analysis-2026-05-07.md` (1,369-line audit memo, generated 2026-05-07). Methodology: 26 AI-produced manuscripts from `workshop/cfps-example/output/` and `workshop/GSS/Projects/output/`, scored 1–10 by five parallel domain-aware reviewer agents against Zhang 2017 *JMF* as benchmark, using a consistent rubric (theory · data · methods · findings · 3-reviewer simulation · journal verdict). Cost estimates derived from manuscript word count, project artifact size, and number of analysis scripts (no direct API logs available). The rubric is internal and not formally validated — replace with your own audit results before citing externally. **The corpus has since grown well beyond these 26 — see the note below the table.**
 
@@ -3153,49 +5385,203 @@ Most outputs were **salvageable drafts**, not submission-ready (median verdict: 
 
 A separate prose-quality revise pass (`cfps-example/output/workshop-updated-manuscripts/SCORECARD.md`, 2026-05-09) lifted 11 produced manuscripts to a mean **8.04** on a 12-dimension *writing-craft* scale — but the scorecard itself flags that craft ≠ publishability: a fresh independent reviewer panel re-reading the 8.17-craft flagship (`cohabitation-marriage-cfps` v5) still returned MAJOR_REVISION on all four reviewers. **Bottom line: an 8+ *auto self-critique* or prose-craft score is not a peer-review verdict — only the four editorial-panel numbers above are trustworthy, and they still land at major-revision-or-worse.**
 
+### 21.10 When to ask the user rather than push through
+
+The skill names the moments where an agent should stop and ask — worth adopting as your own rule set:
+
+- A gate REDs twice at the same phase and you are considering a third fix.
+- You are about to rewrite agent-authored JSON or YAML in order to clear a gate.
+- You are about to invoke a force reason, cap authorization past a RED, or write an `[EXCUSED:*]` tag on a strong-trigger gate.
+- A pre-mortem RED names an artifact that is absent from the lock manifest.
+- A reviewer's prose verdict disagrees with its own structured metadata.
+
+## 21A. `scholar-resume` — where am I, and what runs next
+
+**Goal:** one advisory line telling you exactly what to do next. It executes nothing, writes nothing, and modifies no state.
+
+```
+> /scholar-resume                              # newest project
+> /scholar-resume digital-divide-china-cfps
+```
+
+It is a thin wrapper over `scripts/resume-dispatch.sh`, so `/scholar-resume <slug>` and `/scholar-full-paper resume <slug>` route identically. Output ends with a single directive:
+
+| `RESUME_ROUTE=` | Meaning | What to do |
+|---|---|---|
+| `execute:<phase>` | Next phase is ready | Run it |
+| `resume:<phase>` | Phase was interrupted mid-run | Re-execute from step 1, reading partial outputs first |
+| `fill-gap:<phase>` | A subphase was skipped | Run it before advancing, or formally excuse it |
+| `back-route:<phase>:<reason>` | A downstream gate blamed an upstream phase | Re-execute that phase with the reason as the goal |
+| `back-route-escalate:<phase>:<reason>` | The back-route counter hit its cap | **Stop.** Surface verbatim. Do not re-route |
+| `stale-block` | The state markdown was hand-edited | Run the rebuild command manually — never auto-rebuilt |
+| `done:pipeline-complete` | Everything finished | Ask what's next |
+| `done:capped-at-<N>` | You capped authorization at phase N | **Stop.** No further phases without re-authorization |
+| `error:no-project-state-found` | No such project | Check the slug |
+
+A malformed slug **fails closed** — it refuses to silently fall back to your newest project, which is exactly the behaviour you want at 11pm.
+
+Between the state dump and the directive, it also prints **lessons from prior phases** in this project and **cross-project lessons** keyed by dataset (CFPS, GSS, PSID) and by keywords from your research question. That injection is always advisory and silent on a miss.
+
 ## 22. `scholar-auto-research` — deterministic teaching scaffold
 
 ```
-> /scholar-auto-research --slug demo-project
-  "Research idea: <prompt>"
-> /scholar-auto-research resume output/demo-project
+> /scholar-auto-research "Does platform trust mediate the digital divide in China?"
+> /scholar-auto-research data/raw/cfps2020.dta materials/codebook.pdf
+> /scholar-auto-research resume output/cfps-platform-trust-asr
+> /scholar-auto-research verify output/cfps-platform-trust-asr
 ```
 
-`scholar-auto-research` defines exactly **21 phases** (0 through 20) in `references/phase-contract.json`. Each phase has `required_inputs`, `required_outputs`, a `verifier` shell command, `next_phase`, and `route_back_phase`.
+`scholar-auto-research` defines exactly **21 phases** (0 through 20) in `references/phase-contract.json`. Each phase declares `required_inputs`, `required_outputs`, a `verifier`, a `pass_schema` the verdict JSON must satisfy, `next_phase`, and `route_back_phase`.
 
-The canonical phase list (this is the literal `phase-contract.json` table — the source of truth):
-
-| # | Phase | Required artifact this phase must produce |
+| # | Phase | Required artifact |
 |---|---|---|
-| 0 | Safety | `safety-status.json`; high-risk unresolved files block the run |
-| 1 | Research Question | Candidate RQs, journal fit, selected RQ JSON, selection rationale |
-| 2 | Literature and Theory | `lit-theory.md`, coverage matrix, verified `references.bib` |
-| 3 | Design | Design blueprint, model specs, identification strategy, revision log |
-| 4 | Data and Measurement | Variable dictionary, data status, measurement plan, data manifest |
-| 5 | Analysis Plan | Spec registry, planned-scripts inventory, analysis plan (no execution) |
+| 0 | Safety | `safety/safety-status.json`; unresolved high-risk files block the run |
+| 1 | Research Question | Candidate RQs, evaluation panel, journal fit, selected RQ, rationale |
+| 2 | Literature and Theory | `lit-theory.md`, coverage matrix, verified `references.bib` (>30 entries) |
+| 3 | Design | Blueprint, model specs, identification strategy, revision log |
+| 4 | Data and Measurement | Variable dictionary, data status, measurement plan, manifest |
+| 5 | Analysis Plan | Spec registry, scripts inventory, analysis plan — **no execution** |
 | 6 | Pre-Execution Review | Six-lens planned-code review + fix log + re-review |
-| 7 | Analysis Premortem | Premortem risk register, null-falsification table, decision rules |
+| 7 | Analysis Premortem | Risk register, null-falsification table, `go_no_go` must be `GO` |
 | 8 | Execute Analysis | Execution report, results registry, figure registry |
-| 9 | Post-Execution Review | Post-execution review with fix log; unresolved blockers route back to 6 |
-| 10 | Runtime Sanity | Runtime sanity report (rerun plausibility, invariants, drift checks) |
-| 11 | Results Lock | Immutable results snapshot, manifest hash, Stage 1 verify |
+| 9 | Post-Execution Review | Review + fix log; unresolved blockers route back to 6 |
+| 10 | Runtime Sanity | Rerun plausibility, invariants, drift checks |
+| 11 | Results Lock | Immutable snapshot, manifest hash, Stage 1 verify |
 | 12 | Manuscript Blueprint | Per-section authoring contract |
-| 13 | Draft Manuscript | Full manuscript draft against blueprint |
+| 13 | Draft Manuscript | Draft, drafting plan, self-critique, polish report, journal spec |
 | 14 | Verify Manuscript | Verification report (numerics, figures, logic, completeness) |
-| 15 | Citation and Claim Support | Citation audit + claim-source map |
+| 15 | Citation and Claim Support | Citation audit + claim-source map + `references.bib` |
 | 16 | Ethics and Open Science | Ethics + open-science statement |
-| 17 | Replication Package | Replication package (scripts, data notes, environment) |
-| 18 | Manuscript Quality Gate | Quality-gate report; hard gate before assembly |
-| 19 | Final Assembly | Final md/docx/tex/pdf |
-| 20 | Submission Hygiene | Submission-clean outputs (no path leaks, no pipeline jargon) |
+| 17 | Replication Package | Package, test report, verification report, manifest |
+| 18 | Manuscript Quality Gate | Quality report — hard gate before assembly |
+| 19 | Final Assembly | `manuscript-final.{md,docx,tex,pdf}` + manifest |
+| 20 | Submission Hygiene | Submission-clean outputs; `pipeline_complete: true` |
 
-The default route ends at **Phase 20**. Optional downstream products (grant, presentation, resubmission, auto-improve) are out of scope and run as standalone skills.
+### 22.1 What makes it "deterministic"
+
+Three mechanisms the heavy chain does not have in the same form:
+
+- **A contract hash.** State records the SHA-256 of `phase-contract.json`. If the contract changes underneath a running project, mutating commands **refuse** with `CONTRACT_DRIFT` rather than proceeding against a moved target.
+- **Verify stamps.** `auto-research-verify.sh` mints a stamp per passing phase. Marking a phase complete without a stamp fails with `VERIFY_STAMP_REQUIRED`; a stamp that no longer matches the artifacts fails with `VERIFY_STAMP_STALE`. Routing back **deletes** the stamps of every invalidated downstream phase, so you cannot accidentally keep a stale pass.
+- **Explicit run modes.** The mode starts `unset`, and `next` returns `MODE_SELECTION` until you choose. In `human_in_loop`, every phase transition creates a pending decision that blocks completion until you approve. **Autonomous mode is never inferred from silence.**
+
+Route-backs cap at **3 per finding ID**; the third exits with code 2 and requires a human to inspect the underlying issue and clear the retry counts by hand.
+
+Phase 18's quality gate is unusually explicit: every dimension ≥7 across ten named dimensions, mean ≥8, no critical or major finding open, no reviewer returning REJECT or MAJOR_REVISION, and **at least one reviewer pair with Jaccard ≥0.7** on what they identified as the contribution — a direct test of whether the reviewers agree on what the paper is about.
+
+### 22.2 The rule that outranks the contract
+
+The skill states it as a MUST-FOLLOW rule, and it is the best sentence in the entire suite:
+
+> **Contract compliance is a means, not the end.** A manuscript that passes every contract but is thin, generic, mechanically templated, poorly cited, weakly argued, or visually incomplete **fails.**
+
+That is the correct relationship between a checklist and a paper, and it is worth saying out loud to any participant who starts treating green gates as the goal.
 
 It is the right tool for **classroom demos and pipeline prototypes**. It is not the heavy default for a serious paper — use `full-paper` for that.
 
 If you want to build your own orchestrator, copy the structure: `phase-id` → `purpose` → `required inputs` → `actions` → `outputs` → `verification gate` → `next/route-back`. Start with five phases for your own workflow before attempting a full chain.
 
-## 23. Codex as external reviewer
+## 22A. `scholar-loop` — a queue of ideas, run unattended
+
+**Goal:** hand it a *set* of research ideas and let it drive each one through a full pipeline across scheduled wakeups — blocking honestly when a gate goes RED rather than bypassing it.
+
+```yaml
+argument-hint: "[init <ideas|file> [--no-triage] | run | status |
+                unblock <id> | add <idea> --orchestrator <o>]"
+```
+
+```
+> /scholar-loop init planning/ideas.txt
+> /loop /scholar-loop run                    # start the loop
+> /scholar-loop status
+> /scholar-loop unblock q03
+```
+
+The queue lives in `output/_queue/` as three files: `queue.json` (the authoritative state, written atomically so Google Drive sync cannot corrupt it), `decisions-needed.md` (an append-only ledger of blocked items), and `loop-journal.md` (one line per wakeup).
+
+Each item moves through `pending → active → done | blocked | failed | skipped`, and **only one item may be active at a time** — a serial queue by design.
+
+### 22A.1 The per-wakeup contract
+
+Each wakeup does exactly one seam-cluster of work: pick the next item → charge its wakeup budget → dispatch or resume the orchestrator → **capture the terminal signal by probe, never by reading prose** → act → re-arm.
+
+That fourth step is the interesting one. The loop never interprets an orchestrator's chatty output itself. It pipes the raw `KEY=value` dump into `queue-state.sh interpret`, which is the single place signals map to actions:
+
+| Signal | Action |
+|---|---|
+| Safety status `NEEDS_REVIEW` or `HALTED` (checked first) | **blocked** |
+| `RESUME_ROUTE=back-route-escalate:*` / `error:*` / `stale-block` | **blocked** |
+| `RESUME_ROUTE=done:*` | done |
+| `RESUME_ROUTE=execute:` / `resume:` / `fill-gap:` / `back-route:` | continue |
+| Auto-research route-back escalation, or `APPROVAL_REQUIRED=1`, or run mode unset | **blocked** |
+| Empty or unrecognized output | **blocked** (`uninterpretable-signal`) |
+
+Note the last row: an unparseable signal blocks. It does not optimistically continue.
+
+### 22A.2 The invariants that make unattended running safe
+
+These are stated as absolutes, and they are the reason this is publishable rather than reckless:
+
+1. **Blocked, never bypassed.** On an unresolvable RED, mark the item blocked and move to the next idea. Never set a force reason, never cap authorization past a RED phase, never write an `[EXCUSED:*]` tag, never write `OVERRIDE` into a safety status file, never hand-edit any state file. **There is no loop-driver exception to any of these.**
+2. Never re-arm when the queue is empty or everything is terminal.
+3. The loop is the **sole wakeup owner** — the orchestrator must not double-arm underneath it.
+4. The re-arm prompt is the fixed literal `/scholar-loop run` — never with an ID or slug embedded.
+5. Notify sparingly: per-item completion, per-item block, budget stop, final summary. A "continue" is a journal line, not a notification.
+6. **Run `/loop` locally, not as a cloud-scheduled agent, whenever any queued project is LOCAL_MODE.** Remote infrastructure has no access to your local safety configuration.
+
+Budgets bound the cost: 40 wakeups per item, 200 total. Exceeding either blocks the item rather than continuing to spend.
+
+`unblock` is interactive-only and never runs autonomously — and the ledger tells you what to do for each block reason, because a blocked item usually needs a real fix, not a retry.
+
+## 22B. `scholar-auto-improve` — auditing the suite itself
+
+**Goal:** find out whether the skills are producing what they claim to, and fix them when they are not.
+
+```yaml
+argument-hint: "[mode: observe|audit|improve|evolve] [optional: skill-name]
+                [optional: output-path]"
+```
+
+| Mode | Inspects | Produces |
+|---|---|---|
+| **observe** | The artifacts a skill just wrote — missing, empty (<100 chars), unexpected; content quality; unresolved `[CITATION NEEDED]` and `SOURCE NEEDED` markers | An audit report and a health verdict |
+| **audit** | Every `SKILL.md` in the suite against 14 structural checks (A1–A14) | A **Suite Health Score /100** |
+| **improve** | The latest observe/audit report | Verified, falsifiable fix proposals — applied only after you confirm |
+| **evolve** | The whole `improvement-log.md` history | Recurring issues, skill hotspots, regression patterns, systemic fixes |
+
+```
+> /scholar-auto-improve observe scholar-analyze
+> /scholar-auto-improve audit
+> /scholar-auto-improve evolve
+```
+
+Health scoring is mechanical: start at 100, subtract 20 per CRITICAL, 5 per ERROR, 1 per WARN. 90–100 GREEN · 70–89 YELLOW · 50–69 ORANGE · below 50 RED.
+
+### 22B.1 Why IMPROVE mode is more careful than it looks
+
+The interesting engineering is in how a proposed fix has to prove itself, and the reason is a documented failure: earlier rounds shipped fixes that **passed the author's own validation and then broke on a peer project.**
+
+So a fix proposal now carries a falsifiable contract — a before-state with an observable (`RC=<n>; MATCH=<regex>`), a predicted after-state, a reproduction command, and a **peer project** to test against, or an explicit limitation note if none exists. Then:
+
+1. A bounded diagnostic loop — **max 3 hypothesis-test cycles, max 6 tool calls per issue** — must identify a *mechanism*, citing `file:line`. **No confirmed cause means the issue is routed to `unexplained-issues-<date>.md` for human triage and is never auto-applied.**
+2. `fix-contract-verify.sh --phase BEFORE` must reproduce the failure on both the author's and the peer's project.
+3. `validate-patch.sh` checks schema, target existence, and line-range overlap.
+4. **You confirm.** Nothing is applied without it.
+5. `--phase AFTER` must flip on **both** projects, and for CRITICAL fixes an independent `review-code-correctness` agent reads the raw fixtures and does *not* trust the verifier's own status line.
+
+The captured fixtures persist as regression tests. Re-running BEFORE in a later round must still match — if it does not, the bug came back.
+
+### 22B.2 The rule worth stealing
+
+Among its five absolute rules, one generalizes far beyond this suite:
+
+> **Never fabricate evidence.** File paths, line numbers, function names, gate names, and any citation in an audit report must be verified against the live tree before being written. A memory that names a file, function, or flag is **a claim to re-verify, not a fact to assert.**
+
+Unverified claims get `[CITATION NEEDED: <what to verify>]` — the same discipline the citation skill applies to literature, applied to the codebase.
+
+> **A documentation inconsistency to know about.** This skill describes itself as running at "Phase 14" of `scholar-full-paper`. The orchestrator now terminates at Phase 12 and explicitly routes post-submission audits to a *standalone* invocation. The Phase-14 framing is stale. Run it yourself after a pipeline completes; do not expect the orchestrator to call it.
+
+## 23. Codex as external reviewer — by hand
 
 **Goal:** independence. The agent that ran the pipeline is not a reliable judge of the pipeline.
 
@@ -3217,13 +5603,53 @@ Inside Codex:
   Report each as PASS / FAIL / UNCERTAIN with one-line evidence.
 ```
 
-Codex will read the script, the blueprint, the table, and reply with a four-row PASS/\allowbreak{}FAIL/\allowbreak{}UNCERTAIN audit. This is exactly the format of a code-review subagent — except the reviewer is a *different vendor's model*, which is the point.
+Codex will read the script, the blueprint, the table, and reply with a four-row PASS/FAIL/UNCERTAIN audit. This is exactly the format of a code-review subagent — except the reviewer is a *different vendor's model*, which is the point.
 
 What **not** to ask Codex to do:
 
 - "Fix the paper" (no constraints → mass rewrite).
 - "Invent missing data" (this should never be asked).
 - "Choose the journal" (editorial judgment is yours).
+
+## 23A. `scholar-openai` — the same review, orchestrated
+
+```yaml
+argument-hint: "[code|stats|logic|full|prose|custom] [manuscript-path]
+                [scripts-dir|phase]"
+```
+
+| Mode | Agents | Reviews |
+|---|---|---|
+| `code` | A1–A3 | Correctness, robustness, reproducibility |
+| `stats` | A4 | Every manuscript number against the raw table outputs, cell by cell |
+| `logic` | A5 | Every prose claim against its referenced table or figure |
+| `peer-audit` | A4, A5, A6 | Strict numeric audit bound to the locked registry |
+| `prose` | P1–P3 | Register, argument, and an **unprimed** reviewer-eye read |
+| `full` (default) | A1–A5 | Everything except the peer audit |
+
+```
+> /scholar-openai full output/digital-divide-china-cfps/drafts/manuscript-final-2026-05-04.md
+> /scholar-openai prose drafts/manuscript-submission-2026-05-06.md 11.5
+```
+
+Agents spawn in parallel as background processes with a 300-second timeout each:
+
+```bash
+codex exec -C "$CODEX_WORKDIR" --skip-git-repo-check \
+  -c 'sandbox_permissions=["disk-full-read-access"]' \
+  -o "${REVIEW_DIR}/A1-code-correctness-${RUN_TS}.md" \
+  "You are a code review agent for a social science research project. …" &
+```
+
+Reports land in `reviews/codex/`, and **Claude** — not Codex — synthesizes them into a scorecard, a deduplicated fix checklist, and a cross-agent agreement section.
+
+Three details matter for using this honestly:
+
+- **The read-only guarantee is architectural, not sandboxed.** The skill documents that `disk-full-read-access` does *not* actually confine reads — Codex can `cat` any absolute path. The real guarantee against modification is that Codex is only ever given `-o <file>` (it writes only its own report) and is prompted to review, never to edit.
+- **Under LOCAL_MODE, a data-free mirror is built first**, and every failure mode of that mirror build — an empty path, a hardcoded absolute data path, a missing `rsync` — **halts fail-closed** rather than falling back to the live tree.
+- **P3, the reviewer-eye lens, is deliberately unprimed.** It must not read the prior peer-review or verification outputs. It answers three questions: what is your first impression, would you recognize this as a paper a reviewer would take seriously, and would you recognize it as AI-drafted.
+
+Codex review is **on by default** in the orchestrator (`SCHOLAR_CODEX_DEFAULT=true`). Opting out requires both the environment flag *and* a documented reason — and the accepted reasons are a short whitelist: Codex not installed, Codex API unavailable, OpenAI API unavailable. Explicitly **rejected** rationales include "context pressure," "workshop context," "operator chose not to invoke," and "gate bug." You may skip the external reviewer because it is unavailable, not because it is inconvenient.
 
 # PART IV — RESPONSIBLE PRACTICE
 
@@ -3314,8 +5740,6 @@ When the agent can execute the pipeline, what becomes more valuable?
 The skills in this handbook do not make AI sound scholarly. They make AI leave behind **inspectable scholarly artifacts**. Inspectable artifacts are how scholarship survives the introduction of any new tool — printing press, statistical computing, or coding agent.
 
 Now go open `claude` in a real project directory and run `/scholar-init`. The first 20 minutes is the most important investment you can make.
-
-\vfill
 
 *Code, scripts, and full project artifacts for the CFPS digital-divide example are at:*
 `Claude-Code-Skill/workshop/cfps-example/output/digital-divide-china-cfps/`
@@ -4414,7 +6838,7 @@ CRITICAL DISCREPANCIES
    - Text states (Conclusion): "p = 0.92"
    - Source-document evidence (`analysis/limitations-accepted.md`, "Late-caught CRITs," entries CRIT-CORR-005 / CRIT-STAT-003): "scripts/05-decomposition.R lines 125–129 extracted the hukou_rural main-effect coefficient from R5 instead of the hukou_rural:female:pre1965 triple-interaction row. The reported H3 p = 0.92 is therefore the main-effect p, not the three-way-interaction p. Action: fixed in iter2 of the script ... H3 verdict re-derived from the correct row, recorded as H3-CORRECTED in adjudication-log.csv."
    - Problem: The four sections (Abstract, Results, Discussion, Conclusion) all attribute the value `p = 0.92` to the **triple-interaction row** of R5, but per the recorded code-review CRIT, that p-value is the **main-effect** row. The triple-interaction p (the one the H3 hypothesis actually requires) is not reported anywhere in the manuscript prose. The H3-NOT-SUPPORTED verdict may still be correct under the corrected row, but the **prose attributes the wrong row's p-value to the H3 test**, which is a number-mismatch between prose and the evidence the prose claims to be quoting.
-   - Fix: (a) Replace `p = 0.92` with the corrected triple-interaction row p-value from `adjudication-log.csv` (`H3-CORRECTED`) in all four locations; (b) re-state the coefficient (currently −0.13) and SE (currently 1.28) from the correct row; (c) re-derive the H3 verdict from the corrected row and update Abstract/\allowbreak{}Results/\allowbreak{}Discussion/\allowbreak{}Conclusion adjudications accordingly.
+   - Fix: (a) Replace `p = 0.92` with the corrected triple-interaction row p-value from `adjudication-log.csv` (`H3-CORRECTED`) in all four locations; (b) re-state the coefficient (currently −0.13) and SE (currently 1.28) from the correct row; (c) re-derive the H3 verdict from the corrected row and update Abstract/Results/Discussion/Conclusion adjudications accordingly.
    - Severity: CRITICAL — same value mis-cited in four sections; affects the central H3 adjudication.
 
 2. [CRIT-TXT-002] Methods §estimator + §robustness — Y2 focal estimator labeling
@@ -4452,7 +6876,7 @@ WARNINGS
    - Text states (Discussion): "agricultural-hukou status reduces weekly internet use among users by approximately 1.3 hours per week."
    - Text states (Results / Abstract): "minus 1.31 hours per week."
    - Issue: Rounding 1.31 → 1.3 is acceptable but technically each rounding compounds when discussed in compounded form ("a 1.31-hour residual ... approximately 30 percent of the raw gap absorbed"). All within tolerance, but worth one consistent decimal-place convention.
-   - Fix: Adopt a uniform decimal-place convention across Abstract/\allowbreak{}Results/\allowbreak{}Discussion/\allowbreak{}Conclusion.
+   - Fix: Adopt a uniform decimal-place convention across Abstract/Results/Discussion/Conclusion.
    - Severity: WARNING (low).
 
 5. [WARN-TXT-005] Robustness range claim
