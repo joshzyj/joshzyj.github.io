@@ -191,6 +191,25 @@ Skills are not built into Claude Code; you install them by cloning the repositor
 
 There are two ways to do this. If `git`, SSH keys, and shell scripts are new to you, use the **beginner shortcut** (§2.4.0) — ask Claude Code itself to do the install. If you'd rather see every command, follow the **manual path** in §2.4.1–§2.4.5.
 
+> **Two editions — which one you have determines which skills exist.**
+>
+> | Edition | Repo | Skills | Access |
+> |---|---|---|---|
+> | **Public** | `github.com/joshzyj/open-scholar-skill` | **33** | Open — this is what §2.4 installs |
+> | **Extended** | `openscholarskills` | **42** | **Available on request** — email the author |
+>
+> This handbook documents the **extended** edition, because that is the superset. Nine skills exist only there:
+>
+> `scholar-full-paper` · `scholar-resume` · `scholar-loop` · `scholar-presentation` · `scholar-image` · `scholar-grant` · `scholar-teach` · `scholar-book` · `scholar-exemplar-curate`
+>
+> Sections covering those carry an **[Extended]** tag. Everything else in Part II works identically on the public edition — including the entire analysis-to-verification core (`scholar-init` → `scholar-design` → `scholar-analyze` → `scholar-write` → `scholar-verify` → `scholar-citation`), which is where the workshop's argument actually lives. On the public edition, run those skills individually in the order of Part II; the orchestrator in §21 is a convenience over that same chain, not a different method.
+>
+> Check what you have at any time:
+>
+> ```bash
+> $ ls ~/.claude/skills/ | grep -c scholar     # 33 public · 42 extended
+> ```
+
 #### 2.4.0 Beginner shortcut — let Claude Code install it for you
 
 Once Claude Code is installed (§2.2) and running in any directory, paste this prompt:
@@ -252,7 +271,7 @@ $ bash setup.sh
 1. Create the `.claude/skills/` and `.claude/agents/` symlinks the plugin uses internally.
 2. **Auto-detect your Zotero library**, or prompt you for the path if it cannot find one.
 3. **Optionally configure BibTeX, EndNote, and a CrossRef email** for the polite API pool.
-4. Install all 42 skills and 22 agents as **personal** skills in `~/.claude/skills/` and `~/.claude/agents/` — so `/scholar-*` works in **every** Claude Code session, in any directory, not just the cloned repo.
+4. Install every skill in your edition (33 public · 42 extended) and its agents as **personal** skills in `~/.claude/skills/` and `~/.claude/agents/` — so `/scholar-*` works in **every** Claude Code session, in any directory, not just the cloned repo.
 5. Register `scripts/gates/pretooluse-data-guard.sh` as a PreToolUse hook in `~/.claude/settings.json`. The hook intercepts every `Read`, `NotebookRead`, `NotebookEdit`, `Grep`, and `Glob` call and refuses files whose `.claude/safety-status.json` entry is `NEEDS_REVIEW:*` or `HALTED`.
 6. Write a `.env` file recording your configuration.
 
@@ -1515,10 +1534,12 @@ The skills appear in the order you actually use them. But before the walkthrough
 
 The § column points at the section of this handbook documenting that skill in full — every mode, every argument, every gate, every file it writes.
 
+**◆ marks the nine skills that ship only in the extended edition** (§2.4). On the public edition those commands do not exist; everything unmarked works identically on both.
+
 The suite installs into `~/.claude/skills/<skill-name>/SKILL.md`. Anything in that directory is invocable as `/<skill-name>`. Verify your install with:
 
 ```bash
-$ ls ~/.claude/skills/ | grep scholar | wc -l      # expect 42
+$ ls ~/.claude/skills/ | grep -c scholar           # 33 public · 42 extended
 $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scripts/
 ```
 
@@ -1570,7 +1591,7 @@ $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scri
 | §15 | `scholar-verify` | Two-stage, four-agent output↔manuscript↔prose verification | `full` / `stage1` / `stage2` / one agent |
 | §16 | `scholar-citation` | Verify, insert, convert, materialize, retraction-check citations | `insert` / `audit` / `convert-style` / `full-rebuild` / `verify` / `export` / `materialize` / `retraction-check` / `reporting-summary` |
 | §17 | `scholar-polish` | Style personalization without touching claims | `scan` / `rewrite` / `full` |
-| §20G | `scholar-exemplar-curate` | Build the annotated paragraph-exemplar library `scholar-write` reads | `zotero` / `top50` / `user-work` / `review` |
+| §20G | `scholar-exemplar-curate` ◆ | Build the annotated paragraph-exemplar library `scholar-write` reads | `zotero` / `top50` / `user-work` / `review` |
 | §23A | `scholar-openai` | Independent Codex CLI review panel (read-only) | `code` / `stats` / `logic` / `full` / `prose` / `custom` |
 
 **Stage 5 — submit, share, and reuse**
@@ -1587,21 +1608,21 @@ $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scri
 
 | § | Skill | Use it for | First argument |
 |---|---|---|---|
-| §20 | `scholar-presentation` | Talks and print-ready conference posters (8 modes) | talk type |
-| §20A | `scholar-image` | Decorative/conceptual figures via gpt-image-2 (never evidence) | `generate` / `prompt` / `preview` / `list-venues` |
-| §20B | `scholar-grant` | NSF / NIH / RSF / Spencer proposals and mock review | `nsf` / `nih` / `rsf` / `spencer` / `aims` / `budget` / `data-plan` / `review` / `compare` / `resubmit` |
-| §20C | `scholar-teach` | Syllabus-first course materials from your research | `syllabus` / `lecture` / `discussion` / `assignment` / `exam` / `reading-list` / `slides` / `rubric` / `adapt` |
-| §20D | `scholar-book` | Monographs, edited volumes, textbooks, diss-to-book | `proposal` / `outline` / `chapter` / `revise` / `assemble` / `diss2book` / `full` |
+| §20 | `scholar-presentation` ◆ | Talks and print-ready conference posters (8 modes) | talk type |
+| §20A | `scholar-image` ◆ | Decorative/conceptual figures via gpt-image-2 (never evidence) | `generate` / `prompt` / `preview` / `list-venues` |
+| §20B | `scholar-grant` ◆ | NSF / NIH / RSF / Spencer proposals and mock review | `nsf` / `nih` / `rsf` / `spencer` / `aims` / `budget` / `data-plan` / `review` / `compare` / `resubmit` |
+| §20C | `scholar-teach` ◆ | Syllabus-first course materials from your research | `syllabus` / `lecture` / `discussion` / `assignment` / `exam` / `reading-list` / `slides` / `rubric` / `adapt` |
+| §20D | `scholar-book` ◆ | Monographs, edited volumes, textbooks, diss-to-book | `proposal` / `outline` / `chapter` / `revise` / `assemble` / `diss2book` / `full` |
 | §20E | `scholar-collaborate` | CRediT roles, task delegation, team coordination | `credit` / `tasks` / `communication` / `contributions` / `mentor` / `team-setup` / `conflict` / `meeting` |
 
 **Orchestrators (Part III)**
 
 | § | Skill | Use it for |
 |---|---|---|
-| §21 | `scholar-full-paper` | The canonical gated chain, Phase −1 → Phase 12 |
+| §21 | `scholar-full-paper` ◆ | The canonical gated chain, Phase −1 → Phase 12 |
 | §22 | `scholar-auto-research` | The deterministic 21-phase teaching scaffold |
-| §21A | `scholar-resume` | Read project state and emit the single next route |
-| §22A | `scholar-loop` | Drive a queue of ideas unattended across `/loop` wakeups |
+| §21A | `scholar-resume` ◆ | Read project state and emit the single next route |
+| §22A | `scholar-loop` ◆ | Drive a queue of ideas unattended across `/loop` wakeups |
 | §22B | `scholar-auto-improve` | Audit and evolve the skill suite itself |
 
 ### 5B.2 The argument grammar every skill shares
@@ -4220,7 +4241,8 @@ If the report shows Tier 1 (local library) hits, you are configured. If everythi
 **3. Understand what a missing library costs you.** Nothing errors. `scholar-write` degrades quietly:
 
 - The **Tier 0/1 citation pool** is empty, so drafting leans on external APIs and produces more `[CITATION NEEDED]` markers.
-- **Exemplar retrieval** (§14.2, Step 0a-exemplars) falls back from your curated library to a per-project Zotero scan — and if Zotero is missing too, to nothing. Prose drafted without exemplars is measurably more generic. **§14.3 is how you fix this permanently**, including seeding the library with your own published papers.
+- The **article library** is empty, so there is no voice calibration at all — this applies to **both editions** and is the single biggest quality difference you control. **§14.3 is how you fix it**, including seeding it with your own published papers.
+- *(Extended only)* **Exemplar retrieval** falls back from the curated library to a per-project Zotero scan, and if Zotero is missing too, to nothing.
 - The **Theory-section carry-forward rule** still fires, but with fewer verified sources to carry forward.
 
 **4. Know that `scholar-write` is data-safety gated.** It is a **Tier B** skill: it checks `.claude/safety-status.json` and refuses fail-fast on `NEEDS_REVIEW:*`, `HALTED`, or `LOCAL_MODE` inputs. It does not implement the LOCAL_MODE dispatch contract itself — it just declines. Resolve the sidecar with `/scholar-init review` (§6.2) first.
@@ -4250,22 +4272,68 @@ Sections it knows: `introduction`, `theory`, `data_methods`, `results`, `discuss
 | **polish** | Text is structurally fine; vocabulary, tense, abbreviation, hedging, and citation-format audit only |
 | **expansion** *(internal)* | Auto-detected from a Phase 11.5 word-budget directive or a Phase 7b `route_back_to` block — splices new content into named targets, never redrafts |
 
-### 14.2 What it reads, in what order — and what wins
+### 14.2 The three modes — and the audits that keep REVISE honest
 
-This is the most important thing to understand about the skill. `scholar-write` runs a long Step 0 before writing a word:
+| Mode | When | Input |
+|---|---|---|
+| **DRAFT** (default) | Writing a section from scratch | Topic + findings + hypotheses |
+| **REVISE** | Improving existing text against feedback | Your text, pasted, plus the feedback |
+| **POLISH** | Final pass before submission | Your text; no structural change needed |
+
+Mode is inferred from whether you paste text: text present → REVISE or POLISH, absent → DRAFT.
+
+There is also a **no-journal mode**. If no target journal is named or inferrable, the skill skips journal-specific formatting, word limits, and section conventions and writes general academic prose. Pass a numeric word budget and it overrides the journal default — useful for a book chapter or a report.
+
+REVISE annotates every substantive change `[REVISED: reason]` and appends a Change Summary. Before it revises anything it runs a nine-item checklist — topic sentences present, hedging matched to design strength, no passive voice in Methods/Results, Theory naming mechanisms explicitly, Results leading with findings rather than model descriptions, all `[CITATION NEEDED]` markers listed — plus three audits that are the real substance of this mode.
+
+#### The Claims Audit (mandatory for Results and Discussion)
+
+Every *interpretive* claim — any sentence that goes beyond reporting a number to characterize a pattern, name a mechanism, or draw an inference — goes in a table:
+
+| # | Claim | Supporting numbers | Holds cross-group? | Holds within-group? | Measured or imported? | Verdict |
+|---|---|---|---|---|---|---|
+| 1 | … | … | YES/NO | YES/NO | Measured / Imported from … | KEEP / REVISE / FLAG |
+
+Two rules make this worth the effort:
+
+- **A claim that holds cross-group but not within-group (or vice versa) must state both.** The skill's own example: "CN has less negative Democrat content than EN" is true *across* groups, while *within* CN, Democrats still face a 5:1 negative-to-positive ratio. Both facts are true; reporting only the first is a real misrepresentation, and it is the kind that survives peer review.
+- **"Imported" claims must be marked.** If a sentence asserts something about your study context but rests on other literature rather than your data, it gets `[IMPORTED: source]`, and the cited source must actually apply to your specific case. Unsupported imports become `[UNVERIFIED MECHANISM CLAIM]`.
+
+#### The Borrowed Claims Detector (mandatory for Theory and mechanism sections)
+
+Scans mechanism prose for three failure shapes: causal claims about your context with no citation; claims describing features of your data environment ("absence of gatekeeping," "algorithmic amplification") that you never measured; and claims lifted from one literature and applied to another context without checking they transfer — English-platform findings asserted about a non-English ecosystem, say.
+
+Each flagged claim needs one of: a citation demonstrating it **in the context you are studying**; hedging ("If [feature] holds in this context…", "To the extent that…"); or removal and replacement with something your data supports.
+
+#### Literature Claims Verification (Introduction and literature review)
+
+Every characterization of what a cited paper found or argued is checked against the verified citation pool or the knowledge graph — catching paraphrase drift, strength inflation, and finding conflation.
+
+Together these three are the most useful part of the public skill, and they are what makes REVISE more than a rewrite. Run REVISE on a section you drafted by hand and read the Claims Audit table: it is an unusually direct way to see which of your own sentences outrun your evidence.
+
+### 14.2A What it reads before writing — and what wins
+
+`scholar-write` runs a Step 0 before writing a word. **How long that Step 0 is depends on your edition.**
+
+**Both editions:**
+
+| Step | Reads | Effect |
+|---|---|---|
+| **0a-safety** | `.claude/safety-status.json` | Halts on `NEEDS_REVIEW` / `HALTED` / `LOCAL_MODE` |
+| **0b** | `references/writing-protocol.md` | Builds three things: the **article-knowledge-base calibration** (§14.3), the **verified citation pool**, and the **artifact registry** |
+
+**Extended edition adds** the machinery that binds drafting to locked results and a per-section contract:
 
 | Step | Reads | Effect |
 |---|---|---|
 | **0a-lock** | `results-locked/LATEST.txt` | Verifies the lock; **refuses to draft (exit 1) if verification fails**; pins tables and figures to the locked snapshot |
-| **0a-safety** | `.claude/safety-status.json` | Halts on `NEEDS_REVIEW` / `HALTED` / `LOCAL_MODE` |
 | **0a-blueprint** | `drafts/section-blueprint.json` | The per-section authoring contract from §9.5 |
 | **0a-revision-directive** | Phase 11.5 / 7b directives | Switches to expansion or patch mode; directives older than 24 h are ignored |
 | **0a-exemplars** | The curated exemplar library (§14.3, §20G) | Real paragraphs from your target journal, for **shape only** |
 | **0a-outcomes** | `reader_outcomes[]` | What the reader must be able to *do* after reading |
 | **0a-lrh** | `drafts/scholar-lrh-*.md` | **Binding for Theory sections** |
-| **0b** | The writing protocol and register guide | Builds the article knowledge base and verified citation pool |
 
-When these conflict, the precedence ladder decides:
+On the **extended** edition, when these conflict a precedence ladder decides:
 
 | Tier | What | Status |
 |---|---|---|
@@ -4275,11 +4343,13 @@ When these conflict, the precedence ladder decides:
 | 3 | Structural moves | Advisory fallback |
 | 4 | Forbidden patterns | **Hard constraint** |
 
-Two of these deserve emphasis:
+Two extended-only rules deserve emphasis:
 
-**The Theory section is bound to the literature review.** When drafting Theory, the skill locates the Phase 2 `scholar-lrh-*.md` file and treats it as canonical. **At least 70% of the citations named there must carry forward** into the Theory prose or the `.bib`, enforced by `lit-review-carry-forward-check.sh`. Dropping one requires a logged justification (`superseded` / `duplicate` / `low-quality` / `out-of-scope`). The skill must not re-derive citations from its training data. This single rule is why the drafted theory section cites the literature you actually reviewed rather than the literature the model vaguely remembers.
+**The Theory section is bound to the literature review.** When drafting Theory, the skill locates the Phase 2 `scholar-lrh-*.md` file and treats it as canonical. **At least 70% of the citations named there must carry forward** into the Theory prose or the `.bib`, enforced by `lit-review-carry-forward-check.sh`. Dropping one requires a logged justification (`superseded` / `duplicate` / `low-quality` / `out-of-scope`). The skill must not re-derive citations from its training data. This is why the drafted theory cites the literature you actually reviewed rather than the literature the model vaguely remembers.
 
 **Exemplars are studied for shape, never copied.** `expansion-quality-check.sh` detects 10-gram overlap with an exemplar and fails the run.
+
+> **On the public edition none of that machinery exists** — no results lock, no section blueprint, no reader-outcome verifiers. The equivalent discipline is procedural rather than mechanical: you supply the numbers, and §14.2's Claims Audit is what stops the prose outrunning them. The public skill compensates with stronger *in-mode* auditing; the extended one compensates with stronger *pre-draft* contracts. Neither is a substitute for reading the draft.
 
 ### 14.3 Making it draft in *your* voice
 
@@ -4301,15 +4371,23 @@ They are complements, not alternatives. **A** teaches the model how *you* build 
 
 ```
 .claude/skills/scholar-write/assets/
-├── user1-articles/         ← your own published papers — voice, framing, contribution style
-├── user2-articles/         ← a second author's work (co-author, or a second subfield)
+├── example-articles/       ← PUBLIC: your own published papers
+│   └── (extended edition names these user1-articles/ + user2-articles/)
 ├── top-journal-articles/   ← 5–20 recent papers from journals you target
 ├── index.md                ← the catalog scholar-write actually reads
 ├── article-knowledge-base.md
 └── section-snippets.md
 ```
 
-> **The README is stale here — trust the skill, not the docs.** The repo README tells you to create `example-articles/`. The shipped `SKILL.md` and `index.md` read **`user1-articles/`**. A directory named `example-articles/` will simply be ignored. (`user2-articles/` is undocumented in the README entirely; it exists so a second voice — a co-author, or your own work in a different subfield — can be kept separate.)
+The **public** edition uses `example-articles/`; the **extended** edition renames it `user1-articles/` and adds `user2-articles/` for a second voice — a co-author, or your own work in a different subfield. `index.md` in each edition names the directories that edition reads, so it is the authority.
+
+> **Confirm the directory name before you copy anything in** — a directory by the wrong name is silently ignored:
+>
+> ```bash
+> $ ls "$SCHOLAR_SKILL_DIR/.claude/skills/scholar-write/assets/"
+> ```
+>
+> Public shows `example-articles/`; extended shows `user1-articles/`.
 
 **How the skill uses it.** At write-time it reads `index.md`, picks **1–2 user articles** matching your domain and method, plus **1–2 top-journal articles** matching your target venue, then extracts text from just those:
 
@@ -4329,12 +4407,12 @@ So the library scales without cost: only the handful of selected papers are ever
 
 **Setting it up — three steps.**
 
-1. Copy your own published PDFs into `user1-articles/`.
+1. Copy your own published PDFs into `example-articles/` (extended: `user1-articles/`).
 2. Copy 5–20 recent papers from your target journals into `top-journal-articles/`.
 3. Ask Claude Code to index them. One prompt builds all three files:
 
 ```
-Scan all PDFs in .claude/skills/scholar-write/assets/user1-articles/ and
+Scan all PDFs in .claude/skills/scholar-write/assets/example-articles/ and
 .claude/skills/scholar-write/assets/top-journal-articles/. For each paper,
 use pdftotext to extract the first 300 lines, then populate:
 1. assets/index.md — a row per paper (filename, citation, journal, method,
@@ -4345,11 +4423,15 @@ use pdftotext to extract the first 300 lines, then populate:
 3. assets/section-snippets.md — verbatim quotes in the 9 rhetorical categories
 ```
 
-Re-run it whenever you add papers. A populated library on a working install looks roughly like: **32** user articles, **8** second-author articles, **87** top-journal exemplars across 15+ journals — feeding a 1,300-line knowledge base and a 690-line snippet file.
+Re-run it whenever you add papers.
+
+**The directory ships empty.** On a fresh public install `index.md`, `article-knowledge-base.md`, and `section-snippets.md` are ~50–85-line templates with zero PDFs behind them — so the calibration they provide is nil until you add papers. For scale, a heavily used install runs about **32** of your own articles, **87** top-journal exemplars across 15+ journals, and a 1,300-line knowledge base. You do not need anything near that: three of your own papers and five from your target journal already change the output noticeably.
 
 `scholar-write` works with an empty assets directory — it falls back to built-in journal conventions. It just writes like nobody in particular.
 
-#### 14.3.2 Path B — curated paragraph exemplars
+#### 14.3.2 Path B — curated paragraph exemplars  **[Extended]**
+
+*(`scholar-exemplar-curate` ships only in the extended edition — see §2.4. Path A above works on both, and is the one to do first regardless.)*
 
 Where the article library teaches whole-paper architecture, `/scholar-exemplar-curate` builds a **cross-project library of individual annotated paragraphs**, keyed by journal × section. Each is a real published paragraph plus a note on what it does well:
 
@@ -4439,9 +4521,11 @@ COUNT=4
 
 Both libraries are **cross-project and cumulative**. Curate once and every future paper for that journal drafts against them. They are the parts of this pipeline that compound.
 
-**Stop and check.** Put three of your own papers in `user1-articles/`, run the indexing prompt, then draft a section and read it aloud. If it still does not sound like you, that is what `/scholar-polish` (§17) is for — but fix the architecture first, because polish cannot repair structure.
+**Stop and check.** Put three of your own papers in `example-articles/` (extended: `user1-articles/`), run the indexing prompt, then draft a section and read it aloud. If it still does not sound like you, that is what `/scholar-polish` (§17) is for — but fix the architecture first, because polish cannot repair structure.
 
-### 14.4 The eighteen forbidden patterns
+### 14.4 The eighteen forbidden patterns  **[Extended]**
+
+*(Extended edition only — the public skill has no forbidden-pattern table. It is still worth reading: most of these are failure modes of AI-drafted prose generally, and `scholar-polish` §17 catches several of them on both editions.)*
 
 Step 0d loads a table of eighteen classes of **pipeline machinery** that must never appear in body prose. This is the difference between a manuscript and a pipeline log:
 
@@ -4470,19 +4554,24 @@ Enforcement is mechanical: `pipeline-machinery-check.sh` at the polish phase and
 
 ### 14.5 Word budgets, by journal
 
-| Journal | Total | Abstract | Intro | Theory | Methods | Results | Discussion |
-|---|---|---|---|---|---|---|---|
-| ASR | 9,000–12,000 | 150–200 | 1,000–1,500 | 2,200–3,600 | 1,800–2,800 | 1,800–2,800 | 1,200–2,000 |
-| AJS | 12,000–20,000 | 150 | — | — | — | — | — |
-| Social Forces | 8,000–12,000 | 150 | — | — | — | — | — |
-| Demography | 8,000–12,000 | ~150 | — | 1,500–2,500 (lit merged) | — | — | — |
-| JMF | 7,000–9,000 | 200 | — | — | — | — | — |
-| Science Advances | 5,000–8,000 | ~250 | — | *(no separate Theory; Results before Methods)* | — | — | — |
-| NHB / NCS | 3,000–5,000 | ≤150 | 400–500, no heading | — | — | — | — |
+The public skill ships a full per-section grid. This is the one to work from — it is the table `scholar-write` actually applies:
 
-Hard floors on long-form journals: Discussion ≥ 1,200 words, Conclusion ≥ 500. The table is calibrated against a corpus of 53+ published papers — and the skill documents that its own earlier hand-curated table systematically *under*-specified these ranges, since corrected.
+| Section | ASR | AJS | Demography | Science Advances | NHB / NCS |
+|---|---|---|---|---|---|
+| Abstract | 150–200 | 150–200 | ~150 | ~250 | ≤150 |
+| Introduction | 800–1,200 | 800–1,200 | 600–800 | 500–700 | 400–500 *(no heading)* |
+| Theory / Background | 1,500–2,500 | 1,500–2,500 | 800–1,200 | *in intro* | *integrated* |
+| Data & Methods | 1,500–2,500 | 1,500–2,500 | 1,500–2,000 | 800–1,200 *(after Results)* | 600–800 *(after Results)* |
+| Results | 2,000–3,500 | 2,000–3,500 | 2,000–3,000 | 1,200–1,800 | 800–1,200 |
+| Discussion | 2,000–3,500 | 2,000–3,500 | 800–1,500 | 500–800 | 400–600 |
+| Conclusion | 200–500 | 200–500 | 200–300 | *(in Discussion)* | *(in Discussion)* |
+| **Total** | **10,000–12,000** | **10,000–15,000** | **8,000–12,000** | **5,000–8,000** | **3,000–5,000** |
 
-That corpus is not abstract: it is the article library from §14.3.1. `assets/article-knowledge-base.md` carries the per-journal empirical section word counts these budgets derive from, with per-paper detail (ASR n=10, AJS n=13, NHB n=6, Science Advances n=4). Add your own target journal's papers there and the calibration improves for it.
+Two structural facts the table encodes, easy to miss and expensive to get wrong: for **Science Advances and the Nature family, Results comes *before* Methods**, and there is **no separate Theory section** — background is folded into the Introduction. Results subsections there take descriptive headings ("Redlining predicts lower activity-space diversity"), never model numbers.
+
+The **extended** edition carries its own budget table driven by per-journal JSON profiles (§18.2.1), which adds Social Forces, JMF, and others, and applies hard floors — Discussion ≥ 1,200 words, Conclusion ≥ 500 — enforced by `section-length-check.sh`. Where the two disagree, the JSON profile is authoritative on that edition.
+
+Both are calibrated against a corpus of **53+ published papers**, and that corpus is not abstract: it is the article library from §14.3.1. `assets/article-knowledge-base.md` carries the per-journal empirical section counts these ranges derive from, with per-paper detail (ASR n=10, AJS n=13, NHB n=6, Science Advances n=4). Add your own target journal's papers and the calibration improves for it — which is the concrete reason §14.3.1 is worth an afternoon.
 
 ### 14.6 The Methods section has a canonical shape
 
@@ -4519,7 +4608,7 @@ endowments, indicating that the gap reflects differential returns to
 identical resources rather than shortfalls in resources themselves. […]
 ```
 
-Notice the **anchors** embedded in the live source (HTML comments in markdown):
+Notice the **anchors** embedded in the live source (HTML comments in markdown) — an **extended-edition** mechanism:
 
 ```
 agricultural-hukou status is associated with -1.306 weekly hours
@@ -4529,9 +4618,11 @@ agricultural-hukou status is associated with -1.306 weekly hours
 
 These anchors are how `scholar-verify` later checks that every number matches a locked cell. They are HTML comments precisely so they are invisible in the rendered document, machine-readable to `anchor-verify.sh`, and strippable by `submission-prep.sh` before export. **Don't strip them yourself, and don't let them become visible brackets** — that is forbidden pattern P12.
 
+On the **public** edition there are no anchors and no lock to anchor to. The equivalent check is manual and is exactly §14.9's: pick a number, trace it to the table, trace the table to the script. Do it on a sample of ten numbers rather than all of them, and do it before the draft leaves your machine.
+
 ### 14.8 What runs before it saves
 
-The tail of every drafting run is a stack of checks:
+The tail of every drafting run is a stack of checks. Steps 4.5 through 5b are on **both** editions — they are the core of the skill:
 
 - **Step 4.5 — citation verification.** A hard stop. Any citation that cannot be verified becomes `[CITATION NEEDED]`.
 - **Step 4.5e — claim-content verification.** Checks that each cited source actually supports the claim, flagging `CLAIM-REVERSED`, `CLAIM-MISCHARACTERIZED`, `CLAIM-OVERCAUSAL`, `CLAIM-UNSUPPORTED`, `CLAIM-WRONG-POPULATION`, `CLAIM-IMPRECISE`, `CLAIM-NOT-CHECKABLE`.
@@ -4540,7 +4631,7 @@ The tail of every drafting run is a stack of checks:
 - **Step 5 — the five-agent review panel.** R1 Logic · R2 Rhetoric · R3 Journal Fit · R4 Citations · R5 Clarity → a scorecard → one reviser pass prioritizing items two agents flagged → you accept, edit, or reject.
 - **Step 6 — Source Integrity.** A three-agent panel: Originality Auditor, Claim Verifier, Attribution Analyst.
 
-Then the file is written to exactly one path: `drafts/draft-<section>-<slug>-<YYYY-MM-DD>.md`. Alternate paths are rejected by `draft-path-contract.sh` **before** `Write` is called — because Phase 11 assembly discovers manuscripts by globbing that pattern by modification time, and a file written anywhere else is silently dropped from the final paper. That is not hypothetical; it is the documented cause of a real content-loss incident.
+Then the file is written to exactly one path: `drafts/draft-<section>-<slug>-<YYYY-MM-DD>.md`. Both editions run a version-collision check before any `Write`, so an existing draft is never overwritten — you get `-v2`. On the **extended** edition, alternate paths are additionally rejected by `draft-path-contract.sh` **before** `Write` is called — because Phase 11 assembly discovers manuscripts by globbing that pattern by modification time, and a file written anywhere else is silently dropped from the final paper. That is not hypothetical; it is the documented cause of a real content-loss incident.
 
 The specific failure this guards against is worth naming, because it is a pure model-behaviour bug rather than a user error. Language models have seen an enormous amount of Jekyll and Hugo source, where sectioned documents live at `content/manuscript-sections/01-introduction.md`. That is a strong attractor: left unconstrained, the model writes `drafts/manuscript-sections/NN-section.md`, which looks entirely reasonable, passes every content check, and is invisible to the assembler. The pre-Write self-check (added in v5.11.1) means those paths can no longer land on disk at all.
 
@@ -4561,9 +4652,12 @@ If any of those three fails, the draft is not ready for verification yet.
 A pipeline that never fails verification is a pipeline that isn't checking hard enough. Our run found **7 CRITICAL** issues and **6 WARN** issues. That is a successful verification, not an embarrassing one.
 
 ```yaml
+# public edition
 argument-hint: "[full|stage1|stage2|numerics|figures|logic|completeness]
-                [manuscript-path] [output-dir] [--lock <id>]
-                [--scope 'Section A,Section B']"
+                [manuscript-path] [output-dir]"
+
+# extended edition adds
+                [--lock <id>] [--scope 'Section A,Section B']
 ```
 
 ### 15.1 Run
@@ -4582,7 +4676,7 @@ argument-hint: "[full|stage1|stage2|numerics|figures|logic|completeness]
 | `stage2` | Agents 3 + 4 — manuscript objects vs. prose |
 | `numerics` / `figures` / `logic` / `completeness` | One agent only |
 
-Flags: `--manuscript <path>` skips auto-detection; `--artifacts-dir` overrides where tables and figures come from; `--scope` restricts Stage 2 to named sections; `--no-manuscript` runs Stage 1 before a draft exists.
+Flags: `--manuscript <path>` skips auto-detection; `--artifacts-dir` overrides where tables and figures come from; `--no-manuscript` runs Stage 1 before a draft exists. **`--lock` and `--scope` are extended-edition only.**
 
 ### 15.2 Two stages, four agents
 
@@ -4600,7 +4694,9 @@ Raw script outputs  ──[Stage 1]──▶  Manuscript tables & figures  ─�
 
 **`verify-figures` must actually look at the picture.** The rule is explicit: it renders or reads every image file and checks counts, identities, colours, presence, and structure against the caption. If it cannot render an image, the verdict is **UNVERIFIABLE** — never a default PASS. This is the agent that caught four of our seven CRITs.
 
-### 15.3 The lock — why verification is not a moving target
+### 15.3 The lock — why verification is not a moving target  **[Extended]**
+
+*(Extended only — the public edition has no results lock. There, verification reads the live `tables/` and `figures/`, which means you must not regenerate outputs between drafting and verifying. That discipline is manual: finish the analysis, then draft, then verify, and do not go back and re-run a script in the middle.)*
 
 By default, when `results-locked/LATEST.txt` exists, `scholar-verify` reads tables and figures **from the lock, not from the live output directories**, and refuses a live read otherwise. To override you must create `.claude/unlock-verify.sentinel` or set `SCHOLAR_VERIFY_UNLOCK=1`; a bare `--no-lock` exits with an error.
 
@@ -4616,9 +4712,11 @@ Findings: **CRITICAL** (must fix) / **WARNING** (should fix) / **INFO** (may fix
 | **REVISIONS NEEDED** | 1–3 CRITICAL, or >3 WARNING |
 | **MAJOR ISSUES — DO NOT SUBMIT** | >3 CRITICAL, any ★★ CRITICAL, **or any DEGRADED agent** |
 
-That last clause is the anti-silent-failure rule. Every agent report must state `SCANNED: <N> artifacts`. If the line is missing or the count is zero, the agent is marked **DEGRADED** and the whole verdict is forced to MAJOR ISSUES — because an agent that scanned nothing and found nothing looks exactly like an agent that scanned everything and found nothing.
+That last clause is **extended-only**, and it is the anti-silent-failure rule: every agent report must state `SCANNED: <N> artifacts`, and if the line is missing or the count is zero the agent is marked **DEGRADED** and the whole verdict is forced to MAJOR ISSUES — because an agent that scanned nothing and found nothing looks exactly like an agent that scanned everything and found nothing.
 
-Two more guards work the same way. Every agent is dispatched with an explicit `--write-to <path>` and must end its output with `WROTE: <path>`; if the file is not on disk, the orchestrator **fails closed** rather than scraping the agent's chat output for its report. And if any of the four agent profile files is missing, the skill refuses to start at all.
+Two further extended-only guards work the same way. Every agent is dispatched with an explicit `--write-to <path>` and must end its output with `WROTE: <path>`; if the file is not on disk, the orchestrator **fails closed** rather than scraping the agent's chat output for its report. And if any of the four agent profile files is missing, the skill refuses to start at all.
+
+> **On the public edition you are the degraded-agent check.** Nothing forces an agent to declare how much it scanned, so a verification run that inspected two figures and a run that inspected twelve produce similarly confident-looking reports. Before trusting a PASS, open each of the four agent reports and confirm it actually names the artifacts it checked. A report that discusses no specific table or figure by name did not do the work.
 
 Rounding tolerance, since it comes up constantly: **±1 in the last decimal is a WARNING; ±2 or more is CRITICAL**; inconsistent decimal places within a table, or between a table and the text, is a WARNING.
 
@@ -4647,9 +4745,9 @@ The seven CRITs (paraphrased):
 
 Four of seven were figure-related. That is not a coincidence: prose about figures is where a language model's fluency most easily outruns the evidence, because nothing forces it to look.
 
-### 15.6 Routing a fix back
+### 15.6 Routing a fix back  **[Extended]**
 
-Each agent can append a machine-readable `route_back_to` block that `scholar-write` consumes to make a targeted patch instead of a rewrite:
+*(Extended only.)* Each agent can append a machine-readable `route_back_to` block that `scholar-write` consumes to make a targeted patch instead of a rewrite:
 
 ```yaml
 route_back_to:
@@ -4832,9 +4930,11 @@ argument-hint: "[scan|rewrite|full] [file-path]"
 
 Intensity: `light` (high-severity tells only) · `moderate` (default) · `aggressive` (everything). Style Score = 5 × HIGH + 2 × MEDIUM + 1 × LOW, capped at 100 — **lower is better.**
 
-### 17.1 The twenty-four tells
+### 17.1 The tells — nineteen public, twenty-four extended
 
-The skill hunts twenty-four named patterns. Knowing them makes you a better writer even without the tool:
+The public edition hunts **nineteen** named patterns, T1–T19. The extended edition adds five more, T20–T24, which exist because the extended pipeline generates machinery that can leak into prose — on the public edition there is no such machinery to leak.
+
+Knowing them makes you a better writer even without the tool:
 
 | | Tell | Signature |
 |---|---|---|
@@ -4857,18 +4957,21 @@ The skill hunts twenty-four named patterns. Knowing them makes you a better writ
 | T17 | Terminology inconsistency | The same phenomenon named differently across sections |
 | T18 | **Causal language in a non-causal design** | "shapes," "drives," "the effect of X on Y" in cross-sectional data |
 | T19 | Enumerated-Methods tell | Bulleted model ladders, bulleted robustness batteries, compliance-signaling headers |
-| T20 | **Pipeline-machinery leakage** | `L-A#` IDs, `spec_id=` pseudo-citations, floating `M#`/`R#` |
-| T21 | Section-tour-guide forecasts | Three or more "Section N does…" sentences |
-| T22 | Tricolon as structure | "Three X follow" as a recurring paragraph opener |
-| T23 | Numbered limitations | "First… Second… …Tenth," in lockstep with `L-A1`–`L-A10` |
-| T24 | Abstract pseudo-citation density | `(β = −0.025, p = 0.004; spec_id=M3)` inside the abstract |
+| T20 ◆ | **Pipeline-machinery leakage** | `L-A#` IDs, `spec_id=` pseudo-citations, floating `M#`/`R#` |
+| T21 ◆ | Section-tour-guide forecasts | Three or more "Section N does…" sentences |
+| T22 ◆ | Tricolon as structure | "Three X follow" as a recurring paragraph opener |
+| T23 ◆ | Numbered limitations | "First… Second… …Tenth," in lockstep with `L-A1`–`L-A10` |
+| T24 ◆ | Abstract pseudo-citation density | `(β = −0.025, p = 0.004; spec_id=M3)` inside the abstract |
+
+**◆ = extended edition only.**
 
 Two of these are not stylistic preferences:
 
 - **T18 is a methodological correction.** "Shapes" and "drives" in a cross-sectional design is a claim your data cannot license. The skill checks the Methods section first and skips T18 entirely if the design *is* causal. Reviewer 2 will flag it if you don't.
-- **T20 is the largest real-world defect observed** in this corpus — larger than T1–T19 combined. One May 2026 draft shipped 13 `L-A#` markers, 8 `spec_id` pseudo-citations, and 12 floating `M#`/`R#` references in a single manuscript.
+- **T20 is the largest real-world defect observed** in this corpus — larger than T1–T19 combined. One May 2026 draft shipped 13 `L-A#` markers, 8 `spec_id` pseudo-citations, and 12 floating `M#`/`R#` references in a single manuscript. It is extended-only for a good reason: those markers are artifacts of the extended pipeline. If you work on the public edition you cannot hit T20, which is one concrete advantage of the simpler toolchain.
+- On the **public** edition, **T19** carries the weight T20 does on the extended one. The skill calls the enumerated-Methods pattern *the dominant prose-quality tell in AI-authored manuscripts, ahead of T1–T18* — bulleted model ladders and robustness batteries that seasoned reviewers read as machine output.
 
-> **A documentation bug worth knowing.** The skill's own quality checklist still says "all 18 tell types (T1–T18) scanned," but the catalog runs to T24. Following the checklist literally under-scans by six categories. Ask for T19–T24 explicitly.
+> **A documentation bug worth knowing.** Both editions' quality checklists still say "all 18 tell types (T1–T18) scanned," but the public catalog runs to **T19** and the extended one to **T24**. Following the checklist literally under-scans — by one category on public, by six on extended. Ask for the missing ones explicitly.
 
 ### 17.2 What polish must **never** do
 
@@ -4880,7 +4983,9 @@ Five absolute rules:
 4. Preserve every `[CITATION NEEDED]` marker and verification label.
 5. Never manufacture hedging where the original was appropriately assertive. The goal is a distinctive voice, not false modesty.
 
-### 17.3 The tooling rule — why this matters more than it sounds
+### 17.3 The tooling rule — why this matters more than it sounds  **[Extended]**
+
+*(This rule is written into the extended edition. It is not in the public SKILL.md — but the failure it prevents is identical on both, so apply it yourself either way.)*
 
 Fixes are applied with the **Edit tool, one call per occurrence.** Bulk `sed -i`, `re.sub`, or one-line regex passes over the manuscript are **forbidden**.
 
@@ -5245,7 +5350,7 @@ The data-availability statement templates cover the situations you will actually
 
 **Stop and check.** Delete your `renv/` directory, run `bash scripts/run-all.sh`, and see what happens. That is Level 3, and it is the lowest bar any journal will accept.
 
-## 20. `scholar-presentation` — talks and print posters
+## 20. `scholar-presentation` — talks and print posters  **[Extended]**
 
 Once the paper is verified, the same skill suite produces downstream artifacts. The general rule for all of them: every downstream product must trace back to a locked result, a verified citation, or an accepted limitation. **Presentation is claim selection under time pressure, not decoration.**
 
@@ -5307,7 +5412,7 @@ For posters (mode 8) there is a third: a **VLM render-and-critique loop**. The p
 
 Outputs land in `output/presentation/`: the full plan, the slide plan, speaker notes, the PPTX, the PDF, and the JSON manifest — the manifest being the thing to keep, since it regenerates everything else.
 
-## 20A. `scholar-image` — decorative figures only, and a hard refusal
+## 20A. `scholar-image` — decorative figures only, and a hard refusal  **[Extended]**
 
 ```yaml
 argument-hint: "[generate|prompt|preview|list-venues] [venue] [freeform intent]"
@@ -5334,7 +5439,7 @@ Generation goes through the Codex CLI (`codex exec`, using your ChatGPT session 
 
 There is also a global negative-prompt floor that cannot be removed: *no rendered text, no fake data, no hallucinated numerical values, no fake axis labels, no fabricated plots, no logos.* This skill will make you a nice poster header. It will not make you evidence.
 
-## 20B. `scholar-grant` — from pilot to proposal
+## 20B. `scholar-grant` — from pilot to proposal  **[Extended]**
 
 ```yaml
 argument-hint: "[nsf|nih|rsf|spencer|aims|budget|data-plan|review|compare|
@@ -5374,7 +5479,7 @@ $ bash assets/find_spencer_grants.sh "education inequality" 20
 
 Gates: a budget cannot be drafted before the aims are final; a pre-panel gate blocks any remaining `[CLAIM-*]` or `[CITATION NEEDED]` markers; and a `scholar-code-review` pass with zero CRITICAL issues is required if the proposal carries analysis scripts.
 
-## 20C. `scholar-teach` — syllabus-first course materials
+## 20C. `scholar-teach` — syllabus-first course materials  **[Extended]**
 
 **Goal:** turn your research into teaching materials that are actually aligned to a course, not free-floating handouts.
 
@@ -5410,7 +5515,7 @@ Every reading is tagged `[VERIFIED-LOCAL]`, `[VERIFIED-CROSSREF]`, `[VERIFIED-WE
 
 Note that `lecture` and `slides` produce *outlines*; hand them to `/scholar-presentation` (§20.1) for actual PPTX files.
 
-## 20D. `scholar-book` — the long form
+## 20D. `scholar-book` — the long form  **[Extended]**
 
 **Goal:** plan, draft, revise, and assemble a book — with the argument threading intact across chapters.
 
@@ -5508,7 +5613,7 @@ This installs a macOS `launchd` job. The skill is explicit that the alternatives
 
 New papers flow into the `scholar-knowledge` graph (§8C) at `extraction_tier: abstract_only`; run `/scholar-knowledge re-extract` later to deepen them once you have PDFs.
 
-## 20G. `scholar-exemplar-curate` — teaching the writer what good looks like
+## 20G. `scholar-exemplar-curate` — teaching the writer what good looks like  **[Extended]**
 
 **Goal:** build the annotated paragraph library that `scholar-write` reads when it drafts.
 
@@ -5538,7 +5643,9 @@ So far we've run skills one at a time. For a real paper, you want the entire cha
 
 An orchestrator adds exactly three things the individual skills do not have: **ordering**, **gates**, and **resumable state**. It adds no new research capability. If you understand those three things, you can use it well — and, more importantly, you can tell when it is lying to you.
 
-## 21. `scholar-full-paper` — the canonical heavy chain
+> **On the public edition**, `scholar-auto-research` (§22) and `scholar-auto-improve` (§22B) are available; `scholar-full-paper`, `scholar-resume`, and `scholar-loop` are extended-only (§2.4). That is less limiting than it sounds — §22's 21-phase contract is the more legible of the two orchestrators and the better one to *learn* from, and the sentence above is the reason: an orchestrator adds no capability the individual skills lack. Read §21 anyway for the gate and state-machine design; it is the fullest worked example of the ideas §22 implements.
+
+## 21. `scholar-full-paper` — the canonical heavy chain  **[Extended]**
 
 **Goal:** one command takes you from data + research question to a verified, polished, submission-clean draft.
 
@@ -5746,7 +5853,7 @@ The skill names the moments where an agent should stop and ask — worth adoptin
 - A pre-mortem RED names an artifact that is absent from the lock manifest.
 - A reviewer's prose verdict disagrees with its own structured metadata.
 
-## 21A. `scholar-resume` — where am I, and what runs next
+## 21A. `scholar-resume` — where am I, and what runs next  **[Extended]**
 
 **Goal:** one advisory line telling you exactly what to do next. It executes nothing, writes nothing, and modifies no state.
 
@@ -5832,7 +5939,7 @@ It is the right tool for **classroom demos and pipeline prototypes**. It is not 
 
 If you want to build your own orchestrator, copy the structure: `phase-id` → `purpose` → `required inputs` → `actions` → `outputs` → `verification gate` → `next/route-back`. Start with five phases for your own workflow before attempting a full chain.
 
-## 22A. `scholar-loop` — a queue of ideas, run unattended
+## 22A. `scholar-loop` — a queue of ideas, run unattended  **[Extended]**
 
 **Goal:** hand it a *set* of research ideas and let it drive each one through a full pipeline across scheduled wakeups — blocking honestly when a gate goes RED rather than bypassing it.
 
