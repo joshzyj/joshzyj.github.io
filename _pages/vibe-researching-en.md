@@ -99,7 +99,7 @@ v20.11.0
 
 If `node` is missing or older than 18, install [nvm](https://github.com/nvm-sh/nvm) and run `nvm install 20`.
 
-> **Prefer not to install anything by hand?** Once Claude Code or Codex is running (even with only Node installed), you can ask the agent to install Python, R, Git, and the standard social-science packages for you. See §2.6 — "Let the agent install your research toolchain" — for the exact prompts.
+> **Prefer not to install anything by hand?** Once Claude Code or Codex is running (even with only Node installed), you can ask the agent to install Python, R, Git, and the standard social-science packages for you. See §2.7 — "Let the agent install your research toolchain" — for the exact prompts.
 
 ### 2.2 Installing Claude Code
 
@@ -171,7 +171,7 @@ Pick the macOS build (Apple Silicon or Intel) or the Windows build; Windows user
 
 > **What you should see:** a window-based agent that can open a folder, read and edit files, run commands, and talk to git — the same capabilities as the CLI, with buttons instead of keystrokes.
 
-**Let the desktop install the CLI for you.** You do not have to run the `npm` commands from §2.2 by hand. Once the desktop app is open, ask it in plain English — *"Install the Claude Code CLI on my machine and walk me through signing in"* — and the agent will check your Node version, run the installer, fix your `PATH`, and hand you a working `claude` command. It is the same agent that later sets up your whole research toolchain (§2.6); here it simply sets up its own terminal home.
+**Let the desktop install the CLI for you.** You do not have to run the `npm` commands from §2.2 by hand. Once the desktop app is open, ask it in plain English — *"Install the Claude Code CLI on my machine and walk me through signing in"* — and the agent will check your Node version, run the installer, fix your `PATH`, and hand you a working `claude` command. It is the same agent that later sets up your whole research toolchain (§2.7); here it simply sets up its own terminal home.
 
 **…but for this workshop, please also install and use the CLI.** The desktop apps are excellent for first contact and for day-to-day work, and you are welcome to keep using them afterward. The reason to spend ten minutes at the terminal too is *not* that the desktop is weak — by now it reads your files, runs code, remembers across a session, and connects to MCP servers, exactly like the CLI. The reason is a handful of things a *graphical* app structurally cannot do. A desktop needs a screen and a human clicking; the CLI is just text in, text out, so it runs anywhere a shell does:
 
@@ -250,10 +250,17 @@ $ bash setup.sh
 `setup.sh` will:
 
 1. Create the `.claude/skills/` and `.claude/agents/` symlinks the plugin uses internally.
-2. Register `scripts/gates/pretooluse-data-guard.sh` as a PreToolUse hook in `~/.claude/settings.json`. The hook intercepts every `Read`, `NotebookRead`, `NotebookEdit`, `Grep`, and `Glob` call and refuses files whose `.claude/safety-status.json` entry is `NEEDS_REVIEW:*` or `HALTED`.
-3. Confirm that `jq` and `python3` are present (both required by the hook; it fails closed without either).
+2. **Auto-detect your Zotero library**, or prompt you for the path if it cannot find one.
+3. **Optionally configure BibTeX, EndNote, and a CrossRef email** for the polite API pool.
+4. Install all 42 skills and 22 agents as **personal** skills in `~/.claude/skills/` and `~/.claude/agents/` — so `/scholar-*` works in **every** Claude Code session, in any directory, not just the cloned repo.
+5. Register `scripts/gates/pretooluse-data-guard.sh` as a PreToolUse hook in `~/.claude/settings.json`. The hook intercepts every `Read`, `NotebookRead`, `NotebookEdit`, `Grep`, and `Glob` call and refuses files whose `.claude/safety-status.json` entry is `NEEDS_REVIEW:*` or `HALTED`.
+6. Write a `.env` file recording your configuration.
+
+**Requirements:** `bash`, `python3`, `jq`. Install `jq` *first* — the data-safety hook fails closed without it, which means every data read gets blocked until you do. Presidio, used for NER-based PII detection, is optional: `python3 -m pip install presidio-analyzer presidio-anonymizer`.
 
 If `setup.sh` reports a missing dependency, install it (`brew install jq` on macOS; `sudo apt install jq python3` on Linux) and re-run.
+
+> **Step 2 is the one people skip, and it silently degrades half the suite.** The reference library detected here is what `scholar-write` drafts against, what `scholar-citation` verifies against at Tier 1, what `scholar-lit-review` searches before it touches the web, and what `scholar-exemplar-curate` harvests paragraph exemplars from. Get it wrong and nothing errors — you just get web-only citations and generic prose. §14.0 shows how to verify it took.
 
 #### 2.4.3 Update later
 
@@ -291,27 +298,157 @@ If it prints a help summary, you are ready for §3.
 
   Or download the repo as a ZIP and extract it before running `setup.sh`.
 
-## 2.5 Pointing Claude Code at GLM, DeepSeek, or a local model
+## 2.5 What `setup.sh` actually does — a walk-through
+
+**Goal:** know what to expect before you run it, what each of the seven prompts is asking, and how to tell afterwards whether it worked.
+
+`setup.sh` is **interactive**. It asks six or seven questions, and every one of them can be skipped by pressing Enter. It is also **idempotent** — re-running it is safe and is the documented way to repair a broken install. Budget three minutes.
+
+One design note that explains a lot of its behaviour: the script deliberately does **not** use `set -e`. Its own header says why — the interactive `read` prompts return non-zero on EOF (piping `/dev/null`, or running it in CI), and under `set -e` that would abort the install halfway through. Instead each step checks its own exit status and continues best-effort. The consequence for you: **a warning mid-run does not mean the install failed**, and you have to read the summary at the end rather than assuming silence is success.
+
+### 2.5.1 The seven steps, in order
+
+**1 — Symlinks.** `▸ Checking symlinks...` creates two repo-local conveniences, `skills/ → .claude/skills/` and `agents/ → .claude/agents/`. If one exists but points somewhere unexpected it is repaired; if a *real directory* sits at that name, the script refuses to delete it and tells you to move it yourself. It will not destroy your files to make room.
+
+**2 — Zotero auto-detection.** `▸ Looking for Zotero library...` probes seven locations, in order, for a `zotero.sqlite` (or `.sqlite.bak`):
+
+```
+~/Zotero                              ~/Library/CloudStorage/*/zotero
+~/Documents/Zotero                    ~/Library/CloudStorage/*/Zotero
+~/snap/zotero-snap/common/Zotero      ~/Google Drive/zotero
+                                      ~/Google Drive/Zotero
+```
+
+Then it asks:
+
+```
+  Auto-detected Zotero at: /Users/you/Zotero
+  Use this path? [Y/n] or enter a different path:
+```
+
+Three valid answers: Enter or `Y` accepts, `n` skips Zotero entirely, or you paste a different path. If you paste a path that does not exist, it warns and keeps the auto-detected one rather than silently accepting a broken path. If nothing was found at all, it asks you to type a path and skips on empty input.
+
+**3 — Optional reference managers.** Four prompts in a row, each skippable with Enter:
+
+| Prompt | Sets | Notes |
+|---|---|---|
+| Path to a `.bib` file | `SCHOLAR_BIB_PATH` | Must exist, or it warns and skips |
+| Path to an EndNote XML export | `SCHOLAR_ENDNOTE_XML` | Must exist |
+| CrossRef/OpenAlex polite pool email | `SCHOLAR_CROSSREF_EMAIL` | Not validated — it is just an email for API etiquette |
+| HuggingFace access token | `HF_TOKEN` | For SciThinker and gated models |
+
+**4 — Knowledge graph directory.** Defaults to `~/.claude/scholar-knowledge`; press Enter to accept. This is the user-scoped, cross-project graph from §8C — one graph for all your papers, deliberately not inside any project.
+
+**5 — `jq` check, then Presidio.** `▸ Checking jq...` is the step to actually read:
+
+```
+  ⚠ jq is NOT installed.
+    ... the guard falls back to a minimal sed-based parser and fails CLOSED
+    on data files — every Read of a .csv/.dta/.xlsx will be blocked
+    with "install jq" until jq is available.
+```
+
+That is not a soft warning. Without `jq` the data guard blocks every data read. Install it and re-run.
+
+Presidio is then offered for NER-based PII detection (names, addresses, entities) on top of the built-in regex patterns. It needs roughly **500 MB** and defaults to **no**. If you accept, the script installs `presidio-analyzer`, `presidio-anonymizer`, and spaCy's `en_core_web_lg`, then **smoke-tests that `presidio_anonymizer` actually imports** — because a successful `pip install` is not proof the package works on that interpreter. Declining is fine; regex detection is used instead, and you can install it later.
+
+**6 — The `.env` file.** Before writing, an existing `.env` is copied to `.env.bak.<timestamp>` and you are told to re-apply any manual additions. The script never silently clobbers a file you may have hand-edited. The result:
+
+```bash
+SCHOLAR_SKILL_DIR="/path/to/open-scholar-skills"
+SCHOLAR_ZOTERO_DIR="/Users/you/Zotero"
+SCHOLAR_BIB_PATH=""
+SCHOLAR_ENDNOTE_XML=""
+SCHOLAR_CROSSREF_EMAIL="you@university.edu"
+HF_TOKEN=""
+SCHOLAR_KNOWLEDGE_DIR="/Users/you/.claude/scholar-knowledge"
+```
+
+**7 — Installing as personal skills.** This is what makes `/scholar-*` work in every directory. It creates **one symlink per skill and per agent** inside `~/.claude/skills/` and `~/.claude/agents/` — rather than replacing those directories with a single link to the repo. Three consequences, all good:
+
+- A skill of your own already at `~/.claude/skills/my-thing/` is untouched; the `scholar-*` entries install alongside it.
+- If a *real* (non-symlink) directory already occupies a `scholar-*` name, the script **skips it and says so** rather than deleting your content.
+- Uninstalling is just deleting the `scholar-*` symlinks.
+
+Then three smaller steps run without asking anything:
+
+- **`chmod +x` repair.** Helper scripts that lost their executable bit — which happens on cloud-sync mounts and ZIP downloads, though not on a fresh `git clone` — get it restored. Only files starting with a `#!` shebang are touched; sourced helpers are deliberately left non-executable.
+- **The PreToolUse hook.** `scripts/gates/pretooluse-data-guard.sh` is merged into `~/.claude/settings.json` with `jq` — additively and idempotently, preserving every other key you have configured, and replacing rather than duplicating an existing scholar entry. The command is written **quoted**, which is what makes it survive a path containing spaces (§6.4).
+- **Bootstrap files.** `~/.claude/scholar-skills.path` (a one-line absolute path, `chmod 600`) and a copy of `scholar-skill-bootstrap.sh`, so skills can find the repo from any working directory even with `SCHOLAR_SKILL_DIR` unset.
+
+Finally it offers to append `export SCHOLAR_SKILL_DIR="..."` to your `~/.zshrc` (or `~/.bashrc` / `~/.bash_profile`), detecting your shell. Accept unless you manage your profile some other way.
+
+### 2.5.2 Reading the summary — the one line that matters
+
+```
+═══════════════════════════════════════════════════
+  Setup Complete
+═══════════════════════════════════════════════════
+
+  SCHOLAR_SKILL_DIR=/path/to/open-scholar-skills
+  Zotero:     /Users/you/Zotero
+
+  Next steps:
+  1. Source your shell profile or open a new terminal
+  2. Try from any project: /scholar-idea "your research question"
+```
+
+If the safety hook could not be installed, the banner says so instead — and **the script exits non-zero**:
+
+```
+  Setup Complete (WARNING: safety hook NOT installed)
+
+  The PreToolUse data-safety hook could not be installed.
+  Raw data files will NOT be automatically guarded.
+```
+
+That exit code is the machine-readable signal. If you script the install, check it:
+
+```bash
+$ bash setup.sh || echo "SAFETY HOOK MISSING — install jq and re-run"
+```
+
+### 2.5.3 Verify it took
+
+```bash
+$ ls ~/.claude/skills/ | grep -c scholar        # 42
+$ ls ~/.claude/agents/ | wc -l                  # 22
+$ cat ~/.claude/scholar-skills.path             # the repo path
+$ jq '.hooks.PreToolUse' ~/.claude/settings.json | head    # the guard
+$ cat "$SCHOLAR_SKILL_DIR/.env"                 # your configuration
+```
+
+Then, in a **new** terminal (so the profile export is live), from a directory that is *not* the repo:
+
+```
+> /scholar-idea does hukou status shape internet use in urban China?
+```
+
+If the skill runs from an unrelated directory, the personal-skills install worked. If `/help` does not list the scholar skills, re-run `bash setup.sh` and watch the `▸ Checking symlinks...` block for errors (§2.4.5).
+
+**Stop and check.** Open `~/.claude/settings.json` and find the PreToolUse entry. Is the script path wrapped in quotes? If your install lives under a path with a space in it — `My Drive`, `Application Support` — an unquoted command silently never fires, and you would have no guard at all while believing you did.
+
+## 2.6 Pointing Claude Code at GLM, DeepSeek, or a local model
 
 **Goal:** keep using the same Claude Code CLI, the same `open-scholar-skill` plugin, and the same project layout, but route the model calls to a different backend — Z.ai/GLM, DeepSeek, or a model you run on your own machine.
 
 You do **not** need to install another CLI, swap your scripts, or hand-edit JSON before every session. Claude Code reads two environment variables — `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` — and will talk to any provider that exposes an Anthropic-compatible endpoint. GLM (Z.ai and the mainland BigModel host) and DeepSeek both do. For genuinely local models (DeepSeek-R1 distilled, Qwen2.5-Coder, Llama, GLM), Claude Code still needs an Anthropic-compatible front: Ollama, vLLM, and llama.cpp all speak OpenAI-style APIs, so you put a small translation layer — `claude-code-router` or `litellm` — in front to re-shape their responses into the Anthropic schema; the rest of the workflow is identical.
 
-### 2.5.1 Provider snapshot
+### 2.6.1 Provider snapshot
 
 | Provider | Endpoint host | Models to set |
 | -------- | ------------- | ------------- |
 | GLM / Z.ai (international) | `api.z.ai` | Opus → `glm-5.1`; Sonnet → `glm-5-turbo`; Haiku → `glm-4.5-air`. Also set `API_TIMEOUT_MS=3000000`. |
 | GLM mainland China | `open.bigmodel.cn` | Same idea; pick the GLM family your BigModel account has access to. |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`; Haiku and subagents → `deepseek-v4-flash`. |
-| Local — Ollama (via CCR/proxy) | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.5.5. |
-| Local — vLLM / llama.cpp (via proxy) | proxy address you start | Whatever you exposed; see §2.5.5. |
+| Local — Ollama (via CCR/proxy) | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.6.5. |
+| Local — vLLM / llama.cpp (via proxy) | proxy address you start | Whatever you exposed; see §2.6.5. |
 
 The full `ANTHROPIC_BASE_URL` for Z.ai is `https://api.z.ai/api/anthropic`; for BigModel it is `https://open.bigmodel.cn/api/anthropic`; for DeepSeek it is `https://api.deepseek.com/anthropic`. The trailing `/anthropic` segment is what makes these endpoints route to the compatibility shim — leaving it off is the most common configuration error.
 
 **Model names move fast.** The model IDs in this section (`glm-5.1`, `glm-5-turbo`, `deepseek-v4-pro`, and the rest) are illustrative. Before a session, check the provider's current model list — Z.ai/BigModel and DeepSeek each publish their own — and use the exact names your account can call; pasting a retired tag is the second most common error after dropping the `/anthropic` suffix.
 
-### 2.5.2 Option A — declare a backend in `~/.claude/settings.json`
+### 2.6.2 Option A — declare a backend in `~/.claude/settings.json`
 
 This is the simplest setup: you point Claude Code at one backend, save the file, and every new session uses it until you change it.
 
@@ -346,7 +483,7 @@ This is the simplest setup: you point Claude Code at one backend, save the file,
 
 Restart Claude Code; run `/usage` or just trigger any tool call to confirm the backend has switched.
 
-### 2.5.3 Option B — keep keys outside the project and switch with shell functions
+### 2.6.3 Option B — keep keys outside the project and switch with shell functions
 
 Hand-editing `settings.json` before every workshop is painful and tends to leak keys into git. Instead, keep all your provider keys in `~/.api-keys` (chmod 600), source it from `~/.zshrc` or `~/.bashrc`, and define small shell functions that export the right environment and then launch `claude`:
 
@@ -389,7 +526,7 @@ claude-anthropic() {
 
 From then on, `glm` opens Claude Code against Z.ai, `deepseek` opens it against DeepSeek, and `claude-anthropic` falls back to vanilla Anthropic. The PATH binary `claude` itself is still the one CLI you trust.
 
-### 2.5.4 Option C — CC Switch, a one-click GUI for provider switching
+### 2.6.4 Option C — CC Switch, a one-click GUI for provider switching
 
 Options A and B edit configuration by hand. If you juggle several providers or accounts — an Anthropic login for one project, GLM and DeepSeek for others, a Kimi key for a collaborator's repo — a GUI that makes those same edits for you is less error-prone. **CC Switch** is a cross-platform desktop app that manages provider configurations for Claude Code (and Codex, Gemini CLI, Claude Desktop, and more) from one window, with 50+ built-in provider presets and a system-tray menu for instant switching. It is an open-source, third-party tool — **not** an Anthropic product.
 
@@ -420,11 +557,11 @@ On **Windows**, download the `.msi` installer (Windows 10+); on other **Linux** 
 **Two cautions — the workshop's data-boundary rules still apply.**
 
 - **It stores your API keys unencrypted** in `~/.cc-switch/cc-switch.db`. Treat that file like any credential store: not on a shared lab machine, not in a synced or backed-up folder you don't control, never in git. On a borrowed computer, prefer Option B (keys in `~/.api-keys`, `chmod 600`) or clean up afterwards.
-- **Many presets are community relays**, not the vendor's own endpoint. A relay sees every prompt you send it — including participant text. Before routing a project with sensitive data through any non-official backend, run the trust checks in §2.5.6, and for restricted data prefer an official channel or a provider you have vetted.
+- **Many presets are community relays**, not the vendor's own endpoint. A relay sees every prompt you send it — including participant text. Before routing a project with sensitive data through any non-official backend, run the trust checks in §2.6.6, and for restricted data prefer an official channel or a provider you have vetted.
 
 CC Switch does not replace Options A/B — it automates them behind a UI. Everything else (the plugin, `CLAUDE.md`, the permission gates) is unchanged.
 
-### 2.5.5 Running models locally
+### 2.6.5 Running models locally
 
 If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and route Claude Code to it. The catch: Claude Code speaks the Anthropic Messages API, while local servers (Ollama, vLLM, llama.cpp) speak OpenAI-style chat completions, so you put a thin translation layer in between. `claude-code-router` (CCR) is the lightest option: it speaks OpenAI-style chat completions to providers, so all three plug in as ordinary OpenAI-compatible backends — no per-server transformer required.
 
@@ -464,7 +601,7 @@ There is no `ccr config init`; the config file is created the first time you run
 
 > **vLLM / llama.cpp.** If you already serve models with vLLM (`vllm serve <model>`) or llama.cpp (`llama-server`), they expose OpenAI-style chat completions, not Anthropic-style. vLLM ships its own Claude Code integration guide; otherwise put `litellm`, an `anthropic-proxy`, or CCR in front to translate the OpenAI ↔ Anthropic schemas. The Claude Code side never changes.
 
-### 2.5.6 Workshop checks before you trust a backend
+### 2.6.6 Workshop checks before you trust a backend
 
 Open Scholar skills are **not model-agnostic**. They depend on long-context reading, tool use, and JSON-structured output. Before running the CFPS pipeline on a non-Anthropic backend, run this three-step smoke test:
 
@@ -476,13 +613,13 @@ Record the result of each check in a one-line note in `logs/backend-test.md`. **
 
 > **Workshop rule.** During the workshop itself, default to one backend per laptop. Switching providers mid-pipeline is the fastest way to produce two halves of a paper that disagree about CFPS variable definitions because the two models read the codebook differently.
 
-## 2.6 Let the agent install your research toolchain
+## 2.7 Let the agent install your research toolchain
 
 **Goal:** once `claude` (or `codex`) launches, let the agent do the rest of the install work — Python, R, Git, system build tools, and the standard social-science package stacks (`tidyverse`, `pandas`, `statsmodels`, `scikit-learn`, etc.). You read the proposed commands, approve them one at a time, and you end up with a reproducible install log you can re-use on another laptop.
 
 The agent is good at this for three reasons: it picks the right package manager for your OS (`brew` vs. `apt` vs. `winget` vs. `choco`), it sequences dependencies correctly (system libraries first, then language runtime, then packages), and it leaves a record of every command it ran in the transcript.
 
-### 2.6.1 Before you ask — set the safety expectation
+### 2.7.1 Before you ask — set the safety expectation
 
 System installs touch shared state. Tell the agent the rules **before** you ask it to do anything:
 
@@ -508,7 +645,7 @@ System installs touch shared state. Tell the agent the rules **before** you ask 
 
 Stay in **`default`** permission mode for this. Do *not* switch to `acceptEdits` or `bypassPermissions` — every `sudo`, `brew install`, `apt install`, or `npm install -g` should be a separate approval click.
 
-### 2.6.2 The four prompts that cover 90 % of installs
+### 2.7.2 The four prompts that cover 90 % of installs
 
 Once the agent has a map of your machine, send these in order. Each one is small enough that you can read and approve every command.
 
@@ -600,11 +737,11 @@ A surprising number of pipeline failures are "I drafted the paper but cannot ren
 > 10-line hello.qmd → hello.pdf to confirm the toolchain works end to end.
 ```
 
-### 2.6.3 Codex-flavoured prompts
+### 2.7.3 Codex-flavoured prompts
 
 The same prompts work with `codex` with minor wording changes — Codex is more terse about explaining what it is about to do, so add `"Explain each command before running it"` at the top of every prompt. Codex tends to prefer `python -m venv` over `pyenv`, which is fine on a clean machine but breaks badly if you already have a system Python that conflicts; the pyenv prompt above is the safer route.
 
-### 2.6.4 Capture the install log
+### 2.7.4 Capture the install log
 
 After all four prompts succeed, ask:
 
@@ -618,7 +755,7 @@ After all four prompts succeed, ask:
 
 That log is the artifact. If a colleague asks "how do I get set up?", you hand them `logs/install.md` and Claude (or Codex) replays it on their machine.
 
-### 2.6.5 What to *not* let the agent install
+### 2.7.5 What to *not* let the agent install
 
 A few classes of software should always be installed by you, not by the agent:
 
@@ -1050,7 +1187,7 @@ $ claude mcp get zotero      # config + connection status for one server
 
 (There is no `claude mcp tools` subcommand; `/mcp` is where you see the per-server tool list.)
 
-Most servers need credentials (a Zotero API key, a GitHub PAT). Store them in `~/.api-keys` as in §2.5.3 and reference them from the server config; never hard-code them in `settings.json`.
+Most servers need credentials (a Zotero API key, a GitHub PAT). Store them in `~/.api-keys` as in §2.6.3 and reference them from the server config; never hard-code them in `settings.json`.
 
 **Workshop rule.** Add an MCP server only when the alternative is the agent repeatedly fabricating a citation, a PR description, or a database row. MCP is not a free upgrade — every server is one more piece of surface area that can ship your data somewhere you didn't intend.
 
@@ -4044,6 +4181,56 @@ argument-hint: "[draft|revise|polish] [section] on [topic] for [journal],
                 segregation for ASR'"
 ```
 
+### 14.0 Before you draft — what `scholar-write` needs configured
+
+`scholar-write` is the skill most sensitive to setup, because it reads from more places than any other. Run through this once; it takes about five minutes and it is the difference between a draft that cites your library and one that cites the open web.
+
+**1. Confirm the suite is installed as personal skills.** `bash setup.sh` (§2.4.2) installs all 42 skills into `~/.claude/skills/`, which is what makes `/scholar-write` available in any directory rather than only inside the cloned repo:
+
+```bash
+$ ls ~/.claude/skills/scholar-write/SKILL.md    # should exist
+$ ls ~/.claude/agents/ | wc -l                  # 22 agents
+```
+
+**2. Confirm your reference library was detected.** This is the step that matters most. `setup.sh` auto-detects Zotero and optionally configures BibTeX, EndNote, and a CrossRef email; the result is recorded in the repo's `.env`:
+
+```bash
+$ cat "$SCHOLAR_SKILL_DIR/.env"
+SCHOLAR_ZOTERO_DIR=/Users/you/Zotero
+SCHOLAR_CROSSREF_EMAIL=you@university.edu
+```
+
+If detection failed or you keep your library somewhere unusual, set the override that matches your manager and put it in your shell profile so it persists:
+
+| Env var | Points at |
+|---|---|
+| `SCHOLAR_ZOTERO_DIR` | The Zotero directory containing `zotero.sqlite` |
+| `SCHOLAR_BIB_PATH` | A `.bib` file, if you use plain BibTeX |
+| `SCHOLAR_ENDNOTE_XML` | An exported EndNote XML library |
+| `SCHOLAR_CROSSREF_EMAIL` | Your email, for the CrossRef/OpenAlex polite pool |
+
+Zotero is searched by copying the live database to a temp file first, so you do **not** need to close Zotero — but the file must exist where the variable points. Verify the library is actually reachable before you draft:
+
+```
+> /scholar-citation verify drafts/any-existing-draft.md
+```
+
+If the report shows Tier 1 (local library) hits, you are configured. If everything resolves at Tier 2 or 3, the library was not found and every citation is coming from the web.
+
+**3. Understand what a missing library costs you.** Nothing errors. `scholar-write` degrades quietly:
+
+- The **Tier 0/1 citation pool** is empty, so drafting leans on external APIs and produces more `[CITATION NEEDED]` markers.
+- **Exemplar retrieval** (§14.2, Step 0a-exemplars) falls back from your curated library to a per-project Zotero scan — and if Zotero is missing too, to nothing. Prose drafted without exemplars is measurably more generic; this is the mechanism behind §20G.
+- The **Theory-section carry-forward rule** still fires, but with fewer verified sources to carry forward.
+
+**4. Know that `scholar-write` is data-safety gated.** It is a **Tier B** skill: it checks `.claude/safety-status.json` and refuses fail-fast on `NEEDS_REVIEW:*`, `HALTED`, or `LOCAL_MODE` inputs. It does not implement the LOCAL_MODE dispatch contract itself — it just declines. Resolve the sidecar with `/scholar-init review` (§6.2) first.
+
+**5. Under Codex**, there are no slash commands. Export `SCHOLAR_SKILL_DIR` to the repo root and symlink the skill folders into `~/.codex/skills/`, then invoke in prose — "Use scholar-write to draft the Introduction for ASR." Persist the variable:
+
+```bash
+$ echo 'export SCHOLAR_SKILL_DIR="$HOME/open-scholar-skills"' >> ~/.zshrc
+```
+
 ### 14.1 Run
 
 ```
@@ -4191,7 +4378,9 @@ The tail of every drafting run is a stack of checks:
 - **Step 5 — the five-agent review panel.** R1 Logic · R2 Rhetoric · R3 Journal Fit · R4 Citations · R5 Clarity → a scorecard → one reviser pass prioritizing items two agents flagged → you accept, edit, or reject.
 - **Step 6 — Source Integrity.** A three-agent panel: Originality Auditor, Claim Verifier, Attribution Analyst.
 
-Then the file is written to exactly one path: `drafts/draft-<section>-<slug>-<YYYY-MM-DD>.md`. Alternate paths are rejected by `draft-path-contract.sh` — because Phase 11 assembly discovers manuscripts by globbing that pattern by modification time, and a file written anywhere else is silently dropped from the final paper. That is not hypothetical; it is the documented cause of a real content-loss incident.
+Then the file is written to exactly one path: `drafts/draft-<section>-<slug>-<YYYY-MM-DD>.md`. Alternate paths are rejected by `draft-path-contract.sh` **before** `Write` is called — because Phase 11 assembly discovers manuscripts by globbing that pattern by modification time, and a file written anywhere else is silently dropped from the final paper. That is not hypothetical; it is the documented cause of a real content-loss incident.
+
+The specific failure this guards against is worth naming, because it is a pure model-behaviour bug rather than a user error. Language models have seen an enormous amount of Jekyll and Hugo source, where sectioned documents live at `content/manuscript-sections/01-introduction.md`. That is a strong attractor: left unconstrained, the model writes `drafts/manuscript-sections/NN-section.md`, which looks entirely reasonable, passes every content check, and is invisible to the assembler. The pre-Write self-check (added in v5.11.1) means those paths can no longer land on disk at all.
 
 ### 14.8 Stop and check
 
@@ -7300,7 +7489,7 @@ $ sudo apt -y install build-essential curl wget unzip ca-certificates \
 $ git --version && jq --version && python3 --version
 ```
 
-That gives you the bare minimum the §2 install needs. Everything else — Node.js, Claude Code, Codex, the open-scholar-skill plugin, R, the social-science packages — comes from §2 and §2.6 *unchanged*.
+That gives you the bare minimum the §2 install needs. Everything else — Node.js, Claude Code, Codex, the open-scholar-skill plugin, R, the social-science packages — comes from §2 and §2.7 *unchanged*.
 
 ### K.5 Where your files live
 
@@ -7325,11 +7514,11 @@ Most Windows participants want VS Code as the editor for files that live inside 
 
 Do *not* open the same project from the Windows-native VS Code window via `\\wsl$\...`; line endings and file watchers get confused.
 
-### K.7 Then continue with §2.6
+### K.7 Then continue with §2.7
 
-You are now indistinguishable from a macOS or Linux participant. Go back to **§2.6 — "Let the agent install your research toolchain"** and run the four prompts there. The agent will detect Ubuntu and use `apt`-based commands.
+You are now indistinguishable from a macOS or Linux participant. Go back to **§2.7 — "Let the agent install your research toolchain"** and run the four prompts there. The agent will detect Ubuntu and use `apt`-based commands.
 
-When §2.6.2 prompt (1) asks you to print your public key, paste it into GitHub from inside Windows Terminal — `clip.exe` is on PATH thanks to WSL2's interop, so:
+When §2.7.2 prompt (1) asks you to print your public key, paste it into GitHub from inside Windows Terminal — `clip.exe` is on PATH thanks to WSL2's interop, so:
 
 ```bash
 $ cat ~/.ssh/id_ed25519.pub | clip.exe
