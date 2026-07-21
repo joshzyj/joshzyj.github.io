@@ -4283,31 +4283,86 @@ Two of these deserve emphasis:
 
 ### 14.3 Making it draft in *your* voice
 
-Everything so far makes the draft **correct**. This subsection makes it sound like **you** rather than like a language model writing sociology. It is the highest-leverage thing in §14, and it is the step most people never do.
+Everything so far makes the draft **correct**. This subsection makes it sound like **you** rather than like a language model writing sociology. It is the highest-leverage part of §14, and the part most people never do.
 
-Two independent mechanisms do the work, and they operate at different moments:
+Three mechanisms do the work, at three different moments:
 
-| Mechanism | When | What it does |
-|---|---|---|
-| **Exemplars** | *Before* drafting — `scholar-write` Step 0a-exemplars | Shows the model real paragraphs to imitate the *shape* of |
-| **Tiny topos** | *After* drafting — `/scholar-polish` (§17) | Injects authorial micro-patterns into finished prose |
+| | Mechanism | When | Granularity |
+|---|---|---|---|
+| **A** | **Article library** — `scholar-write/assets/` | Read at write-time to pick examples | Whole papers |
+| **B** | **Curated exemplars** — `/scholar-exemplar-curate` | Step 0a-exemplars, before drafting | Single paragraphs |
+| **C** | **Tiny topos** — `/scholar-polish` (§17) | After drafting | Sentences |
 
-Exemplars are the more powerful of the two, because shape is decided while drafting and is expensive to retrofit.
+They are complements, not alternatives. **A** teaches the model how *you* build an argument across a whole paper; **B** shows it the shape of one paragraph in one section of one journal; **C** repairs sentence-level tells afterwards. If you only ever do one, do **A** — it is the cheapest and it calibrates everything downstream.
 
-#### 14.3.1 What an exemplar is
+#### 14.3.1 Path A — the article library
 
-Not a template and not text to copy. Each is a real published paragraph plus an annotation of *what it does well*:
+`scholar-write` ships with an assets directory that it reads *at write-time* to select worked examples. Three PDF corpora:
+
+```
+.claude/skills/scholar-write/assets/
+├── user1-articles/         ← your own published papers — voice, framing, contribution style
+├── user2-articles/         ← a second author's work (co-author, or a second subfield)
+├── top-journal-articles/   ← 5–20 recent papers from journals you target
+├── index.md                ← the catalog scholar-write actually reads
+├── article-knowledge-base.md
+└── section-snippets.md
+```
+
+> **The README is stale here — trust the skill, not the docs.** The repo README tells you to create `example-articles/`. The shipped `SKILL.md` and `index.md` read **`user1-articles/`**. A directory named `example-articles/` will simply be ignored. (`user2-articles/` is undocumented in the README entirely; it exists so a second voice — a co-author, or your own work in a different subfield — can be kept separate.)
+
+**How the skill uses it.** At write-time it reads `index.md`, picks **1–2 user articles** matching your domain and method, plus **1–2 top-journal articles** matching your target venue, then extracts text from just those:
+
+```bash
+$ pdftotext "assets/user1-articles/<paper>.pdf" - | head -250
+```
+
+So the library scales without cost: only the handful of selected papers are ever read.
+
+**The three generated files, and what each is for:**
+
+| File | Contents |
+|---|---|
+| `index.md` | One row per paper — filename, citation, journal, method, topics, **best-for**. This is the selection table; without a row, a PDF is invisible |
+| `article-knowledge-base.md` | Per paper: opening line, gap sentence, contribution claim, voice register, sentence architecture, paragraph rhythm. Also the **empirical section word counts by journal** that §14.5's budget table is calibrated from |
+| `section-snippets.md` | Verbatim quotes sorted into **nine rhetorical categories**: opening hooks · gap statements · contribution claims · theory and mechanism descriptions · methods lead sentences · results lead sentences · discussion openers · hedging and scope conditions · high-impact quantitative sentences |
+
+**Setting it up — three steps.**
+
+1. Copy your own published PDFs into `user1-articles/`.
+2. Copy 5–20 recent papers from your target journals into `top-journal-articles/`.
+3. Ask Claude Code to index them. One prompt builds all three files:
+
+```
+Scan all PDFs in .claude/skills/scholar-write/assets/user1-articles/ and
+.claude/skills/scholar-write/assets/top-journal-articles/. For each paper,
+use pdftotext to extract the first 300 lines, then populate:
+1. assets/index.md — a row per paper (filename, citation, journal, method,
+   topics, best-for)
+2. assets/article-knowledge-base.md — a structured entry per paper (opening
+   line, gap sentence, contribution claim, voice register, sentence
+   architecture, paragraph rhythm)
+3. assets/section-snippets.md — verbatim quotes in the 9 rhetorical categories
+```
+
+Re-run it whenever you add papers. A populated library on a working install looks roughly like: **32** user articles, **8** second-author articles, **87** top-journal exemplars across 15+ journals — feeding a 1,300-line knowledge base and a 690-line snippet file.
+
+`scholar-write` works with an empty assets directory — it falls back to built-in journal conventions. It just writes like nobody in particular.
+
+#### 14.3.2 Path B — curated paragraph exemplars
+
+Where the article library teaches whole-paper architecture, `/scholar-exemplar-curate` builds a **cross-project library of individual annotated paragraphs**, keyed by journal × section. Each is a real published paragraph plus a note on what it does well:
 
 ```markdown
 ---
 journal: american-sociological-review
 section: methods
 source_id: zotero:ABCD1234
-authors: [...]  year: 2021  curated_by: user-work
+curated_by: user-work
 ---
 
 ## Excerpt
-> [80–350 words, verbatim, from the published paper]
+> [80–350 words, verbatim]
 
 ## What it does well
 - Opens with the sampling frame rather than a tour of the dataset.
@@ -4317,15 +4372,9 @@ authors: [...]  year: 2021  curated_by: user-work
 - Assumes a panel; a cross-section cannot borrow the attrition move.
 ```
 
-The **"What it does well"** block is the load-bearing part — generic praise like "clear writing" is explicitly banned by the extraction contract. And the excerpt is studied for structure only: `expansion-quality-check.sh` fails the run on 10-gram overlap with an exemplar, so it cannot leak into your manuscript.
+The **"What it does well"** block is load-bearing — generic praise like "clear writing" is banned by the extraction contract. Excerpts are studied for structure only: `expansion-quality-check.sh` fails the run on 10-gram overlap, so exemplar text cannot leak into your manuscript.
 
-#### 14.3.2 What ships, and what you have to build
-
-The suite arrives pre-seeded for eight journals:
-
-```bash
-$ ls "$SCHOLAR_SKILL_DIR/.claude/skills/scholar-journal/exemplars/"
-```
+**What ships pre-seeded** — eight journals:
 
 | Journal | Exemplars |
 |---|---|
@@ -4337,72 +4386,60 @@ $ ls "$SCHOLAR_SKILL_DIR/.claude/skills/scholar-journal/exemplars/"
 | nature-human-behaviour | 20 |
 | journal-of-marriage-and-family | 5 |
 
-If you write for a journal not on that list, **you have no exemplars and nobody will tell you** — drafting silently falls back to a per-project Zotero scan, then to nothing.
+Write for anything else and you have none — silently.
 
-#### 14.3.3 The three ways to personalize
+**Three sourcing modes:**
 
-```yaml
-argument-hint: "<mode> [<journal>] [<section>] [<options>]"
-```
-
-| Mode | Source | Use it for |
+| Mode | Source | Use for |
 |---|---|---|
-| **`user-work`** | Your own publications — Zotero items tagged `My Publications` | **Your voice.** Start here |
-| **`top50`** | `~/.claude/scholar-knowledge/top-50.bib` — the papers you most want to write like | Aspirational voice |
-| **`zotero`** | Your library filtered by journal × time window | Coverage for a target journal |
+| **`user-work`** | Zotero items tagged `My Publications` | **Your voice. Start here** |
+| **`top50`** | `~/.claude/scholar-knowledge/top-50.bib` | Aspirational voice |
+| **`zotero`** | Your library, filtered by journal × time window | Coverage for a target journal |
 
 ```
 > /scholar-exemplar-curate user-work
-> /scholar-exemplar-curate top50
 > /scholar-exemplar-curate zotero "Social Forces" methods --year-from 2020
 > /scholar-exemplar-curate review
 ```
 
-> **`user-work` outranks everything else.** When several candidates exist for the same journal × section, user-work exemplars are **sorted first** — the skill's stated reason is that *your own published voice is the most relevant template for your next paper*. If you have published anything, this is the single highest-value command in this handbook.
+> **`user-work` outranks everything else.** When several candidates exist for the same journal × section, user-work exemplars are **sorted first** — the skill's stated reason is that *your own published voice is the most relevant template for your next paper*.
 
-Tag your own papers `My Publications` in Zotero first (or point at a different tag with `--user-tag <tag>`, or set `SCHOLAR_USER_WORK_TAG`).
-
-For `top50`, create the list yourself — it does not exist by default, and the mode will prompt you:
+Tag your papers `My Publications` in Zotero first (or use `--user-tag <tag>` / `SCHOLAR_USER_WORK_TAG`). For `top50`, create the list yourself — it does not exist by default:
 
 ```bash
 $ ${EDITOR:-nano} ~/.claude/scholar-knowledge/top-50.bib
 ```
 
-A plain BibTeX file where each entry has a `file = {…}` field pointing at the PDF. Fifty is a ceiling, not a target; ten papers you genuinely admire beat fifty you merely cited.
+Plain BibTeX, each entry with a `file = {…}` field pointing at the PDF. Ten papers you genuinely admire beat fifty you merely cited.
 
-#### 14.3.4 Nothing enters the library without your approval
-
-Every candidate is staged, never auto-promoted:
+**Nothing enters without your approval.** Every candidate stages first:
 
 ```
-_staging/<journal>/<section>/   →   review   →   <journal>/<section>/   (approved)
-                                      ↓
-                               _rejected/<journal>/<section>/   (+ reason, never re-proposed)
+_staging/<journal>/<section>/  →  review  →  <journal>/<section>/   (approved)
+                                    ↓
+                             _rejected/<journal>/<section>/  (+ reason, never re-proposed)
 ```
 
-```
-> /scholar-exemplar-curate review
-```
+`/scholar-exemplar-curate review` walks each one and waits for `[a]ccept` / `[r]eject` / `[s]kip`. Budget realistically: one journal across all sections with 20 candidates dispatches up to ~140 extraction agents, about five minutes, with a 30–50% accept rate. Steady state is 5–15 exemplars per journal × section.
 
-walks each candidate — frontmatter, excerpt, "what it does well" — and waits for `[a]ccept` / `[r]eject` / `[s]kip`. Rejections record a reason so the same paper × section pair is never proposed again.
-
-Budget realistically: one journal across all sections with 20 candidate papers dispatches up to ~140 extraction agents and takes roughly five minutes. Expect to accept **30–50%**. Steady state is 5–15 exemplars per journal × section.
-
-#### 14.3.5 Verify it is actually being used
+#### 14.3.3 Verify both paths are actually feeding the draft
 
 ```bash
+# Path A — is the catalog populated?
+$ wc -l "$SCHOLAR_SKILL_DIR/.claude/skills/scholar-write/assets/index.md"
+
+# Path B — is the curated library being hit?
 $ bash "$SCHOLAR_SKILL_DIR/scripts/exemplar-lookup.sh" social-forces methods
 STATUS=GREEN
 SOURCE=curated        # curated | fallback | both
 COUNT=4
-PATHS=...
 ```
 
-`SOURCE=curated` means your library is feeding the draft. `SOURCE=fallback` means it is scraping Zotero per-project because the library has nothing for that pair. A `COUNT=0` is the silent failure this whole subsection exists to prevent.
+`SOURCE=curated` means your library is feeding drafting; `fallback` means it found nothing and is scraping Zotero per-project; `COUNT=0` is the silent failure this whole subsection exists to prevent.
 
-The library is **cross-project and cumulative**: curate once, and every future paper you write for that journal drafts against it. It is the one part of this pipeline that compounds.
+Both libraries are **cross-project and cumulative**. Curate once and every future paper for that journal drafts against them. They are the parts of this pipeline that compound.
 
-**Stop and check.** Run `/scholar-exemplar-curate user-work`, approve three paragraphs from your own best paper, then draft a section and read it aloud. If it still does not sound like you, that is what `/scholar-polish` (§17) is for — but fix the shape first, because polish cannot repair structure.
+**Stop and check.** Put three of your own papers in `user1-articles/`, run the indexing prompt, then draft a section and read it aloud. If it still does not sound like you, that is what `/scholar-polish` (§17) is for — but fix the architecture first, because polish cannot repair structure.
 
 ### 14.4 The eighteen forbidden patterns
 
@@ -4444,6 +4481,8 @@ Enforcement is mechanical: `pipeline-machinery-check.sh` at the polish phase and
 | NHB / NCS | 3,000–5,000 | ≤150 | 400–500, no heading | — | — | — | — |
 
 Hard floors on long-form journals: Discussion ≥ 1,200 words, Conclusion ≥ 500. The table is calibrated against a corpus of 53+ published papers — and the skill documents that its own earlier hand-curated table systematically *under*-specified these ranges, since corrected.
+
+That corpus is not abstract: it is the article library from §14.3.1. `assets/article-knowledge-base.md` carries the per-journal empirical section word counts these budgets derive from, with per-paper detail (ASR n=10, AJS n=13, NHB n=6, Science Advances n=4). Add your own target journal's papers there and the calibration improves for it.
 
 ### 14.6 The Methods section has a canonical shape
 
