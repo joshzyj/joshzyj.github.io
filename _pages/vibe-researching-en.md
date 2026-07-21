@@ -298,7 +298,7 @@ If it prints a help summary, you are ready for §3.
 
   Or download the repo as a ZIP and extract it before running `setup.sh`.
 
-## 2.5 What `setup.sh` actually does — a walk-through
+### 2.5 What `setup.sh` actually does — a walk-through
 
 **Goal:** know what to expect before you run it, what each of the seven prompts is asking, and how to tell afterwards whether it worked.
 
@@ -306,7 +306,7 @@ If it prints a help summary, you are ready for §3.
 
 One design note that explains a lot of its behaviour: the script deliberately does **not** use `set -e`. Its own header says why — the interactive `read` prompts return non-zero on EOF (piping `/dev/null`, or running it in CI), and under `set -e` that would abort the install halfway through. Instead each step checks its own exit status and continues best-effort. The consequence for you: **a warning mid-run does not mean the install failed**, and you have to read the summary at the end rather than assuming silence is success.
 
-### 2.5.1 The seven steps, in order
+#### 2.5.1 The seven steps, in order
 
 **1 — Symlinks.** `▸ Checking symlinks...` creates two repo-local conveniences, `skills/ → .claude/skills/` and `agents/ → .claude/agents/`. If one exists but points somewhere unexpected it is repaired; if a *real directory* sits at that name, the script refuses to delete it and tells you to move it yourself. It will not destroy your files to make room.
 
@@ -378,7 +378,7 @@ Then three smaller steps run without asking anything:
 
 Finally it offers to append `export SCHOLAR_SKILL_DIR="..."` to your `~/.zshrc` (or `~/.bashrc` / `~/.bash_profile`), detecting your shell. Accept unless you manage your profile some other way.
 
-### 2.5.2 Reading the summary — the one line that matters
+#### 2.5.2 Reading the summary — the one line that matters
 
 ```
 ═══════════════════════════════════════════════════
@@ -408,7 +408,7 @@ That exit code is the machine-readable signal. If you script the install, check 
 $ bash setup.sh || echo "SAFETY HOOK MISSING — install jq and re-run"
 ```
 
-### 2.5.3 Verify it took
+#### 2.5.3 Verify it took
 
 ```bash
 $ ls ~/.claude/skills/ | grep -c scholar        # 42
@@ -428,13 +428,13 @@ If the skill runs from an unrelated directory, the personal-skills install worke
 
 **Stop and check.** Open `~/.claude/settings.json` and find the PreToolUse entry. Is the script path wrapped in quotes? If your install lives under a path with a space in it — `My Drive`, `Application Support` — an unquoted command silently never fires, and you would have no guard at all while believing you did.
 
-## 2.6 Pointing Claude Code at GLM, DeepSeek, or a local model
+### 2.6 Pointing Claude Code at GLM, DeepSeek, or a local model
 
 **Goal:** keep using the same Claude Code CLI, the same `open-scholar-skill` plugin, and the same project layout, but route the model calls to a different backend — Z.ai/GLM, DeepSeek, or a model you run on your own machine.
 
 You do **not** need to install another CLI, swap your scripts, or hand-edit JSON before every session. Claude Code reads two environment variables — `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` — and will talk to any provider that exposes an Anthropic-compatible endpoint. GLM (Z.ai and the mainland BigModel host) and DeepSeek both do. For genuinely local models (DeepSeek-R1 distilled, Qwen2.5-Coder, Llama, GLM), Claude Code still needs an Anthropic-compatible front: Ollama, vLLM, and llama.cpp all speak OpenAI-style APIs, so you put a small translation layer — `claude-code-router` or `litellm` — in front to re-shape their responses into the Anthropic schema; the rest of the workflow is identical.
 
-### 2.6.1 Provider snapshot
+#### 2.6.1 Provider snapshot
 
 | Provider | Endpoint host | Models to set |
 | -------- | ------------- | ------------- |
@@ -448,7 +448,7 @@ The full `ANTHROPIC_BASE_URL` for Z.ai is `https://api.z.ai/api/anthropic`; for 
 
 **Model names move fast.** The model IDs in this section (`glm-5.1`, `glm-5-turbo`, `deepseek-v4-pro`, and the rest) are illustrative. Before a session, check the provider's current model list — Z.ai/BigModel and DeepSeek each publish their own — and use the exact names your account can call; pasting a retired tag is the second most common error after dropping the `/anthropic` suffix.
 
-### 2.6.2 Option A — declare a backend in `~/.claude/settings.json`
+#### 2.6.2 Option A — declare a backend in `~/.claude/settings.json`
 
 This is the simplest setup: you point Claude Code at one backend, save the file, and every new session uses it until you change it.
 
@@ -483,7 +483,7 @@ This is the simplest setup: you point Claude Code at one backend, save the file,
 
 Restart Claude Code; run `/usage` or just trigger any tool call to confirm the backend has switched.
 
-### 2.6.3 Option B — keep keys outside the project and switch with shell functions
+#### 2.6.3 Option B — keep keys outside the project and switch with shell functions
 
 Hand-editing `settings.json` before every workshop is painful and tends to leak keys into git. Instead, keep all your provider keys in `~/.api-keys` (chmod 600), source it from `~/.zshrc` or `~/.bashrc`, and define small shell functions that export the right environment and then launch `claude`:
 
@@ -526,7 +526,7 @@ claude-anthropic() {
 
 From then on, `glm` opens Claude Code against Z.ai, `deepseek` opens it against DeepSeek, and `claude-anthropic` falls back to vanilla Anthropic. The PATH binary `claude` itself is still the one CLI you trust.
 
-### 2.6.4 Option C — CC Switch, a one-click GUI for provider switching
+#### 2.6.4 Option C — CC Switch, a one-click GUI for provider switching
 
 Options A and B edit configuration by hand. If you juggle several providers or accounts — an Anthropic login for one project, GLM and DeepSeek for others, a Kimi key for a collaborator's repo — a GUI that makes those same edits for you is less error-prone. **CC Switch** is a cross-platform desktop app that manages provider configurations for Claude Code (and Codex, Gemini CLI, Claude Desktop, and more) from one window, with 50+ built-in provider presets and a system-tray menu for instant switching. It is an open-source, third-party tool — **not** an Anthropic product.
 
@@ -561,7 +561,7 @@ On **Windows**, download the `.msi` installer (Windows 10+); on other **Linux** 
 
 CC Switch does not replace Options A/B — it automates them behind a UI. Everything else (the plugin, `CLAUDE.md`, the permission gates) is unchanged.
 
-### 2.6.5 Running models locally
+#### 2.6.5 Running models locally
 
 If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and route Claude Code to it. The catch: Claude Code speaks the Anthropic Messages API, while local servers (Ollama, vLLM, llama.cpp) speak OpenAI-style chat completions, so you put a thin translation layer in between. `claude-code-router` (CCR) is the lightest option: it speaks OpenAI-style chat completions to providers, so all three plug in as ordinary OpenAI-compatible backends — no per-server transformer required.
 
@@ -601,7 +601,7 @@ There is no `ccr config init`; the config file is created the first time you run
 
 > **vLLM / llama.cpp.** If you already serve models with vLLM (`vllm serve <model>`) or llama.cpp (`llama-server`), they expose OpenAI-style chat completions, not Anthropic-style. vLLM ships its own Claude Code integration guide; otherwise put `litellm`, an `anthropic-proxy`, or CCR in front to translate the OpenAI ↔ Anthropic schemas. The Claude Code side never changes.
 
-### 2.6.6 Workshop checks before you trust a backend
+#### 2.6.6 Workshop checks before you trust a backend
 
 Open Scholar skills are **not model-agnostic**. They depend on long-context reading, tool use, and JSON-structured output. Before running the CFPS pipeline on a non-Anthropic backend, run this three-step smoke test:
 
@@ -613,13 +613,13 @@ Record the result of each check in a one-line note in `logs/backend-test.md`. **
 
 > **Workshop rule.** During the workshop itself, default to one backend per laptop. Switching providers mid-pipeline is the fastest way to produce two halves of a paper that disagree about CFPS variable definitions because the two models read the codebook differently.
 
-## 2.7 Let the agent install your research toolchain
+### 2.7 Let the agent install your research toolchain
 
 **Goal:** once `claude` (or `codex`) launches, let the agent do the rest of the install work — Python, R, Git, system build tools, and the standard social-science package stacks (`tidyverse`, `pandas`, `statsmodels`, `scikit-learn`, etc.). You read the proposed commands, approve them one at a time, and you end up with a reproducible install log you can re-use on another laptop.
 
 The agent is good at this for three reasons: it picks the right package manager for your OS (`brew` vs. `apt` vs. `winget` vs. `choco`), it sequences dependencies correctly (system libraries first, then language runtime, then packages), and it leaves a record of every command it ran in the transcript.
 
-### 2.7.1 Before you ask — set the safety expectation
+#### 2.7.1 Before you ask — set the safety expectation
 
 System installs touch shared state. Tell the agent the rules **before** you ask it to do anything:
 
@@ -645,7 +645,7 @@ System installs touch shared state. Tell the agent the rules **before** you ask 
 
 Stay in **`default`** permission mode for this. Do *not* switch to `acceptEdits` or `bypassPermissions` — every `sudo`, `brew install`, `apt install`, or `npm install -g` should be a separate approval click.
 
-### 2.7.2 The four prompts that cover 90 % of installs
+#### 2.7.2 The four prompts that cover 90 % of installs
 
 Once the agent has a map of your machine, send these in order. Each one is small enough that you can read and approve every command.
 
@@ -737,11 +737,11 @@ A surprising number of pipeline failures are "I drafted the paper but cannot ren
 > 10-line hello.qmd → hello.pdf to confirm the toolchain works end to end.
 ```
 
-### 2.7.3 Codex-flavoured prompts
+#### 2.7.3 Codex-flavoured prompts
 
 The same prompts work with `codex` with minor wording changes — Codex is more terse about explaining what it is about to do, so add `"Explain each command before running it"` at the top of every prompt. Codex tends to prefer `python -m venv` over `pyenv`, which is fine on a clean machine but breaks badly if you already have a system Python that conflicts; the pyenv prompt above is the safer route.
 
-### 2.7.4 Capture the install log
+#### 2.7.4 Capture the install log
 
 After all four prompts succeed, ask:
 
@@ -755,7 +755,7 @@ After all four prompts succeed, ask:
 
 That log is the artifact. If a colleague asks "how do I get set up?", you hand them `logs/install.md` and Claude (or Codex) replays it on their machine.
 
-### 2.7.5 What to *not* let the agent install
+#### 2.7.5 What to *not* let the agent install
 
 A few classes of software should always be installed by you, not by the agent:
 
