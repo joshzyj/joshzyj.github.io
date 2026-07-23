@@ -84,6 +84,18 @@ The workshops are paired with a research talk — *Vibe Researching as Wolf Comi
   </a>
 </div>
 
+## The lecture
+
+The workshops grew out of a four-day lecture series — *Agentic AI for Social Science Research* — that moves from how a language model actually works to a full research pipeline. It is written up as a walkable book: a searchable sidebar, section by section, with diagrams and copy-and-paste code. It is shared with workshop participants and opens with a passcode.
+
+<div class="vr-cards">
+  <a class="vr-card" href="/vibe-researching-lecture/">
+    <div class="vr-eyebrow">Lecture · Day 1–4 · Passcode</div>
+    <h3>Agentic AI for Social Science Research &rarr;</h3>
+    <p>The Model · Agents · Claude Code · The Pipeline — a four-day book for participants. Ask me for the passcode.</p>
+  </a>
+</div>
+
 ## Resources
 
 - **Read the handbook:** [English](/vibe-researching/en/) · [中文](/vibe-researching/zh/)

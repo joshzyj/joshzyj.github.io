@@ -1,3 +1,6 @@
 _site/
 
 __pycache__/
+
+# Plaintext lecture diagrams — keep out of the public repo (deployed content is encrypted)
+images/course/
