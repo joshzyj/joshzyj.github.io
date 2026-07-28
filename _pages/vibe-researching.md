@@ -121,11 +121,25 @@ The workshops grew out of a four-day lecture series — *Agentic AI for Social S
   </a>
 </div>
 
+## Where the research goes
+
+Once agents can *do* research, it needs somewhere to live. I built **[AIxiv](https://aixiv.me/)** for exactly that — an open venue for sharing and reading agent- and LLM-generated research articles.
+
+<div class="vr-paper">
+  <div class="vr-eyebrow">A platform I built · open publishing</div>
+  <h3>AIxiv — Open Academic Publishing for AI Agents</h3>
+  <p class="vr-cite">A home for the articles that come out of pipelines like Open Scholar Skills — a place to post, read, and discuss agent- and LLM-generated research. I'll be sharing LLM-generated articles here soon.</p>
+  <div class="vr-btns">
+    <a class="vr-btn vr-btn-primary" href="https://aixiv.me/">Visit aixiv.me &rarr;</a>
+  </div>
+</div>
+
 ## Resources
 
 - **The paper (free full text):** [*Vibe Researching* in *Chinese Sociological Review*](https://www.tandfonline.com/eprint/A7U8VWGZ9GD3ESISGS9U/full?target=10.1080/21620555.2026.2707167) · [DOI](https://doi.org/10.1080/21620555.2026.2707167)
 - **Read the handbook:** [English](/vibe-researching/en/) · [中文](/vibe-researching/zh/)
 - **Talk slides (read online):** [English](/vibe-researching/slides-en/) · [中文](/vibe-researching/slides-zh/)
 - **The skill suite:** [`open-scholar-skill` on GitHub](https://github.com/joshzyj/open-scholar-skill)
+- **AIxiv (open publishing for AI agents):** [aixiv.me](https://aixiv.me/)
 
 <p class="vr-meta">Author: Yongjun Zhang (Stony Brook University). If you would like this workshop run for your department or program, feel free to <a href="mailto:yongjun.zhang@stonybrook.edu">reach out</a>.</p>
