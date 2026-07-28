@@ -20,6 +20,17 @@ author_profile: true
 .vr-video { margin: 1.6em 0; }
 .vr-video video { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; border-radius: 10px; border: 1px solid #e2d6c8; background: #241f1b; box-shadow: 0 6px 20px rgba(40,25,12,.14); }
 .vr-video figcaption { font-size: .85em; color: #6a6058; margin-top: .55em; }
+.vr-paper { border: 1px solid #e7d9c9; border-left: 5px solid #a84a22; border-radius: 12px; background: linear-gradient(100deg, #f7ece2 0%, #fdfaf6 62%); padding: 1.15em 1.35em; margin: 1.4em 0; box-shadow: 0 1px 2px rgba(80,50,20,.06); }
+.vr-paper .vr-eyebrow { font-size: .72em; letter-spacing: .08em; text-transform: uppercase; color: #a84a22; font-weight: 700; }
+.vr-paper h3 { margin: .18em 0 .3em; font-size: 1.18em; color: #7a3b1c; line-height: 1.25; }
+.vr-cite { font-size: .9em; color: #5a5048; line-height: 1.5; margin: 0 0 .85em; }
+.vr-cite a { word-break: break-word; }
+.vr-btns { display: flex; gap: .6em; flex-wrap: wrap; }
+.vr-btn { display: inline-block; font-weight: 700; font-size: .9em; text-decoration: none !important; padding: .5em .95em; border-radius: 8px; transition: background .15s ease, border-color .15s ease; }
+.vr-btn-primary { background: #a84a22; color: #fff; }
+.vr-btn-primary:hover { background: #8a5a34; }
+.vr-btn-ghost { border: 1px solid #d8c4ae; color: #7a3b1c; background: #fff; }
+.vr-btn-ghost:hover { border-color: #a84a22; }
 </style>
 
 <p class="vr-lead"><strong>Vibe researching</strong> is doing real empirical social science by <em>directing coding agents</em> — Claude Code and Codex — rather than writing every line yourself. You describe the study; the agent runs the brainstorm, the design, the analysis, the draft, and the checks. The discipline that separates it from careless automation is <strong>verification</strong>: nothing is trusted until an independent pass confirms it.</p>
@@ -67,6 +78,20 @@ The handbook is built around one running example — a *Social Forces*-style pap
 <strong>Built for copy-and-paste.</strong> Commands prefixed with <code>$</code> go in your terminal (without the <code>$</code>); commands prefixed with <code>&gt;</code> go inside a running Claude Code session. Hover any code block and hit <strong>Copy</strong>.
 </div>
 
+## The paper
+
+The peer-reviewed study behind these workshops and the talk is now published in *Chinese Sociological Review* — read the full text free below.
+
+<div class="vr-paper">
+  <div class="vr-eyebrow">Peer-reviewed article · Chinese Sociological Review</div>
+  <h3>Vibe Researching: Can AI Agents with Skills Replace or Augment Social Scientists?</h3>
+  <p class="vr-cite">Zhang, Y. (2026). Vibe researching: can AI agents with skills replace or augment social scientists? <em>Chinese Sociological Review</em>, 1–36. <a href="https://doi.org/10.1080/21620555.2026.2707167">https://doi.org/10.1080/21620555.2026.2707167</a></p>
+  <div class="vr-btns">
+    <a class="vr-btn vr-btn-primary" href="https://www.tandfonline.com/eprint/A7U8VWGZ9GD3ESISGS9U/full?target=10.1080/21620555.2026.2707167">Read the full text (free) &rarr;</a>
+    <a class="vr-btn vr-btn-ghost" href="https://doi.org/10.1080/21620555.2026.2707167">View via DOI</a>
+  </div>
+</div>
+
 ## The talk
 
 The workshops are paired with a research talk — *Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists?* Walk through it slide by slide right in your browser — arrow keys to move, an overview grid, and fullscreen.
@@ -98,6 +123,7 @@ The workshops grew out of a four-day lecture series — *Agentic AI for Social S
 
 ## Resources
 
+- **The paper (free full text):** [*Vibe Researching* in *Chinese Sociological Review*](https://www.tandfonline.com/eprint/A7U8VWGZ9GD3ESISGS9U/full?target=10.1080/21620555.2026.2707167) · [DOI](https://doi.org/10.1080/21620555.2026.2707167)
 - **Read the handbook:** [English](/vibe-researching/en/) · [中文](/vibe-researching/zh/)
 - **Talk slides (read online):** [English](/vibe-researching/slides-en/) · [中文](/vibe-researching/slides-zh/)
 - **The skill suite:** [`open-scholar-skill` on GitHub](https://github.com/joshzyj/open-scholar-skill)
