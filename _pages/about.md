@@ -77,6 +77,8 @@ I also taught intro to CSS for NYU Shanghai CASER. Check here for [the syllabus]
 
 ## New Paper Alert
 
+Yongjun Zhang. 2026. "[Vibe Researching: Can AI Agents with Skills Replace or Augment Social Scientists?](https://doi.org/10.1080/21620555.2026.2707167)" Chinese Sociological Review, 1–36. [Free full text](https://www.tandfonline.com/eprint/A7U8VWGZ9GD3ESISGS9U/full?target=10.1080/21620555.2026.2707167).
+
 Ting‐Syuan Lin and Yongjun Zhang. "[Multidimensional Segregation Among Asian American Voters: Racial, Income, and Partisan Sorting in New York and California.](https://doi.org/10.1002/psp.70271)" Population, Space and Place 32, no. 4 (2026): e70271.
 
 Hao Lin and Yongjun Zhang. 2025. "[Navitaging The Risks of Using LLMs for Text Annotation in Social Science Research](https://doi.org/10.48550/arXiv.2503.22040)." Social Science Computer Review.
