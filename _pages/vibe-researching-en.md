@@ -29,7 +29,7 @@ The running example is a real one: a Social Forces-style paper on the Chinese di
 The handbook has four parts.
 
 - **Part I — Foundations** (the first hour of the workshop): install the agents, open your first session, learn the project layout, write an agent-quality prompt, and tour the newer Claude Code capabilities — dynamic workflows, subagents, and automation (§5A).
-- **Part II — Open Scholar Skills, end to end** (the second hour): a reference to **all 42 skills** — every mode, every argument, every gate, every file they write — organized in the order you would actually use them, with the CFPS digital divide as the concrete artifact at each step. §5B is the inventory table; read it first and come back to it.
+- **Part II — Open Scholar Skills, end to end** (the second hour): a reference to **all 44 skills** — every mode, every argument, every gate, every file they write — organized in the order you would actually use them, with the CFPS digital divide as the concrete artifact at each step. §5B is the inventory table; read it first and come back to it.
 - **Part III — Orchestrators**: when a single paper deserves the full pipeline (`scholar-full-paper`, `scholar-auto-research`), how to find your place again (`scholar-resume`), how to run a queue of ideas unattended (`scholar-loop`), how to audit the suite itself (`scholar-auto-improve`), and how to get an independent second opinion from a different vendor's model (`scholar-openai`).
 - **Part IV — Responsible practice**: the take-home checklist, common participant mistakes, and the five principles.
 
@@ -195,8 +195,8 @@ There are two ways to do this. If `git`, SSH keys, and shell scripts are new to 
 >
 > | Edition | Repo | Skills | Access |
 > |---|---|---|---|
-> | **Public** | `github.com/joshzyj/open-scholar-skill` | **33** | Open — this is what §2.4 installs |
-> | **Extended** | `openscholarskills` | **42** | **Available on request** — email the author |
+> | **Public** | `github.com/joshzyj/open-scholar-skill` | **35** | Open — this is what §2.4 installs |
+> | **Extended** | `openscholarskills` | **44** | **Available on request** — email the author |
 >
 > This handbook documents the **extended** edition, because that is the superset. Nine skills exist only there:
 >
@@ -207,7 +207,7 @@ There are two ways to do this. If `git`, SSH keys, and shell scripts are new to 
 > Check what you have at any time:
 >
 > ```bash
-> $ ls ~/.claude/skills/ | grep -c scholar     # 33 public · 42 extended
+> $ ls ~/.claude/skills/ | grep -c scholar     # 35 public · 44 extended
 > ```
 
 #### 2.4.0 Beginner shortcut — let Claude Code install it for you
@@ -271,7 +271,7 @@ $ bash setup.sh
 1. Create the `.claude/skills/` and `.claude/agents/` symlinks the plugin uses internally.
 2. **Auto-detect your Zotero library**, or prompt you for the path if it cannot find one.
 3. **Optionally configure BibTeX, EndNote, and a CrossRef email** for the polite API pool.
-4. Install every skill in your edition (33 public · 42 extended) and its agents as **personal** skills in `~/.claude/skills/` and `~/.claude/agents/` — so `/scholar-*` works in **every** Claude Code session, in any directory, not just the cloned repo.
+4. Install every skill in your edition (35 public · 44 extended) and its agents as **personal** skills in `~/.claude/skills/` and `~/.claude/agents/` — so `/scholar-*` works in **every** Claude Code session, in any directory, not just the cloned repo.
 5. Register `scripts/gates/pretooluse-data-guard.sh` as a PreToolUse hook in `~/.claude/settings.json`. The hook intercepts every `Read`, `NotebookRead`, `NotebookEdit`, `Grep`, and `Glob` call and refuses files whose `.claude/safety-status.json` entry is `NEEDS_REVIEW:*` or `HALTED`.
 6. Write a `.env` file recording your configuration.
 
@@ -430,7 +430,7 @@ $ bash setup.sh || echo "SAFETY HOOK MISSING — install jq and re-run"
 #### 2.5.3 Verify it took
 
 ```bash
-$ ls ~/.claude/skills/ | grep -c scholar        # 42
+$ ls ~/.claude/skills/ | grep -c scholar        # 44
 $ ls ~/.claude/agents/ | wc -l                  # 22
 $ cat ~/.claude/scholar-skills.path             # the repo path
 $ jq '.hooks.PreToolUse' ~/.claude/settings.json | head    # the guard
@@ -1530,7 +1530,7 @@ The skills appear in the order you actually use them. But before the walkthrough
 
 ## 5B. The suite at a glance — inventory, grammar, contract
 
-### 5B.1 All 42 skills, by stage
+### 5B.1 All 44 skills, by stage
 
 The § column points at the section of this handbook documenting that skill in full — every mode, every argument, every gate, every file it writes.
 
@@ -1539,7 +1539,7 @@ The § column points at the section of this handbook documenting that skill in f
 The suite installs into `~/.claude/skills/<skill-name>/SKILL.md`. Anything in that directory is invocable as `/<skill-name>`. Verify your install with:
 
 ```bash
-$ ls ~/.claude/skills/ | grep -c scholar           # 33 public · 42 extended
+$ ls ~/.claude/skills/ | grep -c scholar           # 35 public · 44 extended
 $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scripts/
 ```
 
@@ -1561,6 +1561,7 @@ $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scri
 | §8A | `scholar-lit-review-hypothesis` | Both of the above in one integrated chain | RQ or topic |
 | §8B | `scholar-conceptual` | Build the theory *object* — typologies, mechanism diagrams | `theorize` / `diagram` |
 | §8C | `scholar-knowledge` | The cross-project knowledge graph and wiki | `ingest` / `search` / `relate` / `status` / `export` / `compile` / `ask` / `re-extract` |
+| §8F | `scholar-rag` | Local vector DB + GraphRAG over your whole reference library; MCP server | `setup` / `ingest` / `query` / `mcp` / `graph` / `status` |
 | §20F | `scholar-monitor` | Delta-based current-awareness digests from journals and preprints | `init` / `all` / `preview` / `digest` |
 
 **Stage 2 — design before data**
@@ -1581,6 +1582,7 @@ $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scri
 | §11B | `scholar-simulate` | LLM-powered silicon sampling, generative ABM, synthetic experiments | `design` / `personas` / `silicon-survey` / `generative-abm` / `experiment` / `validate` |
 | §11C | `scholar-qual` | Coding, thematic analysis, LLM-assisted coding, reliability | `codebook` / `open-coding` / `axial` / `selective` / `thematic` / `content` / `llm-coding` / `mixed` / `reliability` |
 | §11D | `scholar-ling` | Sociolinguistics, phonetics, discourse, corpus, computational | `variation` / `acoustic` / `corpus` / `CA` / `CDA` / `attitudes` / `contact` / `computational` / `experimental` / `MDA` / `TTS-guise` |
+| §11E | `scholar-annotate` | LLM-as-measurement over a text corpus, with a κ ≥ 0.70 gate before scale-out | `plan` / `profile` / `codebook` / `devset` / `annotate-gold` / `optimize` / `validate` / `scale` / `distill` / `report` / `full` |
 | §13 | `scholar-code-review` | Six-agent audit of every analysis script | `full` or one lens |
 
 **Stage 4 — write and verify**
@@ -1671,6 +1673,8 @@ The skills do not pass information to each other in the chat. They pass it throu
 | `scholar-init` | `.claude/safety-status.json` | every data-touching skill |
 | `scholar-brainstorm` / `scholar-idea` | selected-RQ memo | `scholar-lit-review-hypothesis`, `scholar-design` |
 | `scholar-lit-review*` | `refs.bib`, coverage matrix | `scholar-write`, `scholar-citation` |
+| `scholar-rag` | `~/.claude/scholar-rag/` (LanceDB index + graph), the `rag_search` MCP tool | `scholar-lit-review`, `scholar-write`, `scholar-citation` |
+| `scholar-annotate` | `tables/…labeled.csv`, `codebook.md`, `validation_report.json` | `scholar-analyze`, `scholar-compute`, `scholar-write`, `scholar-replication` |
 | `scholar-causal` | `identification-memo.md` (`causal_status:`) | `scholar-design`, `scholar-write`, `scholar-verify`, `scholar-polish` |
 | `scholar-design` | `model-specs.json`, `variable-dictionary.csv`, `results-lock` | `scholar-eda`, `scholar-analyze`, `scholar-write` |
 | `scholar-analyze` | `tables/`, `figures/`, `results-registry.csv` | `scholar-verify`, `scholar-write`, `scholar-replication` |
@@ -1721,14 +1725,15 @@ Flags accepted by the underlying `scripts/init-project.sh`:
 | `--dest <dir>` | Where to create the project directory (default: current directory) |
 | `--link` | Symlink raw inputs instead of copying them — use for multi-GB panel files |
 | `--materials <path>` | Route this path to `materials/` instead of `data/raw/` (repeatable) |
+| `--corpus <path>` | Route this path to `corpus/` instead of `data/raw/` — for text corpora (repeatable) |
 | `--force` | Rebuild over an existing project directory |
 
 > **`--force` destroys prior review decisions.** A rebuild rewrites the sidecar from a fresh scan, so every `OVERRIDE` rationale and `LOCAL_MODE` choice you made is lost. Fix a broken init incrementally instead, unless you genuinely want to start over.
 
 What it does, in order:
 
-1. Creates `<dest>/<slug>/` with `data/{raw,interim,processed}/`, `materials/`, `output/`, `logs/`, `.claude/`.
-2. Copies (or, with `--link`, symlinks) raw files into `data/raw/` and materials into `materials/`. Name collisions get a numeric suffix.
+1. Creates `<dest>/<slug>/` with `data/{raw,interim,processed}/`, `materials/`, `output/`, `logs/`, `.claude/` — plus `corpus/`, but only if you passed `--corpus`, so non-corpus projects do not get an empty directory.
+2. Copies (or, with `--link`, symlinks) raw files into `data/raw/`, materials into `materials/`, and text corpora into `corpus/`. Name collisions get a numeric suffix.
 3. Runs a **local-only** safety scan on every ingested file via `scripts/gates/safety-scan.sh` — `file`, `wc`, `grep`, `awk` only. Claude sees counts and pattern categories, never the matching values.
 4. Writes `.claude/safety-status.json`, `logs/init-report.md`, `README.md`, `.gitignore`.
 5. Writes the auto-managed project-memory block into `CLAUDE.md` (Claude Code host), `AGENTS.md` (Codex host), or both (host undetected).
@@ -1760,6 +1765,36 @@ Step 5 above is easy to miss and matters a lot. `scholar-init` writes a **lean**
 If you later run `/scholar-full-paper`, the orchestrator **upgrades** that file to the full 13-section, ~230-line profile. The upgrade is **one-way**: re-running `/scholar-init` on an upgraded project prints `already at v2-full ... lean request ignored` and changes nothing. This is deliberate — a lean re-init must never silently strip the gate conventions the orchestrator depends on.
 
 Idempotency messages you may see: `created <path> (v2-lean)`, `appended auto-rules block to <path>`, `migrated <path> from v1 to v2-lean`, `already at v2-lean, no-op`.
+
+#### 6.1.2 Text corpora — `--corpus` and why the directory name is load-bearing
+
+Linguistics and text-as-data projects usually keep a corpus outside `data/`, and until recently that meant it fell outside the guard too. It no longer does: **`corpus/` and `corpora/` are gated path segments**, so everything beneath them is treated as data *regardless of extension* — including extensionless files, and including the linguistics formats (`.eaf`, `.TextGrid`, `.trs`, `.cha`) that no extension rule would otherwise catch.
+
+Ingest a corpus through the skill rather than dropping it in by hand. Ingesting is what earns those files a **reviewed** entry in `safety-status.json`; a corpus you merely copied in gets re-scanned live on every read instead.
+
+```
+> /scholar-init init hanyu-metalinguistic-corpus \
+                --corpus ~/data/hanyu/videos \
+                --corpus ~/data/hanyu/comments
+```
+
+A corpus is not one kind of thing, and the policy differs by what is in it:
+
+| Corpus content | Put it in | `OVERRIDE` |
+|---|---|---|
+| Public text (news, parliamentary records, Wikipedia, published works) | `corpus/<name>/` | allowed, with a rationale |
+| Participant speech (sociolinguistic interviews, classroom recordings, elicitation) | `corpus/transcripts/` or `corpus/interviews/` | **refused** |
+| Audio or video of any kind | anywhere under `corpus/` | **refused** — by extension |
+
+This works because the classifier matches on *path segments*, so the qualitative segments (`transcripts/`, `interviews/`, `field-notes/`, `participants/`, `subjects/`, `respondents/`) keep their strict treatment when nested inside `corpus/`:
+
+```
+corpus/news/article.txt        gated, OVERRIDE allowed
+corpus/transcripts/i01.txt     gated, OVERRIDE refused
+corpus/recordings/s1.wav       gated, OVERRIDE refused (extension rule)
+```
+
+> **The name is an exact segment match.** `mycorpus/`, `corpus-2024/`, `texts/`, `speeches/`, and `tweets/` are **not** gated. Name the directory exactly `corpus/` or `corpora/`, or keep the material under `data/raw/`. This is the kind of rule that looks pedantic until the day a directory called `transcripts-2024/` sits one rename away from protection.
 
 ### 6.2 Resolve `NEEDS_REVIEW` with `scholar-init review`
 
@@ -1847,7 +1882,9 @@ What it does, channel by channel:
 
 - **Read channel.** Canonicalizes the path (resolving symlinks), refuses anything resolving into a system directory (`/etc`, `/dev`, `/proc`, `/sys`, `/System`, `/var/db`, `/var/log`), then consults the sidecar: `CLEARED`/`ANONYMIZED`/`OVERRIDE` → allow; `LOCAL_MODE`/`HALTED` → block with a hint to use a Bash loader; `NEEDS_REVIEW*` → block and tell you to run `/scholar-init review`.
 - **Bash channel.** A **cooperative speed-bump**, not a wall. It blocks the obvious dump verbs — `cat`, `head`, `tail`, `less`, `od`, `xxd`, `strings`, `base64`, `sqlite3`, `jq`, `sed`, `awk`, `perl`, and `grep` without `-c`/`-l`/`-q` — when they target a sensitive path. On ambiguity it fails **open**, because bricking the shell is worse than the marginal leak it would prevent.
+- **How the Bash channel decides what "the target" is.** Two rules, both added in July 2026 after the original shape-matching classifier proved wrong in both directions. **(a) A token is classified only if it resolves to something that exists** — file *or* directory. This kills a whole family of false positives: a regex handed to grep (`grep -nE "data/raw|materials/" script.sh`) is no longer read as a sensitive target, and one such block had been stopping the very command used to check whether that directory existed. Declining to classify a nonexistent path cannot open a leak, because this is a *read* gate and a dump verb aimed at nothing reveals nothing. Globs are rewritten to their literal directory prefix, since a glob can only reach files underneath it. **(b) Variables are expanded before classification.** Tokens containing `$` used to be skipped as unresolvable, so `SP=/abs/proj; grep x "$SP/corpus/transcripts/i01.txt"` evaded the gate outright. A tokenizer pass now resolves `$VAR` and `${VAR}` from assignments made in the *same* command, plus a small ambient-environment allowlist. That scope is exactly right: Claude Code starts a fresh shell per Bash call, so a variable neither assigned in-command nor exported expands to empty and cannot address a file at all.
 - **Grep/Glob channels.** Blocks searching or enumerating raw-data paths, and any direct target with a data extension.
+- **Which paths count as data.** Segment matching, not extension matching: `data/raw/`, `data/interim/`, `data/processed/`, and — since July 2026 — `corpus/` and `corpora/` (§6.1.2), plus the qualitative segments `transcripts/`, `interviews/`, `field-notes/`, `participants/`, `subjects/`, `respondents/`, which additionally refuse `OVERRIDE`.
 - **Edit/Write/MultiEdit.** Guards exactly one thing: writes to `.claude/safety-status.json`. It refuses to promote a RED or HALTED path to CLEARED/OVERRIDE unless `/scholar-init review` provenance exists in `logs/init-report.md`. Everything else fails open.
 - **Images.** Pixels cannot be grep-scanned, so images are classified by path: inside `data/raw/` → blocked; inside `output/figures/` → allowed.
 
@@ -2509,7 +2546,7 @@ Getting the *right* text into the model's window (the "SELECT" move) has three d
 
 Why a wiki can beat RAG for a corpus you return to: the *synthesis is precomputed* (topic overviews, `contradictions.md`, `gaps.md`) instead of re-derived on every query; relationships are *explicit links* you can traverse (`extends`, `contradicts`, `same-dataset`), not implicit vector neighbours; it is *just markdown* — auditable, editable, and needs no embedding model or vector database; and it *compounds* — you file your own outputs back in, so paper #5 stands on the shoulders of #1–4. The cost is that extraction is upfront and lossy (the wiki is the model's *reading* of a source, not the source — which is why `raw/` keeps the originals), and the wiki must be kept current (the LLM maintains it; you rarely edit by hand). This is Andrej Karpathy's "LLM wiki" idea: the model writes and maintains the knowledge base, and you file outputs back to enrich it for future queries.
 
-The three are **complementary, not rivals**. Keep the wiki as durable memory, wrap a live retriever (OpenAlex, Zotero) as an MCP *tool* for reach (Lab 3 §4b), and let the agent choose which to reach for. To see the whole mechanism in ~250 lines of dependency-free Python — ingest → graph → compile → navigate — run the Day-3 demo:
+The three are **complementary, not rivals**. Keep the wiki as durable memory, wrap a live retriever (OpenAlex, Zotero) as an MCP *tool* for reach (Lab 3 §4b), and let the agent choose which to reach for. As of v5.27 the suite ships the first strategy too — `scholar-rag` (§8F) builds a real local vector database over the same library and exposes it as MCP tools, so you no longer have to choose: the wiki holds the synthesis, the vector index holds the verbatim passages, and both key on the same paper identity. To see the whole mechanism in ~250 lines of dependency-free Python — ingest → graph → compile → navigate — run the Day-3 demo:
 
 ```bash
 cd demo/day3-claude-code/llm-wiki
@@ -3089,6 +3126,8 @@ The ninth dimension is a **theory handoff table** — gap → theoretical implic
 
 Two hard behaviours: the skill **hard-stops if no local reference library is detected** rather than quietly falling through to web-only search; and it writes the search log to disk *before* the first query and appends after *every* query, because context compaction silently destroys in-memory hit counts.
 
+> **The full-text tier (v5.27).** Phase 1 searches your library before it searches the web, and it does so in order: **knowledge graph** (pre-extracted findings) → **`scholar-rag`** → **Zotero** (bibliographic metadata) → web. The middle tier is new. When `/scholar-rag status` reports `embedded > 0`, the skill queries your index for *full-text passages* out of your own PDFs — `rag_search("<topic>", k=8, hybrid=true)` if the MCP server is registered (§8F.4), otherwise the `query.py` CLI. What comes back is cited paragraphs with page numbers, which is a different kind of evidence from either neighbour: the graph gives you findings, Zotero gives you metadata, this gives you the sentences. Retrieved passages are **leads to verify**, never citations in themselves; every reference still passes Tier 0–2 verification.
+
 There is also a **theory gate**: if your prompt mentions hypotheses or theory sections, the skill stops and redirects you to `/scholar-lit-review-hypothesis` (§8A) rather than producing half of what you need.
 
 ### 8E.2 `scholar-hypothesis` — formalizing predictions
@@ -3139,6 +3178,176 @@ Theory-section word budgets: ASR/AJS 1,000–1,500 · Demography 600–1,000 · 
 The skill ships a reference library of 25+ frameworks — stratification, networks and capital, culture, assimilation, life course, Coleman's boat, DBO, racial formation, status characteristics, social movements, signaling, rational choice, contact hypothesis, labeling, intersectionality, neo-institutional theory, organizational ecology, practice theory, feminist standpoint, labor process, actor-network theory, and non-Western traditions including coloniality, world-systems, postcolonial theory, Ubuntu, and Confucian/*guanxi* frameworks — each with its core claim, mechanisms, best-use cases, key papers, and ready sentence starters.
 
 **Stop and check.** Take one hypothesis from your own work and fill in the derivation chain table for it. If the "mechanism-chain link" column is the hard one, that is diagnostic: you have a prediction, not yet a theory.
+
+## 8F. `scholar-rag` — a local vector database over your own library
+
+**Goal:** turn every PDF you own into searchable, *cited* passages — and hand that search to Claude Code and Codex as a tool, so a lit-review session can quote your library instead of paraphrasing its memory of it.
+
+```yaml
+argument-hint: "[setup|ingest|query|mcp|graph|status] [args], e.g. 'ingest' or
+                'query how does segregation affect mobility' or 'graph run'"
+```
+
+This is the newest skill in the suite (v5.27, July 2026) and the one that changes the *texture* of literature work most directly. §8C.0 laid out three ways to get the right text into the model's window — RAG, agentic search, and the knowledge wiki — and argued they are complementary. `scholar-rag` is the first of the three, built properly:
+
+| | `scholar-knowledge` (§8C) | `scholar-rag` (§8F) |
+|---|---|---|
+| Stores | *symbolic* extracted findings, mechanisms, theories | *verbatim* full-text passages |
+| Retrieval | keyword search over structured records | dense vector similarity (+ BM25, + rerank) |
+| Answers | "what does the field claim about X?" | "show me the exact paragraphs, with page numbers" |
+| Unit | a paper | a ~500-token chunk of a paper |
+| Cost | one careful read per paper, upfront | one embedding pass, resumable |
+
+They share paper identity (`doc_id` = sha256 of the normalized DOI or title), so a passage hit cross-links to the same paper's extracted findings, and the GraphRAG layer **seeds its entity graph from the knowledge graph** rather than starting cold.
+
+> **Everything is local.** `bge-m3` for embeddings, `ollama` for the GraphRAG LLM, `LanceDB` for vectors, a stdio MCP server for the interface. The only network traffic is the *optional* open-access PDF fetch. This matters more than it sounds: the alternative — uploading your whole Zotero library to a hosted vector service — is a data transfer you would have to disclose, and for anything under embargo or IRB restriction, one you could not make.
+
+> **It is self-contained.** The engine provisions its own CPython 3.12 venv via `uv`, reads Zotero directly, and bundles its own logging. It has no hard dependency on the rest of the plugin, and degrades gracefully when `scholar-knowledge` is absent.
+
+### 8F.1 The six modes
+
+| Mode | Triggers | What it does |
+|---|---|---|
+| **0 setup** | `setup`, `install`, `venv` | One-time: provision the venv (PyMuPDF, LanceDB, sentence-transformers, `mcp`, GraphRAG deps) and prefetch bge-m3 |
+| **1 ingest** | `ingest`, `build`, `index`, `add` | Source → extract → chunk → embed → LanceDB. Resumable. The main deliverable |
+| **2 query** | `query`, `search`, `find`, `ask` | Dense retrieval, optionally hybrid BM25 + cross-encoder rerank, with section/year filters |
+| **3 mcp** | `mcp`, `register`, `serve`, `connect` | Register the stdio MCP server with Claude Code and Codex |
+| **4 graph** | `graph`, `graphrag`, `neighbors`, `communities`, `global` | Seed → LLM entity extraction → Leiden communities → summaries; then `local`/`global`/`neighbors` search |
+| **5 status** | `status`, `stats`, `coverage` | Documents by stage, chunk counts, no-PDF coverage, graph counts |
+
+`full` runs 0 → 1 → 3. GraphRAG (mode 4) is deliberately **not** in `full`, because it is the long, LLM-bound stage — hours of local inference over a real library.
+
+### 8F.2 Build it
+
+```bash
+# one-time
+> /scholar-rag setup
+
+# the whole Zotero library, auto-detected; --limit to trial a subset first
+> /scholar-rag ingest
+```
+
+Under the hood that is `run-ingest.sh`, and it is worth knowing you can drive it directly for the long runs:
+
+```bash
+$ bash "$RAG_ASSETS/run-ingest.sh" --batch 64                  # foreground, watch it
+$ bash "$RAG_ASSETS/run-ingest.sh" --batch 64 --background     # detach; tail the log
+$ bash "$RAG_ASSETS/run-ingest.sh" --source folder --folder ~/pdfs
+$ bash "$RAG_ASSETS/run-ingest.sh" --ocr                       # scanned PDFs, via llama3.2-vision
+```
+
+Three stages, and every document carries a `status` through them — `new → extracted → embedded`, or `no_pdf` / `failed`:
+
+```
+Zotero/PDFs ──ingest──▶ documents(new)
+   PDF ──extract (PyMuPDF → pdftotext → vision-OCR)──▶ raw/text + documents(extracted)
+   text ──chunk (section-aware, ~500 tok, overlap) + bge-m3──▶ LanceDB + documents(embedded)
+```
+
+Each stage processes only rows not yet advanced, so **a killed run continues where it stopped** — which you will need, because a full library is embedding-bound: thousands of PDFs is hours even on Apple-silicon MPS. Run it detached.
+
+The extraction ladder is worth understanding, because it determines quality: PyMuPDF first (fast, keeps page mapping), `pdftotext` as fallback, and vision-OCR last for scanned documents. Extracted text is cached page-mapped in `raw/text/<doc_id>.json`, which is what makes re-chunking or re-embedding with a different model cheap — you do not re-extract.
+
+### 8F.3 Query it
+
+```bash
+> /scholar-rag query how does residential segregation affect intergenerational mobility?
+```
+
+```bash
+# or directly, with filters and reranking:
+$ rag_py query.py "identification strategy" -k 6 \
+         --section methods,results --year-min 2010 --rerank --json
+```
+
+Every hit comes back with an **author-year citation, section, page range, DOI, and similarity score**. That page number is the point: it is what lets you verify a claim in ten seconds instead of re-reading a paper, and it is what `scholar-citation` uses to check a claim against its source (§16.5).
+
+### 8F.4 Hand it to the agent — the MCP server
+
+```bash
+> /scholar-rag mcp
+```
+
+```bash
+$ bash "$RAG_ASSETS/mcp-setup.sh"              # register with every detected host
+$ bash "$RAG_ASSETS/mcp-setup.sh" --print-only # just print the .mcp.json / config.toml snippets
+```
+
+This registers a stdio MCP server (§3.6) exposing four tools:
+
+| Tool | Signature | Returns |
+|---|---|---|
+| `rag_search` | `(query, k=8, section="", year_min=0, hybrid, rerank)` | cited passages nearest the query |
+| `rag_get_document` | `(doc_id, include_text=False)` | the full bibliographic record |
+| `rag_neighbors` | `(doc_id, k=8)` | papers sharing entities or citations |
+| `rag_stats` | `()` | coverage counts + index manifest |
+
+**Restart the session** to pick the tools up.
+
+#### 8F.4.1 The three skills it is wired into
+
+This is the part that changes your workflow without you doing anything. Once an index exists, three skills reach for it on their own — you do not invoke `scholar-rag` during a lit review, you just have a better lit review. Each checks `/scholar-rag status` first and degrades silently to its old behaviour if there is no index.
+
+| Skill | Where it fires | What it uses the passages for |
+|---|---|---|
+| `scholar-lit-review` (§8E.1) | **Phase 1**, between the knowledge-graph check and the Zotero search | A full-text tier: cited passages out of your own PDFs, not just metadata |
+| `scholar-write` (§14.2A) | Alongside the citation-integrity rule, in **all** modes — draft, revise, polish | Phrasing claims against what the page actually says instead of from memory |
+| `scholar-citation` (§16.5) | **Step V-3.5**, claim-level checking, keyed by DOI | Locating the supporting passage + page without opening the PDF |
+
+> **What this does not do.** `rag_search` surfaces *text*; it does not mint citations. Every reference still passes through the Verified Citation Pool and `/scholar-citation` (§16). Treat a retrieved passage as a **lead to verify**, not as a source you have confirmed — the index can only be as honest as the PDF it chunked, and a passage torn from its section can still be misread. The division of labour is worth stating once and remembering: **`scholar-rag` owns the text, `/scholar-citation` owns the bibliographic record.**
+
+### 8F.5 GraphRAG — the long pole
+
+Vector search finds passages near a query. It cannot answer "what are the major theoretical camps in this literature?", because no single chunk contains that answer. GraphRAG builds the structure that can:
+
+```bash
+$ rag_py graphrag.py seed        # import scholar-knowledge concepts + citation edges (fast, no LLM)
+$ rag_py graphrag.py extract     # LLM entity/relation extraction per paper — the long stage, resumable
+$ rag_py graphrag.py build       # dedup entities → Leiden communities
+$ rag_py graphrag.py summarize   # LLM community summaries (the global-search corpus)
+$ rag_py graphrag.py run --limit 50                                     # the whole chain, bounded
+$ rag_py graphrag.py local  "mechanisms linking neighborhood to health" # entity-grounded passages
+$ rag_py graphrag.py global "what are the major theoretical camps here?" # map-reduce over communities
+$ rag_py graphrag.py neighbors <doc_id>
+```
+
+> **Model selection is the thing that will bite you.** Extraction defaults to `deepseek-r1:32b`, which runs and honors `format=json` but is a *reasoning* model — slow for bulk work. `gpt-oss:20b` is the faster ideal, but fails with a `tensor "blk.0.ffn_down_exps.weight" size overflow` on older ollama builds; `brew upgrade ollama`, restart the server, then `export RAG_GRAPH_MODEL=gpt-oss:20b`. If that is unavailable, a fast instruct model is the practical answer: `ollama pull qwen2.5:7b-instruct`. Extraction is section-bounded (12k chars by default) and resumable per document, so run it detached and let it cross sessions.
+
+### 8F.6 Where it lives
+
+```
+~/.claude/scholar-rag/                      (override with $SCHOLAR_RAG_DIR)
+├── corpus.sqlite       ← documents + chunks manifest (the source of truth for status)
+├── raw/text/<doc_id>.json   ← page-mapped extracted text (cache; enables re-chunk)
+├── raw/meta/<doc_id>.json   ← full bibliographic record
+├── index/              ← LanceDB table `chunks` (vector + metadata + BM25 FTS)
+├── graph/              ← entities, relations, doc_edges, communities, summaries
+├── manifest.json       ← embed model + dim + chunk params + build stats
+├── logs/               ← trace-scholar-rag.ndjson, ingest-run-*.log
+└── .venv/              ← self-contained CPython 3.12
+```
+
+It is **user-scoped, not project-scoped** — the same store serves every project, exactly like `scholar-knowledge`. That is the right call for a reference library, which is a property of the scholar rather than the paper.
+
+**The feedback loop back to §8C.** Extraction is the expensive part of both skills, and now only one of them pays it. Once a build finishes, run `/scholar-knowledge re-extract`: nodes that were ingested from an abstract alone can be upgraded from the full text `scholar-rag` already extracted. A library you index once makes the wiki deeper for free.
+
+Configuration, all via `.env` or environment: `SCHOLAR_RAG_DIR` · `SCHOLAR_ZOTERO_DIR` (auto-detected) · `EMBED_MODEL` (default `BAAI/bge-m3`) · `RAG_CHUNK_CHARS` / `RAG_CHUNK_OVERLAP` · `RAG_GRAPH_MODEL` / `RAG_SUMMARY_MODEL` · `RAG_OCR_MODEL` · `OLLAMA_HOST`.
+
+### 8F.7 Inspect
+
+```bash
+$ rag_py ingest.py status      # documents by stage, chunk counts, no_pdf coverage
+$ rag_py graphrag.py status    # entities / relations / communities / summaries
+```
+
+Four checks before you trust it:
+
+1. `setup-venv.sh` reported every import `ok`, and told you whether torch has MPS. (No MPS means a much slower build — plan accordingly.)
+2. `ingest.py status` shows `embedded > 0` **and a sane `no_pdf` count**. A large `no_pdf` means Zotero items whose attachment never synced locally; fix that in Zotero, or let the open-access fetch fill them.
+3. A query on a topic you know returns the paper you expect, with the right author-year and a page number you can check.
+4. The MCP handshake lists all four tools. If it lists none, you did not restart the session.
+
+> **Data safety.** The corpus is published papers, so it is normally `CLEARED`. But `folder` mode will happily ingest a directory of unpublished drafts or a colleague's shared PDFs. If a project sidecar marks any input `NEEDS_REVIEW` or `HALTED`, route through `/scholar-safety` or `/scholar-init` first (§6) — the fact that embedding is local does not make ingestion consent-free.
 
 ## 9. `scholar-design` — design before data
 
@@ -3812,16 +4021,20 @@ argument-hint: "[text|network|ml|reproduce|spatial|bayesian|dsl|audio|life2vec]
 | **3 Networks** | Centrality · **GNNs** (node2vec, GCN, GraphSAGE, link prediction) · Leiden/Louvain · **ERGM** and temporal ERGM · stochastic block models · ego-networks · **SAOM/RSiena** · relational event models | R `ergm`, `btergm`, `RSiena`, `igraph`, `goldfish`; Py `networkx`, `torch_geometric` |
 | **5 Reproducibility** | Project layout · lockfiles · Makefiles · Docker/Singularity/Code Ocean | `renv`, `rocker/verse`, Docker |
 | **6 Computer vision** | DINOv2 (unsupervised) · CLIP (zero-shot) · ConvNeXt/ViT fine-tuning · multimodal LLM annotation · VideoMAE · multimodal fusion | `transformers`, `timm`, `open_clip_torch` |
-| **7 LLM-powered analysis** | Structured extraction · chain-of-thought coding · computational grounded theory · **prompt optimization** · RAG | `anthropic`, `pydantic`, `dspy`, `textgrad`, `faiss` |
+| **7 LLM-powered analysis** | Structured extraction · chain-of-thought coding · computational grounded theory · **prompt optimization** · RAG. *For LLM annotation at corpus scale, use `scholar-annotate` (§11E) — it ships an engine, this module ships instructions* | `anthropic`, `pydantic`, `dspy`, `textgrad`, `faiss` |
 | **9 Geospatial** | `sf` + `tidycensus` · spatial weights · **Moran's I** and LISA · LM tests selecting SAR/SEM/SARAR/Durbin · direct and indirect impacts · spatial panels | `sf`, `spdep`, `spatialreg`, `tmap`, `splm` |
 | **10 Audio** | Whisper transcription · **pyannote** diarization · Essentia/librosa features · LLM-native audio · classification | `faster_whisper`, `pyannote.audio`, `essentia`, `librosa` |
 | **11 Life2Vec** | Life-event sequence transformer (Savcisens et al. 2024, *Nature Computational Science*) with Time2Vec encoding, ScaleNorm, ReZero residuals, hybrid Performer attention, SOP + MLM pretraining, PU-learning finetuning, TCAV interpretability | `torch`, `pytorch_lightning`, `performer_pytorch`, `pacmap` |
 
 Three gates fire before any module loads: a **causal-keyword gate** (routes to `/scholar-causal` first), a **premortem gate**, and a **simulation gate** — about 25 keywords (`abm`, `schelling`, `mesa`, `netlogo`, `opinion dynamics`, `silicon sampling`, `homo silicus`…) redirect to `/scholar-simulate`, because ABM and synthetic respondents moved there.
 
+> **Where LLM annotation lives now.** MODULE 1 and MODULE 7 both still describe LLM annotation, and for a few hundred documents inside a larger text pipeline that is fine. But the *engine* — batch and local serving, sharding, resume, the cost ledger, the κ gate, distillation — is `scholar-annotate` (§11E), which is self-contained and does not call back into `scholar-compute`. Rule of thumb: if the annotation is a step in a topic-model or embedding analysis, stay here; if the labels *are* the variable you will regress on, go to §11E.
+
+> **A reporting change worth catching if you use `conText`.** The `conText` 3.x API returns a debiased normed coefficient (`normed.estimate.deflated`), and that is what the skill now reports — with a **permutation p-value**. Describe the inference as **jackknife plus permutation, never as bootstrap**. Older write-ups that say "normed β" from a bootstrap are describing an API that no longer exists.
+
 ### 11A.2 The validation floor
 
-The rule that matters most across every module: **automated annotation requires human validation at κ ≥ 0.70**, benchmarked on 200 human-coded items. Below 0.60, do not proceed LLM-only. Between 0.60 and 0.70, use it as an assistant with human review.
+The rule that matters most across every module: **automated annotation requires human validation at κ ≥ 0.70**, benchmarked on 200 human-coded items. Below 0.60, do not proceed LLM-only. Between 0.60 and 0.70, use it as an assistant with human review. In `scholar-compute` this is a documented standard you are expected to honour; in `scholar-annotate` (§11E) the same number is a **hard gate that exits non-zero**.
 
 Other module-specific floors:
 
@@ -3868,6 +4081,8 @@ argument-hint: "[design|personas|silicon-survey|generative-abm|experiment|
 ```
 
 **The cardinal rule, stated in the skill:** synthetic data is not a substitute for human data. Any synthetic result entering a publication **must** be validated against a held-out human benchmark, and distributional mismatch (Bisbee et al. 2023) must be disclosed.
+
+Its sibling is `scholar-annotate` (§11E): here the LLM is a *respondent*, there it is an *annotator*. Both carry a hard validation gate for the same reason — an unvalidated LLM output is a guess wearing the clothes of a measurement.
 
 ### 11B.1 Ten modes
 
@@ -4060,6 +4275,146 @@ One subtle rule worth internalizing: **do not print KWIC concordances under LOCA
 
 Finally, for non-English data, every example needs the original, a morpheme-by-morpheme gloss, and a translation — the standard the target journals actually enforce.
 
+## 11E. `scholar-annotate` — the LLM as a measurement instrument
+
+**Goal:** turn a text corpus into a validated, reproducible **variable** — a class, a frame, a stance, a score, an extracted field — and prove its reliability *before* you spend anything annotating the whole corpus.
+
+```yaml
+argument-hint: "[plan|profile|codebook|devset|annotate-gold|optimize|validate|
+                scale|distill|report|full] [corpus path or task description]"
+```
+
+This is the second new skill in v5.26–5.27, and it is the one that fixes a real gap. Until now, "have an LLM code 50,000 documents" lived as MODULE 7 inside `scholar-compute` — a set of instructions, but no engine. `scholar-annotate` **ships a real execution engine** (`assets/annotate_engine.py` and friends) that scales from a few hundred documents to tens of millions via managed Batch APIs, async live requests, or a local/HPC OpenAI-compatible server. It is fully self-contained and does not depend on `scholar-compute`.
+
+Place it against its two siblings and the division of labour is clean:
+
+| Skill | The LLM is a… | You get |
+|---|---|---|
+| `scholar-annotate` (§11E) | **annotator / measurer** | a labeled corpus + a reliability estimate |
+| `scholar-simulate` (§11B) | **respondent / generator** | synthetic data + a human-fidelity check |
+| `scholar-qual` (§11C) | **assistant to a human coder** | themes, reflexivity, an audit trail |
+
+The skill redirects on its own if you land in the wrong one: synthetic respondents or ABM go to `/scholar-simulate`; small-N interpretive coding where the deliverable is themes rather than a scaled variable goes to `/scholar-qual` (and comes back here for the scale-and-validate steps); sociolinguistic variables go to `/scholar-ling`; and estimating an actual causal effect goes to `/scholar-causal`.
+
+> **The cardinal rule, in the skill's own words: VALIDATE BEFORE YOU SCALE.** LLM labels are a measurement, and every measurement needs a reliability estimate. MODE 8 (annotate the full corpus) is **blocked** until MODE 7 passes at **Cohen κ ≥ 0.70** against a human or gold set. This is not advisory — `annotate_engine.py validate` exits 2 below the gate. p-values are irrelevant here; reliability is the currency.
+
+### 11E.1 Eleven modes
+
+| Mode | Triggers | What it does |
+|---|---|---|
+| **1 plan** | `plan`, `feasibility`, `cost`, `which model`, `batch vs local` | Fix the construct, the unit, the label space, and the serving strategy; produce a pre-flight cost and throughput estimate |
+| **2 profile** | `profile`, `class prior`, `what is in the corpus` | Class prior, languages, dominant topics, and off-topic contamination — the thing that silently poisons a scheme |
+| **3 codebook** | `codebook`, `scheme`, `rubric`, `frames` | The measurement instrument: definitions, include/exclude rules, tie-breaking order, boundary exemplars |
+| **4 devset** | `devset`, `sample`, `stratify` | Stratified development set with rare-class over-sampling, plus a human-label template |
+| **5 annotate-gold** | `annotate-gold`, `dual model`, `inter-coder` | Turn the dev sample into gold via multi-model LLM annotation and/or human double-coding |
+| **6 optimize** | `optimize`, `dspy`, `few-shot`, `mipro` | Compile the prompt with DSPy against the gold set; archive the program + hash |
+| **7 validate** | `validate`, `kappa`, `κ`, `f1`, `gate` | **HARD GATE** — κ + per-class F1 vs gold, plus four epistemic-risk checks |
+| **8 scale** | `scale`, `full corpus`, `batch`, `local`, `hpc`, `sbatch` | The only mode that touches the whole corpus, and only after 7 passes |
+| **9 distill** | `distill`, `cheap classifier`, `dsl` | Train a cheap classifier on LLM labels and score the rest on-device |
+| **10 report** | `report`, `methods`, `disclosure` | The deliverable: dataset, distributions, validation report, Methods + Results prose, disclosures |
+| **full** | `full` | Runs 0 → 10 in order |
+
+### 11E.2 The gate, in detail
+
+```bash
+$ python3 assets/annotate_engine.py validate \
+    --pred output/tables/llm_dev_pred.csv \
+    --gold output/tables/devset_gold.csv \
+    --on relevance,discourse_frame --gate 0.70 \
+    --out output/tables/validation_report.json
+```
+
+Per field it reports **n, Cohen κ (LLM vs gold), macro-F1**, and a full classification report — then exits 2 if the primary field misses the bar.
+
+Two things about that bar are worth arguing with your future self about:
+
+- **κ, not accuracy.** κ corrects for the class prior. On a corpus that is 90% one class, accuracy is meaningless — a constant predictor scores 0.90.
+- **Per-class F1 can hide inside a passing κ**, and the class it hides in is usually the one you care about. If the target class F1 is weak, iterate even when the overall gate is green.
+
+Alongside the gate, all four Lin & Zhang (2025) epistemic risks must be assessed explicitly: **validity** (inspect chain-of-thought rationales on a sample — does it measure the construct you named?), **reliability** (temperature = 0; report run-to-run κ on a 50-document re-annotation), **replicability** (exact model id + version + date + prompt/program hash archived), and **transparency** (prompts reproduced in the appendix, limitations stated).
+
+When it fails, the skill prescribes the cheapest lever first: sharpen the codebook's definitions and boundary rules → re-optimize few-shot (MODE 6) → re-validate. A stronger model is the *last* thing to reach for, not the first.
+
+### 11E.3 Gold without two human coders
+
+Not every project can double-code 500 documents by hand, and the skill is honest about the substitutes:
+
+- **Two different models** annotate the dev set via Batch APIs (e.g. Claude + GPT); agreement becomes gold, disagreement goes to an adjudication file. Inter-model Cohen κ is reported.
+- **Only one provider?** Use **two models of it** (`gpt-5.6` + `gpt-4.1`). Model diversity still filters the boundary cases, which is what gold-setting is actually for.
+- **Model forces temperature ≠ 0** (the GPT-5 and o-series do)? Run it *K* times and majority-vote — `gold_reconcile.py --mode majority` — to damp the non-determinism. The deployment model keeps temperature = 0 regardless.
+- Human double-coding, when you have it, reports **Krippendorff α ≥ 0.70**.
+
+### 11E.4 The execution engine
+
+Everything scaled runs through the engine, never through a hand-rolled loop in the conversation. The CLI contract is stable:
+
+```bash
+$ ENG="$SKILL_DIR/assets/annotate_engine.py"
+$ python3 "$ENG" sample   --corpus spec.json --text-cols title,description,tags \
+                          --strata lang --n 3000 --oversample lexicon.json --out sample.csv
+$ python3 "$ENG" annotate --manifest run.json [--dry-run] [--resume] [--shard i --nshards N]
+$ python3 "$ENG" validate --pred pred.csv --gold gold.csv --on relevance --gate 0.70
+$ python3 "$ENG" distill  --labels labels.csv --corpus spec.json --gold gold.csv --out labels_full.csv
+```
+
+It is idempotent (checkpoint and resume), sharded, deduplicated by stable hash, and keeps a **cost ledger with a pre-flight estimate** — `--dry-run` tells you what MODE 8 will cost before you authorize it.
+
+Companion assets: `dspy_optimize.py` and `dspy_run.py` (compile a program, then deploy it threaded/sharded/resumable), `providers.py` (OpenAI · Anthropic · any local OpenAI-compatible server — llama.cpp, ollama, vLLM), `codebook_schema.py` (compiles the codebook into *both* the system prompt and the JSON output schema, so there is one source of truth), `run-annotate.sh` for long headless runs, and `hpc/` (SLURM sbatch, corpus mirror, rsync helper).
+
+> **A gotcha the skill documents about itself.** The MODE 9 distiller and reducer scripts default to `video_id` / `title` / `description` columns — the shape of the worked example. For your own corpus, pass the matching `--id-col` / `--text-cols`, or the run will silently look at the wrong fields.
+
+### 11E.5 Real field lessons — a local reasoning model at 12.7M rows
+
+The skill ships `references/local-model-scale-lessons.md`, which is the most useful thing in it: hard numbers from a real run measuring metalinguistic relevance (6-way) and discourse frame (7-way) over ~12.7M YouTube-metadata rows with a **local GLM-5.2** on a SLURM cluster. Read it before committing GPU-days.
+
+**The throughput wall is decode, and reasoning models make it worse.** At Q3 across four GPUs, decode ran ~4–9 tokens/s, so a single row took **60–150 seconds**; with 8–16-way parallelism that is only **~0.1–0.4 rows/s/node**. Prefill is *not* the bottleneck — llama.cpp caches the shared system + few-shot prefix. For millions of rows, a direct local pass is days-to-weeks.
+
+**What actually cut output tokens — and what didn't:**
+
+| Lever | Effect | Verdict |
+|---|---|---|
+| Drop the free-text `rationale` field | ~220 → ~40 tokens *on a non-reasoning path* | Big win when the model isn't reasoning |
+| DSPy `Predict` instead of `ChainOfThought` | **~no change** | The model reasons internally regardless |
+| `--reasoning-budget 0` | Caps the 1,000-token spikes; ~70–200 tokens of preamble remain | Partial |
+| DSPy `JSONAdapter` vs `ChatAdapter` | ~200 → ~70–100 tokens | ~2× — real but modest |
+| `--max-tokens 100` hard cap | **~12% invalid-JSON parse failures** | Too tight; ~150 is the floor |
+
+Stacked, those give roughly **2×, not 10×**. A local reasoning model has a hard floor around 70–100 output tokens even for three labels.
+
+**Chain-of-thought bought nothing; the DSPy *demonstrations* bought everything.** MODE 6 took frame κ from **0.31** (hand-tuned few-shot) to **0.76** (DSPy). An A/B on the same held-out split showed `ChainOfThought` κ = 0.705 ≈ `Predict` κ = 0.703 — the entire gain came from DSPy *selecting good demonstrations*, not from the reasoning field. The reason the hand-tuned version failed is worth memorizing: a naive "k = 2 per relevance class" few-shot showed only **1–2 of the 7 frames**, so the never-demonstrated frames had **zero recall**. Every rare class must appear in the demonstrations.
+
+> This is the same lesson as §11A.3, arrived at independently on a different task: when the prompt is the problem, adding examples of what the model already gets right does not help. What helps is changing what it is shown, or what it is told.
+
+**Distillation is the real answer at scale (MODE 9)**, ranked by what worked:
+
+| Distiller | κ vs gold | Note |
+|---|---|---|
+| Fine-tuned multilingual BERT (XLM-RoBERTa) | **0.77** | Trained in ~9 min from 38k labels, scored 1.87M in ~15 min — turned a ~23-day pass into ~1 hour |
+| Frozen multilingual embeddings + logistic (bge-m3) | 0.706 | Dependency-light, no fine-tuning fragility; use when labels are few |
+| TF-IDF + logistic | 0.607 | **Failed the gate.** Bag-of-words cannot do a 6-way semantic task |
+
+And three caveats that cost real time:
+
+- **The teacher caps the student.** Frame distillation topped out at κ ≈ 0.67 because the GLM frame *teacher* was only ~0.70–0.76. Distill the variables with a high-κ teacher; keep the LLM for the hard ones.
+- **Tuning is not more data.** Oversampling rare classes plus more epochs *regressed* frame κ from 0.671 to 0.648 — overfitting. The fix for a weak class is usually more labels or a better teacher, not hyperparameters.
+- **Hold gold out of training** and validate the student against it; silver labels are only teacher-accurate.
+
+The two-pass pattern the run converged on generalizes: distill the cheap primary variable over all *N*, filter to the positive subset (~25% here), and spend the expensive LLM only on that subset for the harder secondary variable.
+
+### 11E.6 The data-transfer rule
+
+Sending text to a *cloud* API is an **external data transfer**, and the skill treats it as one: MODE 0 writes an AI-use disclosure, and the decision is logged rather than assumed.
+
+For sensitive, `LOCAL_MODE`, or restricted corpora, the `local` strategy is not a fallback but the default — an on-premises OpenAI-compatible server, so the text never leaves the machine. Under `LOCAL_MODE` the skill must never `Read` raw rows; everything runs through the engine, which emits aggregates only, and MODE 8 is **forced** to `strategy=local` unless you explicitly authorize a cloud batch of public fields. Comments, PII, and transcripts are anonymize-first (§6.5, §11C.1).
+
+### 11E.7 Stop and check
+
+`references/quickstart-hanyu.md` is a complete, copy-pasteable worked example running every mode with real specs, manifests, and commands. Before you scale anything of your own, answer three questions:
+
+1. **What is the unit, and what is the label space?** If you cannot write the codebook entry for your rarest class in two sentences with an include and an exclude rule, you are not ready to annotate.
+2. **What does MODE 8 cost?** Run `--dry-run` and look at the ledger. "Local so it's free" is the assumption that turns into three weeks of GPU time.
+3. **What is your gold, and how reliable is it?** Two models, two humans, or one model run K times — but something. A κ against a gold set you did not interrogate is a number, not evidence.
+
 ## 12. Reading three figures like a reviewer
 
 The `scholar-analyze` run produced six figures. Three of them carry the central narrative. Read them as if you were Reviewer 2.
@@ -4206,7 +4561,7 @@ argument-hint: "[draft|revise|polish] [section] on [topic] for [journal],
 
 `scholar-write` is the skill most sensitive to setup, because it reads from more places than any other. Run through this once; it takes about five minutes and it is the difference between a draft that cites your library and one that cites the open web.
 
-**1. Confirm the suite is installed as personal skills.** `bash setup.sh` (§2.4.2) installs all 42 skills into `~/.claude/skills/`, which is what makes `/scholar-write` available in any directory rather than only inside the cloned repo:
+**1. Confirm the suite is installed as personal skills.** `bash setup.sh` (§2.4.2) installs all 44 skills into `~/.claude/skills/`, which is what makes `/scholar-write` available in any directory rather than only inside the cloned repo:
 
 ```bash
 $ ls ~/.claude/skills/scholar-write/SKILL.md    # should exist
@@ -4348,6 +4703,8 @@ Two extended-only rules deserve emphasis:
 **The Theory section is bound to the literature review.** When drafting Theory, the skill locates the Phase 2 `scholar-lrh-*.md` file and treats it as canonical. **At least 70% of the citations named there must carry forward** into the Theory prose or the `.bib`, enforced by `lit-review-carry-forward-check.sh`. Dropping one requires a logged justification (`superseded` / `duplicate` / `low-quality` / `out-of-scope`). The skill must not re-derive citations from its training data. This is why the drafted theory cites the literature you actually reviewed rather than the literature the model vaguely remembers.
 
 **Exemplars are studied for shape, never copied.** `expansion-quality-check.sh` detects 10-gram overlap with an exemplar and fails the run.
+
+> **Grounding in passages, not memory (both editions, all three modes).** This one sits next to the citation-integrity rule rather than inside the Step 0 ladder, because it applies to draft, revise, *and* polish alike. If `/scholar-rag status` shows an index (§8F), `scholar-write` retrieves supporting *passages* from your own library — `rag_search("<claim or subtopic>", k=6, hybrid=true)`, or the `query.py` CLI — and phrases claims against what the page actually says rather than against a remembered gist. Page-anchored text is also what keeps a claim from drifting upward in strength while you paraphrase it. The distinction that keeps this honest: `scholar-rag` surfaces the **text**, `/scholar-citation` owns the **bibliographic record**. Retrieval never mints a citation; every reference still comes from the Verified Citation Pool.
 
 > **On the public edition none of that machinery exists** — no results lock, no section blueprint, no reader-outcome verifiers. The equivalent discipline is procedural rather than mechanical: you supply the numbers, and §14.2's Claims Audit is what stops the prose outrunning them. The public skill compensates with stronger *in-mode* auditing; the extended one compensates with stronger *pre-draft* contracts. Neither is a substitute for reading the draft.
 
@@ -4890,6 +5247,8 @@ Existence is the easy half. A citation can be perfectly real and still be cited 
 `[CLAIM-REVERSED]` · `[CLAIM-MISCHARACTERIZED]` · `[CLAIM-OVERCAUSAL]` · `[CLAIM-UNSUPPORTED]` · `[CLAIM-WRONG-POPULATION]` · `[CLAIM-IMPRECISE]` · `[CLAIM-NOT-CHECKABLE]`
 
 Newly discovered findings feed back into the knowledge graph, so the check gets cheaper each time you run it.
+
+The expensive part of this check has always been "then the paper's actual text" — reading a whole PDF to adjudicate one sentence. A `scholar-rag` index (§8F) collapses that step: `rag_search("<claim>", doi="<doi>")` retrieves the supporting passage *with its page number* without opening the paper. The tier order is knowledge graph (fast path) → `scholar-rag` full-text retrieval → PDF text. If you intend to run claim-level checking over a long manuscript, building the index first is the single highest-leverage setup step.
 
 ### 16.6 Styles supported
 

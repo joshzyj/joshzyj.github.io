@@ -29,7 +29,7 @@ lang: zh
 手册分为四部分：
 
 - **第一部分：基础（工作坊第一小时）** —— 安装智能体，开启第一个会话，理解项目结构，写出能让智能体执行的提示词，并速览 Claude Code 的新能力 —— 动态工作流、子智能体与自动化（§5A）。
-- **第二部分：Open Scholar Skills 全流程（工作坊第二小时）** —— **全部 42 个技能**的完整参考：每一种模式、每一个参数、每一道关卡、每一份产出文件，按你真实使用的顺序编排，并全程以 CFPS 数字鸿沟为载体。§5B 是技能总表，先读它，之后随时回来查。
+- **第二部分：Open Scholar Skills 全流程（工作坊第二小时）** —— **全部 44 个技能**的完整参考：每一种模式、每一个参数、每一道关卡、每一份产出文件，按你真实使用的顺序编排，并全程以 CFPS 数字鸿沟为载体。§5B 是技能总表，先读它，之后随时回来查。
 - **第三部分：编排器** —— 当你要写一篇真正认真的论文时（`scholar-full-paper`、`scholar-auto-research`）、如何找回自己的位置（`scholar-resume`）、如何无人值守地跑一整队想法（`scholar-loop`）、如何审计技能套件自身（`scholar-auto-improve`），以及如何拿到另一家厂商模型的独立第二意见（`scholar-openai`）。
 - **第四部分：负责任的实践** —— 自查清单、常见错误、五条原则。
 
@@ -176,8 +176,8 @@ $ codex login    # 输入 OpenAI API key
 >
 > | 版本 | 仓库 | 技能数 | 获取方式 |
 > |---|---|---|---|
-> | **公开版** | `github.com/joshzyj/open-scholar-skill` | **33** | 公开 —— §2.4 装的就是它 |
-> | **扩展版** | `openscholarskills` | **42** | **按需申请** —— 向作者索取 |
+> | **公开版** | `github.com/joshzyj/open-scholar-skill` | **35** | 公开 —— §2.4 装的就是它 |
+> | **扩展版** | `openscholarskills` | **44** | **按需申请** —— 向作者索取 |
 >
 > 本手册按**扩展版**来写，因为它是超集。有九个技能只存在于扩展版：
 >
@@ -188,7 +188,7 @@ $ codex login    # 输入 OpenAI API key
 > 随时可以查你装的是哪个：
 >
 > ```bash
-> $ ls ~/.claude/skills/ | grep -c scholar     # 公开版 33 · 扩展版 42
+> $ ls ~/.claude/skills/ | grep -c scholar     # 公开版 35 · 扩展版 44
 > ```
 
 装的方式有两种。如果 `git`、SSH 钥匙、shell 脚本对你来说还陌生，用**新手快捷路径**（§2.4.0）—— 让 Claude Code 自己装。如果你想看每一条命令，用 §2.4.1–§2.4.5 的**手动路径**。
@@ -254,7 +254,7 @@ $ bash setup.sh
 1. 建好 `.claude/skills/` 与 `.claude/agents/` 的内部 symlink。
 2. **自动探测你的 Zotero 库**；探测不到会提示你输入路径。
 3. **可选地配置 BibTeX、EndNote 以及 CrossRef 邮箱**（用于 API 的 polite pool）。
-4. 把你这个版本里的全部技能（公开版 33 · 扩展版 42）与相应 agent 装成**个人级** skills，落在 `~/.claude/skills/` 与 `~/.claude/agents/` —— 这样 `/scholar-*` 在**任何**目录、任何 Claude Code 会话里都能用，而不只是在 clone 出来的仓库里。
+4. 把你这个版本里的全部技能（公开版 35 · 扩展版 44）与相应 agent 装成**个人级** skills，落在 `~/.claude/skills/` 与 `~/.claude/agents/` —— 这样 `/scholar-*` 在**任何**目录、任何 Claude Code 会话里都能用，而不只是在 clone 出来的仓库里。
 5. 把 `scripts/gates/pretooluse-data-guard.sh` 注册为 `~/.claude/settings.json` 中的 PreToolUse hook —— 拦截每一次 `Read`、`NotebookRead`、`NotebookEdit`、`Grep`、`Glob`，对 `NEEDS_REVIEW:*` 或 `HALTED` 的文件直接拒绝。
 6. 写一个 `.env` 文件记录你的配置。
 
@@ -413,7 +413,7 @@ $ bash setup.sh || echo "SAFETY HOOK MISSING —— 装上 jq 再重跑"
 #### 2.5.3 验证它真的生效了
 
 ```bash
-$ ls ~/.claude/skills/ | grep -c scholar        # 42
+$ ls ~/.claude/skills/ | grep -c scholar        # 44
 $ ls ~/.claude/agents/ | wc -l                  # 22
 $ cat ~/.claude/scholar-skills.path             # 仓库路径
 $ jq '.hooks.PreToolUse' ~/.claude/settings.json | head    # 守卫
@@ -1468,7 +1468,7 @@ $ claude mcp add --transport stdio zotero -- uvx zotero-mcp
 
 ## 5B. 套件全景 —— 清单、语法、契约
 
-### 5B.1 全部 42 个技能，按阶段排列
+### 5B.1 全部 44 个技能，按阶段排列
 
 § 那一列指向本手册中完整记录该技能的章节 —— 每个模式、每个参数、每道关卡、它写下的每个文件。
 
@@ -1477,7 +1477,7 @@ $ claude mcp add --transport stdio zotero -- uvx zotero-mcp
 套件安装到 `~/.claude/skills/<skill-name>/SKILL.md`。这个目录里的任何东西都能以 `/<skill-name>` 调用。装完先验一下：
 
 ```bash
-$ ls ~/.claude/skills/ | grep -c scholar           # 公开版 33 · 扩展版 42
+$ ls ~/.claude/skills/ | grep -c scholar           # 公开版 35 · 扩展版 44
 $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scripts/
 ```
 
@@ -1499,6 +1499,7 @@ $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scri
 | §8A | `scholar-lit-review-hypothesis` | 上面两件事合成一条链 | RQ 或主题 |
 | §8B | `scholar-conceptual` | 造理论*本体* —— 类型学、机制图 | `theorize` / `diagram` |
 | §8C | `scholar-knowledge` | 跨项目知识图谱与 wiki | `ingest` / `search` / `relate` / `status` / `export` / `compile` / `ask` / `re-extract` |
+| §8F | `scholar-rag` | 覆盖整个文献库的本地向量数据库 + GraphRAG；带 MCP 服务器 | `setup` / `ingest` / `query` / `mcp` / `graph` / `status` |
 | §20F | `scholar-monitor` | 期刊与预印本的增量式追新摘报 | `init` / `all` / `preview` / `digest` |
 
 **阶段 2 —— 数据之前先有设计**
@@ -1519,6 +1520,7 @@ $ ls ~/.claude/skills/scholar-full-paper/          # SKILL.md, references/, scri
 | §11B | `scholar-simulate` | LLM 驱动的硅基抽样、生成式 ABM、合成实验 | `design` / `personas` / `silicon-survey` / `generative-abm` / `experiment` / `validate` |
 | §11C | `scholar-qual` | 编码、主题分析、LLM 辅助编码、信度 | `codebook` / `open-coding` / `axial` / `selective` / `thematic` / `content` / `llm-coding` / `mixed` / `reliability` |
 | §11D | `scholar-ling` | 社会语言学、语音学、话语、语料、计算 | `variation` / `acoustic` / `corpus` / `CA` / `CDA` / `attitudes` / `contact` / `computational` / `experimental` / `MDA` / `TTS-guise` |
+| §11E | `scholar-annotate` | 把 LLM 当测量工具跑文本语料；上规模前必须过 κ ≥ 0.70 关卡 | `plan` / `profile` / `codebook` / `devset` / `annotate-gold` / `optimize` / `validate` / `scale` / `distill` / `report` / `full` |
 | §13 | `scholar-code-review` | 六个智能体审计每一个分析脚本 | `full` 或某一个视角 |
 
 **阶段 4 —— 写作与验证**
@@ -1609,6 +1611,8 @@ argument-hint: "[quant|qual|mixed|experiment|power|methods-section|pap|
 | `scholar-init` | `.claude/safety-status.json` | 每一个碰数据的技能 |
 | `scholar-brainstorm` / `scholar-idea` | 选定 RQ 备忘 | `scholar-lit-review-hypothesis`、`scholar-design` |
 | `scholar-lit-review*` | `refs.bib`、覆盖矩阵 | `scholar-write`、`scholar-citation` |
+| `scholar-rag` | `~/.claude/scholar-rag/`（LanceDB 索引 + 图谱）、`rag_search` MCP 工具 | `scholar-lit-review`、`scholar-write`、`scholar-citation` |
+| `scholar-annotate` | `tables/…labeled.csv`、`codebook.md`、`validation_report.json` | `scholar-analyze`、`scholar-compute`、`scholar-write`、`scholar-replication` |
 | `scholar-causal` | `identification-memo.md`（`causal_status:`） | `scholar-design`、`scholar-write`、`scholar-verify`、`scholar-polish` |
 | `scholar-design` | `model-specs.json`、`variable-dictionary.csv`、`results-lock` | `scholar-eda`、`scholar-analyze`、`scholar-write` |
 | `scholar-analyze` | `tables/`、`figures/`、`results-registry.csv` | `scholar-verify`、`scholar-write`、`scholar-replication` |
@@ -1659,14 +1663,15 @@ slug 必须匹配 `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`，2–64 个字符。如果你
 | `--dest <dir>` | 在哪里创建项目目录（默认：当前目录） |
 | `--link` | 软链原始输入而不是拷贝 —— 几 GB 的面板文件用这个 |
 | `--materials <path>` | 把这个路径送进 `materials/` 而不是 `data/raw/`（可重复） |
+| `--corpus <path>` | 把这个路径送进 `corpus/` 而不是 `data/raw/` —— 给文本语料用（可重复） |
 | `--force` | 在已有项目目录上重建 |
 
 > **`--force` 会销毁此前的 review 决定。** 重建会用一次全新扫描重写 sidecar，于是你做过的每一条 `OVERRIDE` 理由、每一个 `LOCAL_MODE` 选择都没了。除非你是真心想从头来过，否则请增量地修一个坏掉的 init。
 
 它按顺序做的事：
 
-1. 创建 `<dest>/<slug>/`，内含 `data/{raw,interim,processed}/`、`materials/`、`output/`、`logs/`、`.claude/`。
-2. 把原始文件拷贝（或加 `--link` 时软链）进 `data/raw/`，材料进 `materials/`。重名的加数字后缀。
+1. 创建 `<dest>/<slug>/`，内含 `data/{raw,interim,processed}/`、`materials/`、`output/`、`logs/`、`.claude/` —— 外加 `corpus/`，但只在你传了 `--corpus` 时才建，免得不用语料的项目多出一个空目录。
+2. 把原始文件拷贝（或加 `--link` 时软链）进 `data/raw/`，材料进 `materials/`，文本语料进 `corpus/`。重名的加数字后缀。
 3. 通过 `scripts/gates/safety-scan.sh` 对每个 ingest 进来的文件跑一次**纯本地**安全扫描 —— 只用 `file`、`wc`、`grep`、`awk`。Claude 看到的是计数和模式类别，**绝不是**匹配到的值。
 4. 写 `.claude/safety-status.json`、`logs/init-report.md`、`README.md`、`.gitignore`。
 5. 把自动托管的项目记忆块写进 `CLAUDE.md`（Claude Code 宿主）、`AGENTS.md`（Codex 宿主），或者两个都写（宿主未识别时）。
@@ -1698,6 +1703,36 @@ slug 必须匹配 `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`，2–64 个字符。如果你
 如果你之后跑 `/scholar-full-paper`，编排器会把这个文件**升级**成完整的 13 节、约 230 行的 profile。升级是**单向的**：在已升级的项目上重跑 `/scholar-init` 会打印 `already at v2-full ... lean request ignored`，什么都不改。这是故意的 —— 一次精简的 re-init 绝不能静默地剥掉编排器赖以运转的关卡约定。
 
 你可能看到的幂等性提示：`created <path> (v2-lean)`、`appended auto-rules block to <path>`、`migrated <path> from v1 to v2-lean`、`already at v2-lean, no-op`。
+
+#### 6.1.2 文本语料 —— `--corpus`，以及目录名为什么是承重的
+
+语言学和 text-as-data 项目通常把语料放在 `data/` 之外，而在此之前，这也意味着它落在守卫之外。现在不会了：**`corpus/` 和 `corpora/` 是被守卫的路径段**，所以它们底下的一切都按数据处理，**不看扩展名** —— 包括没有扩展名的文件，也包括任何扩展名规则都抓不住的语言学格式（`.eaf`、`.TextGrid`、`.trs`、`.cha`）。
+
+请通过技能 ingest 语料，而不是手工拷进去。ingest 才能让这些文件在 `safety-status.json` 里拿到一条**已审定**的条目；你手工拷进去的语料，每次读都要重新现场扫描一遍。
+
+```
+> /scholar-init init hanyu-metalinguistic-corpus \
+                --corpus ~/data/hanyu/videos \
+                --corpus ~/data/hanyu/comments
+```
+
+语料不是一种东西，里面装的是什么，政策就该不同：
+
+| 语料内容 | 放在哪里 | `OVERRIDE` |
+|---|---|---|
+| 公开文本（新闻、议会记录、维基百科、已出版作品） | `corpus/<name>/` | 给出理由后允许 |
+| 参与者言语（社会语言学访谈、课堂录音、诱导实验） | `corpus/transcripts/` 或 `corpus/interviews/` | **拒绝** |
+| 任何音频或视频 | `corpus/` 下任意位置 | **拒绝** —— 按扩展名 |
+
+之所以成立，是因为分类器匹配的是*路径段*：定性研究的那些段（`transcripts/`、`interviews/`、`field-notes/`、`participants/`、`subjects/`、`respondents/`）嵌套在 `corpus/` 里时，仍然保持它们严格的待遇：
+
+```
+corpus/news/article.txt        受守卫，OVERRIDE 允许
+corpus/transcripts/i01.txt     受守卫，OVERRIDE 拒绝
+corpus/recordings/s1.wav       受守卫，OVERRIDE 拒绝（扩展名规则）
+```
+
+> **名字是精确的路径段匹配。** `mycorpus/`、`corpus-2024/`、`texts/`、`speeches/`、`tweets/` 都**不**受守卫。目录就叫 `corpus/` 或 `corpora/`，或者把材料留在 `data/raw/` 下。这条规则看着像抠字眼，直到某天你发现一个叫 `transcripts-2024/` 的目录，离受保护只差一次重命名。
 
 ### 6.2 用 `scholar-init review` 解决 `NEEDS_REVIEW`
 
@@ -1785,7 +1820,10 @@ sidecar 是一个**扁平**映射 —— 绝对文件路径 → 状态字符串 
 
 - **Read 通道。** 先规范化路径（解开软链），拒绝任何解析到系统目录（`/etc`、`/dev`、`/proc`、`/sys`、`/System`、`/var/db`、`/var/log`）的东西，然后查 sidecar：`CLEARED`/`ANONYMIZED`/`OVERRIDE` → 放行；`LOCAL_MODE`/`HALTED` → 阻断，并提示改用 Bash 加载器；`NEEDS_REVIEW*` → 阻断，并叫你去跑 `/scholar-init review`。
 - **Bash 通道。** 是一道**协作式减速带**，不是一堵墙。当目标是敏感路径时，它拦下那些明显的倾倒命令 —— `cat`、`head`、`tail`、`less`、`od`、`xxd`、`strings`、`base64`、`sqlite3`、`jq`、`sed`、`awk`、`perl`，以及不带 `-c`/`-l`/`-q` 的 `grep`。遇到模棱两可的情况它 **fail-open**，因为把 shell 搞瘫比它能挡住的那点边际泄漏更糟。
+- **Bash 通道怎么判断「目标」是谁。** 两条规则，都是 2026 年 7 月加的 —— 此前那个只看路径形状的分类器在两个方向上都出过错。**（a）一个 token 只有在解析到某个真实存在的东西时才会被分类**，文件或目录都算。这一下干掉了一整类误报：交给 grep 的正则（`grep -nE "data/raw|materials/" script.sh`）不再被当成敏感目标，而此前这类误拦甚至挡住过那条用来检查该目录是否存在的命令本身。不去分类一个不存在的路径不会开口子，因为这是一道*读*的关卡，倾倒命令指向虚空时什么也倒不出来。glob 会被改写成它的字面目录前缀 —— glob 只能够到它下面的文件。**（b）分类之前先展开变量。**
+含 `$` 的 token 过去被当成无法解析而跳过，于是 `SP=/abs/proj; grep x "$SP/corpus/transcripts/i01.txt"` 直接绕过了关卡。现在有一遍分词会把*同一条命令*里赋的 `$VAR` 与 `${VAR}` 解析出来，外加一小份环境变量白名单。这个范围恰好是对的：Claude Code 每次 Bash 调用都起一个全新的 shell，所以一个既没在命令内赋值、也没有 export 的变量会展开成空，根本指不到任何文件。
 - **Grep/Glob 通道。** 阻断对原始数据路径的搜索或枚举，以及任何带数据扩展名的直接目标。
+- **哪些路径算数据。** 匹配的是路径段，不是扩展名：`data/raw/`、`data/interim/`、`data/processed/`，以及自 2026 年 7 月起的 `corpus/` 与 `corpora/`（§6.1.2），再加上定性研究的那几段 —— `transcripts/`、`interviews/`、`field-notes/`、`participants/`、`subjects/`、`respondents/` —— 后者还额外拒绝 `OVERRIDE`。
 - **Edit/Write/MultiEdit。** 只守一样东西：对 `.claude/safety-status.json` 的写入。除非 `logs/init-report.md` 里存在 `/scholar-init review` 的溯源记录，否则它拒绝把 RED 或 HALTED 路径提升为 CLEARED/OVERRIDE。其余一律 fail-open。
 - **图像。** 像素没法 grep，所以图像按路径分类：在 `data/raw/` 里 → 阻断；在 `output/figures/` 里 → 放行。
 
@@ -2435,7 +2473,7 @@ THEORIZE 进一步把任务分八类——类型学构建（Lazarsfeld property-
 
 对于一个你会*反复回来查*的语料，wiki 为什么可能胜过 RAG：*综合是预先算好的*（主题综述、`contradictions.md`、`gaps.md`），而不是每次查询都重新推导一遍；关系是*可遍历的显式链接*（`extends`、`contradicts`、`same-dataset`），不是隐含的向量邻居；它*就是 markdown* —— 可审计、可编辑，不需要 embedding 模型、也不需要向量库；而且它会*滚雪球* —— 你把自己的产出 file 回去，于是第 5 篇论文站在第 1–4 篇的肩膀上。代价是：抽取是*前期一次性投入*且有损（wiki 是模型对源文献的*阅读*，不是源文献本身 —— 所以 `raw/` 会保留原件），而且 wiki 必须保持最新（由 LLM 维护，你几乎不用手动改）。这就是 Andrej Karpathy 的"LLM wiki"想法：模型自己写、自己维护这个知识库，你把产出 file 回去，让它为将来的查询变得更好。
 
-三者是**互补，不是对手**。把 wiki 当作持久记忆，把活的检索器（OpenAlex、Zotero）包成 MCP *工具*来延伸触达（Lab 3 §4b），让智能体自己决定该伸手去拿哪一个。想看完整机制 —— ingest → 图谱 → compile → 导航 —— 只用约 250 行零依赖 Python，跑一下 Day 3 的 demo：
+三者是**互补，不是对手**。把 wiki 当作持久记忆，把活的检索器（OpenAlex、Zotero）包成 MCP *工具*来延伸触达（Lab 3 §4b），让智能体自己决定该伸手去拿哪一个。从 v5.27 起，套件把第一种也一并给了你 —— `scholar-rag`（§8F）在同一个文献库上建一个真正的本地向量数据库，并把它作为 MCP 工具暴露出来，于是你不必再二选一：wiki 存综合，向量索引存原文段落，两边用同一套论文身份对齐。想看完整机制 —— ingest → 图谱 → compile → 导航 —— 只用约 250 行零依赖 Python，跑一下 Day 3 的 demo：
 
 ```bash
 cd demo/day3-claude-code/llm-wiki
@@ -3010,6 +3048,8 @@ argument-hint: "[topic or research question] [optional: landscape|targeted|rapid
 
 两条硬行为：**检测不到本地文献库时技能直接硬停**，而不是悄悄退化成纯网页搜索；以及它在第一次查询**之前**就把搜索日志写到磁盘，并在**每一次**查询之后追加，因为上下文压缩会无声地毁掉内存里的命中计数。
 
+> **全文那一层（v5.27）。** Phase 1 先搜你的文献库、再搜网页，而且顺序是固定的：**知识图谱**（预抽取的发现）→ **`scholar-rag`** → **Zotero**（书目元数据）→ 网页。中间那一层是新加的。当 `/scholar-rag status` 报告 `embedded > 0` 时，技能会去查你自己 PDF 里的*全文段落* —— MCP 服务器已注册的话走 `rag_search("<topic>", k=8, hybrid=true)`（§8F.4），否则走 `query.py` CLI。回来的是带页码的引文段落，这和它两边的邻居是不同种类的证据：图谱给你发现，Zotero 给你元数据，这一层给你句子。取回的段落是**待核实的线索**，本身绝不是引文；每一条参考文献仍要过 Tier 0–2 验证。
+
 还有一道**理论关卡**：如果你的提示词提到假设或理论章节，技能会停下来，把你转到 `/scholar-lit-review-hypothesis`（§8A），而不是只给你一半你需要的东西。
 
 ### 8E.2 `scholar-hypothesis` —— 把预测形式化
@@ -3060,6 +3100,176 @@ argument-hint: "[phenomenon or RQ] — optionally: [design type: quant/qual/comp
 技能自带一个 25+ 框架的参考库 —— 分层、网络与资本、文化、同化、生命历程、Coleman's boat、DBO、种族形成、地位特征、社会运动、信号、理性选择、接触假说、标签理论、交叉性、新制度主义、组织生态学、实践理论、女性主义立场论、劳动过程、行动者网络理论，以及非西方传统包括殖民性、世界体系、后殖民理论、Ubuntu 和儒家/*关系*框架 —— 每个都附核心主张、机制、最佳适用场景、关键论文和现成的起句。
 
 **自检：** 拿你自己研究里的一条假设，把推导链表填一遍。如果“机制链环节”那一列最难填，这就是诊断结果：你手上是一条预测，还不是一个理论。
+
+## 8F. `scholar-rag` —— 建在你自己文献库上的本地向量数据库
+
+**目标：** 把你拥有的每一个 PDF 变成可检索、**带引文**的段落 —— 并把这套检索作为工具交给 Claude Code 和 Codex，于是一次文献综述会话能*引用*你的文献库，而不是转述它对文献库的记忆。
+
+```yaml
+argument-hint: "[setup|ingest|query|mcp|graph|status] [args], e.g. 'ingest' or
+                'query how does segregation affect mobility' or 'graph run'"
+```
+
+这是套件里最新的技能（v5.27，2026 年 7 月），也是最直接改变文献工作*手感*的一个。§8C.0 摆出了把对的文本送进模型窗口的三条路 —— RAG、智能体式搜索、知识 wiki —— 并说它们互补。`scholar-rag` 就是其中第一条，而且是认真做出来的：
+
+| | `scholar-knowledge`（§8C） | `scholar-rag`（§8F） |
+|---|---|---|
+| 存什么 | *符号化*的抽取结果：发现、机制、理论 | *逐字*的全文段落 |
+| 怎么取 | 在结构化记录上做关键词搜索 | 稠密向量相似度（+ BM25，+ 重排） |
+| 回答 | "这个领域在 X 上主张什么？" | "把原文段落给我看，带页码。" |
+| 单位 | 一篇论文 | 一篇论文里约 500 token 的一块 |
+| 成本 | 每篇论文前期认真读一次 | 一遍 embedding，可断点续跑 |
+
+两者共享论文身份（`doc_id` = 规范化 DOI 或标题的 sha256），所以一次段落命中能交叉链接到同一篇论文的抽取结果；而 GraphRAG 层**直接从知识图谱给自己的实体图播种**，不必冷启动。
+
+> **一切都在本地。** embedding 用 `bge-m3`，GraphRAG 的 LLM 用 `ollama`，向量库用 `LanceDB`，接口是一个 stdio MCP 服务器。唯一的网络流量是*可选的*开放获取 PDF 抓取。这件事比听上去更要紧：另一条路 —— 把整个 Zotero 库上传到托管向量服务 —— 是一次你必须披露的数据传输；而对任何处于禁运期或 IRB 限制下的材料，那是一次你根本做不了的传输。
+
+> **它是自包含的。** 引擎用 `uv` 自建 CPython 3.12 虚拟环境，直接读 Zotero，自带日志。它对插件其余部分没有硬依赖，`scholar-knowledge` 不在时也能优雅降级。
+
+### 8F.1 六个模式
+
+| 模式 | 触发词 | 做什么 |
+|---|---|---|
+| **0 setup** | `setup`、`install`、`venv` | 一次性：建虚拟环境（PyMuPDF、LanceDB、sentence-transformers、`mcp`、GraphRAG 依赖），并预取 bge-m3 |
+| **1 ingest** | `ingest`、`build`、`index`、`add` | 源 → 抽取 → 切块 → embedding → LanceDB。可断点续跑。主交付物 |
+| **2 query** | `query`、`search`、`find`、`ask` | 稠密检索，可选混合 BM25 + cross-encoder 重排，支持章节/年份过滤 |
+| **3 mcp** | `mcp`、`register`、`serve`、`connect` | 把 stdio MCP 服务器注册进 Claude Code 与 Codex |
+| **4 graph** | `graph`、`graphrag`、`neighbors`、`communities`、`global` | 播种 → LLM 抽实体 → Leiden 社区 → 摘要；然后做 `local`/`global`/`neighbors` 检索 |
+| **5 status** | `status`、`stats`、`coverage` | 按阶段统计文档、块数、无 PDF 的覆盖率、图谱计数 |
+
+`full` 跑 0 → 1 → 3。GraphRAG（模式 4）**故意**不在 `full` 里 —— 它是那个漫长的、受 LLM 限速的阶段，在真实规模的文献库上是数小时的本地推理。
+
+### 8F.2 把它建起来
+
+```bash
+# 一次性
+> /scholar-rag setup
+
+# 整个 Zotero 库（自动探测）；先加 --limit 拿一个子集试跑
+> /scholar-rag ingest
+```
+
+底层就是 `run-ingest.sh`，长跑时值得直接驱动它：
+
+```bash
+$ bash "$RAG_ASSETS/run-ingest.sh" --batch 64                  # 前台，盯着跑
+$ bash "$RAG_ASSETS/run-ingest.sh" --batch 64 --background     # 脱离；tail 打印出来的日志
+$ bash "$RAG_ASSETS/run-ingest.sh" --source folder --folder ~/pdfs
+$ bash "$RAG_ASSETS/run-ingest.sh" --ocr                       # 扫描版 PDF，走 llama3.2-vision
+```
+
+三个阶段，每份文档带着一个 `status` 走完 —— `new → extracted → embedded`，或者 `no_pdf` / `failed`：
+
+```
+Zotero/PDFs ──ingest──▶ documents(new)
+   PDF ──extract（PyMuPDF → pdftotext → 视觉 OCR）──▶ raw/text + documents(extracted)
+   text ──chunk（按章节，约 500 token，带重叠）+ bge-m3──▶ LanceDB + documents(embedded)
+```
+
+每个阶段只处理尚未推进的行，所以**被杀掉的运行会从断点继续** —— 你一定会用上，因为整库构建是 embedding 受限的：几千个 PDF 即便在 Apple 芯片的 MPS 上也要数小时。请脱离终端跑。
+
+抽取阶梯值得了解，因为它决定质量：先 PyMuPDF（快，保留页码映射），退到 `pdftotext`，最后对扫描件用视觉 OCR。抽出来的文本按页缓存在 `raw/text/<doc_id>.json` —— 这正是换一个模型重新切块或重新 embedding 很便宜的原因：你不必重新抽取。
+
+### 8F.3 查询它
+
+```bash
+> /scholar-rag query how does residential segregation affect intergenerational mobility?
+```
+
+```bash
+# 或者直接跑，带过滤与重排：
+$ rag_py query.py "identification strategy" -k 6 \
+         --section methods,results --year-min 2010 --rerank --json
+```
+
+每条命中都带着**作者-年份引文、章节、页码范围、DOI 和相似度**回来。页码才是重点：它让你用十秒钟核实一条主张，而不是重读一篇论文；也正是 `scholar-citation` 用来把主张对回源文献的东西（§16.5）。
+
+### 8F.4 把它交给智能体 —— MCP 服务器
+
+```bash
+> /scholar-rag mcp
+```
+
+```bash
+$ bash "$RAG_ASSETS/mcp-setup.sh"              # 注册进每一个探测到的宿主
+$ bash "$RAG_ASSETS/mcp-setup.sh" --print-only # 只打印 .mcp.json / config.toml 片段
+```
+
+这会注册一个 stdio MCP 服务器（§3.6），暴露四个工具：
+
+| 工具 | 签名 | 返回 |
+|---|---|---|
+| `rag_search` | `(query, k=8, section="", year_min=0, hybrid, rerank)` | 与查询最近的带引文段落 |
+| `rag_get_document` | `(doc_id, include_text=False)` | 完整书目记录 |
+| `rag_neighbors` | `(doc_id, k=8)` | 共享实体或引用关系的论文 |
+| `rag_stats` | `()` | 覆盖率计数 + 索引清单 |
+
+**要重启会话**才能加载这些工具。
+
+#### 8F.4.1 它被接进了哪三个技能
+
+这一节讲的正是那个你什么都不用做、工作流就变了的部分。索引一旦存在，就有三个技能会自己去调它 —— 你不需要在文献综述过程中调用 `scholar-rag`，你只是得到了一次更好的文献综述。每一个都先查 `/scholar-rag status`，没有索引就静默退回原来的行为。
+
+| 技能 | 在哪里触发 | 拿这些段落做什么 |
+|---|---|---|
+| `scholar-lit-review`（§8E.1） | **Phase 1**，在知识图谱检查与 Zotero 搜索之间 | 一层全文：来自你自己 PDF 的带引文段落，而不只是元数据 |
+| `scholar-write`（§14.2A） | 与引用完整性规则并列，**所有**模式都适用 —— draft、revise、polish | 照着页面上真正写的东西措辞，而不是凭记忆 |
+| `scholar-citation`（§16.5） | **Step V-3.5** 主张层面检查，按 DOI 检索 | 不打开 PDF 就定位到支撑段落及其页码 |
+
+> **它不做什么。** `rag_search` 浮出的是*文本*，它不生成引文。每一条参考文献仍然要走 Verified Citation Pool 和 `/scholar-citation`（§16）。把检索到的段落当作**待核实的线索**，而不是已经确认的来源 —— 索引只能和它切的那个 PDF 一样诚实，而一段被从章节里撕下来的文字照样可能被读错。分工值得说一次并记住：**`scholar-rag` 拥有文本，`/scholar-citation` 拥有书目记录。**
+
+### 8F.5 GraphRAG —— 那根长杆
+
+向量检索能找到离查询最近的段落。它回答不了"这片文献里主要有哪几个理论阵营"，因为没有任何单独一块里装着这个答案。GraphRAG 建的就是能回答它的结构：
+
+```bash
+$ rag_py graphrag.py seed        # 导入 scholar-knowledge 的概念与引用边（快，不用 LLM）
+$ rag_py graphrag.py extract     # 逐篇论文做 LLM 实体/关系抽取 —— 最长的阶段，可续跑
+$ rag_py graphrag.py build       # 实体去重 → Leiden 社区
+$ rag_py graphrag.py summarize   # LLM 社区摘要（global 检索的语料）
+$ rag_py graphrag.py run --limit 50                                     # 整条链，带上限
+$ rag_py graphrag.py local  "mechanisms linking neighborhood to health" # 实体锚定的段落
+$ rag_py graphrag.py global "what are the major theoretical camps here?" # 在社区上 map-reduce
+$ rag_py graphrag.py neighbors <doc_id>
+```
+
+> **会咬你的是选模型。** 抽取默认用 `deepseek-r1:32b`：它能跑，也遵守 `format=json`，但那是个*推理*模型 —— 做批量抽取很慢。`gpt-oss:20b` 是更快的理想选择，但在较老的 ollama 构建上会以 `tensor "blk.0.ffn_down_exps.weight" size overflow` 失败；`brew upgrade ollama`、重启服务，然后 `export RAG_GRAPH_MODEL=gpt-oss:20b`。要是拿不到它，务实的答案是一个快的 instruct 模型：`ollama pull qwen2.5:7b-instruct`。抽取按章节截断（默认 12k 字符），并且逐文档可续跑 —— 脱离终端跑，让它跨会话继续。
+
+### 8F.6 它存在哪里
+
+```
+~/.claude/scholar-rag/                      （用 $SCHOLAR_RAG_DIR 覆盖）
+├── corpus.sqlite       ← 文档 + 块清单（status 的唯一真相来源）
+├── raw/text/<doc_id>.json   ← 按页映射的抽取文本（缓存；使重新切块成为可能）
+├── raw/meta/<doc_id>.json   ← 完整书目记录
+├── index/              ← LanceDB 表 `chunks`（向量 + 元数据 + BM25 全文索引）
+├── graph/              ← 实体、关系、文档边、社区、摘要
+├── manifest.json       ← embedding 模型 + 维度 + 切块参数 + 构建统计
+├── logs/               ← trace-scholar-rag.ndjson、ingest-run-*.log
+└── .venv/              ← 自包含的 CPython 3.12
+```
+
+它是**用户级的，不是项目级的** —— 同一个库服务于每一个项目，和 `scholar-knowledge` 完全一样。这是对的：文献库是研究者的属性，不是某一篇论文的属性。
+
+**回到 §8C 的反馈回路。** 抽取是两个技能里都最贵的那一步，而现在只有一个需要付这笔钱。构建跑完之后跑一次 `/scholar-knowledge re-extract`：那些只从摘要 ingest 进来的节点，可以用 `scholar-rag` 已经抽好的全文升级。索引一次文献库，wiki 就白白变深一层。
+
+配置全部通过 `.env` 或环境变量：`SCHOLAR_RAG_DIR` · `SCHOLAR_ZOTERO_DIR`（自动探测）· `EMBED_MODEL`（默认 `BAAI/bge-m3`）· `RAG_CHUNK_CHARS` / `RAG_CHUNK_OVERLAP` · `RAG_GRAPH_MODEL` / `RAG_SUMMARY_MODEL` · `RAG_OCR_MODEL` · `OLLAMA_HOST`。
+
+### 8F.7 检查
+
+```bash
+$ rag_py ingest.py status      # 按阶段统计文档、块数、no_pdf 覆盖
+$ rag_py graphrag.py status    # 实体 / 关系 / 社区 / 摘要
+```
+
+信任它之前查四件事：
+
+1. `setup-venv.sh` 报告每一个 import 都 `ok`，并告诉你 torch 有没有 MPS。（没有 MPS 意味着构建慢得多 —— 据此安排时间。）
+2. `ingest.py status` 显示 `embedded > 0`，**并且 `no_pdf` 数目合理**。`no_pdf` 一大片，说明那些 Zotero 条目的附件从没同步到本地；去 Zotero 里修，或者让开放获取抓取去补。
+3. 拿一个你熟悉的主题查一下，返回的是你预期的那篇论文，作者-年份对，页码你能翻过去核对。
+4. MCP 握手列出全部四个工具。一个都没列出，说明你没重启会话。
+
+> **数据安全。** 语料是已发表论文，通常是 `CLEARED`。但 `folder` 模式会毫不犹豫地 ingest 一整个装着未发表草稿或同事共享 PDF 的目录。如果项目 sidecar 把任何输入标成 `NEEDS_REVIEW` 或 `HALTED`，先走 `/scholar-safety` 或 `/scholar-init`（§6）—— embedding 在本地跑，并不等于 ingest 不需要授权。
 
 ## 9. `scholar-design` —— 数据之前先有设计
 
@@ -3732,16 +3942,20 @@ argument-hint: "[text|network|ml|reproduce|spatial|bayesian|dsl|audio|life2vec]
 | **3 网络** | 中心性 · **GNN**（node2vec、GCN、GraphSAGE、链接预测）· Leiden/Louvain · **ERGM** 与时序 ERGM · 随机块模型 · 自我网络 · **SAOM/RSiena** · 关系事件模型 | R `ergm`、`btergm`、`RSiena`、`igraph`、`goldfish`；Py `networkx`、`torch_geometric` |
 | **5 可复现性** | 项目布局 · lockfile · Makefile · Docker/Singularity/Code Ocean | `renv`、`rocker/verse`、Docker |
 | **6 计算机视觉** | DINOv2（无监督）· CLIP（零样本）· ConvNeXt/ViT 微调 · 多模态 LLM 标注 · VideoMAE · 多模态融合 | `transformers`、`timm`、`open_clip_torch` |
-| **7 LLM 驱动分析** | 结构化抽取 · 思维链编码 · 计算扎根理论 · **提示词优化** · RAG | `anthropic`、`pydantic`、`dspy`、`textgrad`、`faiss` |
+| **7 LLM 驱动分析** | 结构化抽取 · 思维链编码 · 计算扎根理论 · **提示词优化** · RAG。*语料规模的 LLM 标注请用 `scholar-annotate`（§11E）—— 那边给的是引擎，这个模块给的是指令* | `anthropic`、`pydantic`、`dspy`、`textgrad`、`faiss` |
 | **9 地理空间** | `sf` + `tidycensus` · 空间权重 · **Moran's I** 与 LISA · 用 LM 检验在 SAR/SEM/SARAR/Durbin 之间选择 · 直接效应与间接效应 · 空间面板 | `sf`、`spdep`、`spatialreg`、`tmap`、`splm` |
 | **10 音频** | Whisper 转写 · **pyannote** 说话人分离 · Essentia/librosa 特征 · LLM 原生音频 · 分类 | `faster_whisper`、`pyannote.audio`、`essentia`、`librosa` |
 | **11 Life2Vec** | 生命事件序列 transformer（Savcisens et al. 2024, *Nature Computational Science*），含 Time2Vec 编码、ScaleNorm、ReZero 残差、混合 Performer 注意力、SOP + MLM 预训练、PU-learning 微调、TCAV 可解释性 | `torch`、`pytorch_lightning`、`performer_pytorch`、`pacmap` |
 
 任何模块加载之前先触发三道关卡：**因果关键词关卡**（先路由到 `/scholar-causal`）、**pre-mortem 关卡**，以及**仿真关卡**——约 25 个关键词（`abm`、`schelling`、`mesa`、`netlogo`、`opinion dynamics`、`silicon sampling`、`homo silicus` ……）会重定向到 `/scholar-simulate`，因为 ABM 和合成受访者已经搬到那里了。
 
+> **LLM 标注现在住在哪里。** 模块 1 和模块 7 都还在讲 LLM 标注，对于嵌在更大文本流水线里的几百份文档来说，那没问题。但*引擎* —— 批处理与本地服务、分片、断点续跑、成本账本、κ 关卡、蒸馏 —— 在 `scholar-annotate`（§11E），它自包含，不会回调 `scholar-compute`。经验法则：如果标注只是主题模型或 embedding 分析里的一步，就留在这里；如果这些标签*本身*就是你要拿去回归的变量，去 §11E。
+
+> **用 `conText` 的话，有一处报告方式的变化要留意。** `conText` 3.x 的 API 返回的是去偏后的归一化系数（`normed.estimate.deflated`），技能现在报告的就是它 —— 并配一个**置换检验 p 值**。推断要描述成 **jackknife 加置换检验，绝不能说成 bootstrap**。那些写着「bootstrap 得到的 normed β」的旧稿，描述的是一个已经不存在的 API。
+
 ### 11A.2 验证底线
 
-所有模块里最要紧的一条规则：**自动化标注必须有人工验证，κ ≥ 0.70**，以 200 条人工编码项为基准。低于 0.60，不要纯 LLM 往下走。介于 0.60 与 0.70 之间，只能当助手用，配人工复核。
+所有模块里最要紧的一条规则：**自动化标注必须有人工验证，κ ≥ 0.70**，以 200 条人工编码项为基准。低于 0.60，不要纯 LLM 往下走。介于 0.60 与 0.70 之间，只能当助手用，配人工复核。在 `scholar-compute` 里这是一条要求你遵守的书面标准；在 `scholar-annotate`（§11E）里，同一个数字是一道**会以非零码退出的硬关卡**。
 
 其它模块专属底线：
 
@@ -3788,6 +4002,8 @@ argument-hint: "[design|personas|silicon-survey|generative-abm|experiment|
 ```
 
 **技能里写明的头号规则：** 合成数据不是人类数据的替代品。任何进入发表的合成结果**必须**对着留出的人类基准做验证，并且必须披露分布失配（Bisbee et al. 2023）。
+
+它的姊妹技能是 `scholar-annotate`（§11E）：这里 LLM 是*受访者*，那里 LLM 是*标注者*。两者都带一道硬验证关卡，理由相同 —— 一个没验证过的 LLM 输出，是一个穿着测量外衣的猜测。
 
 ### 11B.1 十种模式
 
@@ -3980,6 +4196,146 @@ argument-hint: "[variation|acoustic|corpus|CA|CDA|attitudes|contact|
 
 最后，对非英语数据，每个例句都要有原文、逐语素注解和译文——这是目标期刊真正会执行的标准。
 
+## 11E. `scholar-annotate` —— 把 LLM 当成一件测量工具
+
+**目标：** 把一个文本语料变成一个经过验证、可复现的**变量** —— 一个类别、一个框架、一个立场、一个分数、一个抽取出来的字段 —— 并且*在*你为标注整个语料花掉任何成本*之前*，先证明它的信度。
+
+```yaml
+argument-hint: "[plan|profile|codebook|devset|annotate-gold|optimize|validate|
+                scale|distill|report|full] [corpus path or task description]"
+```
+
+这是 v5.26–5.27 里第二个新技能，也是补上一个真实缺口的那个。此前，"让 LLM 编码五万份文档"住在 `scholar-compute` 的模块 7 里 —— 那是一套指令，但没有引擎。`scholar-annotate` **带来一个真正的执行引擎**（`assets/annotate_engine.py` 及其伙伴），能通过托管 Batch API、异步实时请求，或本地/HPC 的 OpenAI 兼容服务器，从几百份文档一路扩到数千万份。它完全自包含，不依赖 `scholar-compute`。
+
+把它和两个姊妹技能摆在一起，分工就很清楚：
+
+| 技能 | LLM 扮演的角色 | 你得到什么 |
+|---|---|---|
+| `scholar-annotate`（§11E） | **标注者 / 测量者** | 一个带标签的语料 + 一个信度估计 |
+| `scholar-simulate`（§11B） | **受访者 / 生成者** | 合成数据 + 一次人类保真度检查 |
+| `scholar-qual`（§11C） | **人类编码者的助手** | 主题、反身性、一条审计轨迹 |
+
+走错门时技能会自己重定向：合成受访者或 ABM 去 `/scholar-simulate`；交付物是主题而非可规模化变量的小 N 阐释性编码去 `/scholar-qual`（做完再回来走规模化与验证）；社会语言学变量去 `/scholar-ling`；估计真实因果效应去 `/scholar-causal`。
+
+> **头号规则，用技能自己的话说：先验证，再上规模。** LLM 标签是一种测量，而每一种测量都需要一个信度估计。在 MODE 7 通过之前，MODE 8（标注整个语料）是**被拦住的**：对照人工或金标准集，**Cohen κ ≥ 0.70**。这不是建议 —— `annotate_engine.py validate` 在关卡以下会以 2 退出。p 值在这里无关紧要；信度才是硬通货。
+
+### 11E.1 十一个模式
+
+| 模式 | 触发词 | 做什么 |
+|---|---|---|
+| **1 plan** | `plan`、`feasibility`、`cost`、`which model`、`batch vs local` | 定下构念、分析单位、标签空间与服务策略；产出一份预飞的成本与吞吐估计 |
+| **2 profile** | `profile`、`class prior`、`what is in the corpus` | 类先验、语种、主导话题，以及跑题污染 —— 那个会悄悄毒死整套编码方案的东西 |
+| **3 codebook** | `codebook`、`scheme`、`rubric`、`frames` | 测量工具本体：定义、纳入/排除规则、并列时的判定顺序、边界样例 |
+| **4 devset** | `devset`、`sample`、`stratify` | 分层的开发集，对稀有类过采样，外加一份人工标注模板 |
+| **5 annotate-gold** | `annotate-gold`、`dual model`、`inter-coder` | 用多模型 LLM 标注和/或人工双编码把开发集变成金标准 |
+| **6 optimize** | `optimize`、`dspy`、`few-shot`、`mipro` | 用 DSPy 针对金标准集编译提示词；归档程序 + 哈希 |
+| **7 validate** | `validate`、`kappa`、`κ`、`f1`、`gate` | **硬关卡** —— 对金标准的 κ + 逐类 F1，外加四项认知风险检查 |
+| **8 scale** | `scale`、`full corpus`、`batch`、`local`、`hpc`、`sbatch` | 唯一会碰整个语料的模式，且只在 7 通过之后 |
+| **9 distill** | `distill`、`cheap classifier`、`dsl` | 用 LLM 标签训一个便宜的分类器，在本机把其余部分打完分 |
+| **10 report** | `report`、`methods`、`disclosure` | 交付物：数据集、分布、验证报告、Methods + Results 正文、各项披露 |
+| **full** | `full` | 按序跑 0 → 10 |
+
+### 11E.2 关卡的细节
+
+```bash
+$ python3 assets/annotate_engine.py validate \
+    --pred output/tables/llm_dev_pred.csv \
+    --gold output/tables/devset_gold.csv \
+    --on relevance,discourse_frame --gate 0.70 \
+    --out output/tables/validation_report.json
+```
+
+逐字段报告 **n、Cohen κ（LLM vs 金标准）、macro-F1** 和一份完整的分类报告 —— 主字段没够线就以 2 退出。
+
+关于这条线，有两件事值得你跟未来的自己争论一下：
+
+- **是 κ，不是准确率。** κ 会针对类先验做校正。在一个 90% 属于同一类的语料上，准确率毫无意义 —— 一个恒定预测器就能拿 0.90。
+- **逐类 F1 能藏在一个通过的 κ 后面**，而它藏身的那一类，通常正是你在乎的那一类。目标类 F1 弱的话，就算总体关卡是绿的，也要继续迭代。
+
+除关卡之外，Lin & Zhang（2025）的四项认知风险必须逐一明确评估：**效度**（抽样检查思维链理由 —— 它测的是不是你命名的那个构念？）、**信度**（temperature = 0；在 50 份文档上重标一次，报告运行间 κ）、**可复制性**（归档确切的模型 id + 版本 + 日期 + 提示词/程序哈希）、**透明度**（附录里复现提示词，写明局限）。
+
+失败时，技能规定先动最便宜的杠杆：把编码本的定义与边界规则写锐利 → 重新做 few-shot 优化（MODE 6）→ 重新验证。换更强的模型是**最后**才伸手的东西，不是第一个。
+
+### 11E.3 没有两位人工编码员时怎么造金标准
+
+不是每个项目都能人工双编码 500 份文档，技能对替代方案很坦诚：
+
+- **两个不同的模型**通过 Batch API 标注开发集（比如 Claude + GPT）；一致的成为金标准，不一致的进入裁决文件。报告模型间 Cohen κ。
+- **只有一家提供方？** 用它的**两个模型**（`gpt-5.6` + `gpt-4.1`）。模型多样性照样能筛出边界个案 —— 而筛边界个案正是造金标准的意义所在。
+- **模型强制 temperature ≠ 0**（GPT-5 与 o 系列就是）？跑 *K* 次做多数投票 —— `gold_reconcile.py --mode majority` —— 压掉非确定性。部署用的模型无论如何保持 temperature = 0。
+- 有人工双编码时，报告 **Krippendorff α ≥ 0.70**。
+
+### 11E.4 执行引擎
+
+所有上规模的工作都走引擎，绝不走对话里手搓的循环。CLI 契约是稳定的：
+
+```bash
+$ ENG="$SKILL_DIR/assets/annotate_engine.py"
+$ python3 "$ENG" sample   --corpus spec.json --text-cols title,description,tags \
+                          --strata lang --n 3000 --oversample lexicon.json --out sample.csv
+$ python3 "$ENG" annotate --manifest run.json [--dry-run] [--resume] [--shard i --nshards N]
+$ python3 "$ENG" validate --pred pred.csv --gold gold.csv --on relevance --gate 0.70
+$ python3 "$ENG" distill  --labels labels.csv --corpus spec.json --gold gold.csv --out labels_full.csv
+```
+
+它是幂等的（检查点 + 续跑）、分片的、按稳定哈希去重的，并且维护一本**带预飞估计的成本账本** —— `--dry-run` 会在你批准之前告诉你 MODE 8 要花多少钱。
+
+配套资产：`dspy_optimize.py` 与 `dspy_run.py`（先编译一个程序，再按线程/分片/可续跑的方式部署）、`providers.py`（OpenAI · Anthropic · 任何本地 OpenAI 兼容服务器 —— llama.cpp、ollama、vLLM）、`codebook_schema.py`（把编码本同时编译成系统提示词*和* JSON 输出 schema，于是只有一个真相来源）、给长跑用的 `run-annotate.sh`，以及 `hpc/`（SLURM sbatch、语料镜像、rsync 助手）。
+
+> **技能自己记录的一个坑。** MODE 9 的蒸馏与降维脚本默认用 `video_id` / `title` / `description` 这几列 —— 那是范例的形状。换成你自己的语料，要传对应的 `--id-col` / `--text-cols`，否则整轮会静默地看错字段。
+
+### 11E.5 真实的现场教训 —— 本地推理模型跑 1270 万行
+
+技能里带了 `references/local-model-scale-lessons.md`，那是里面最有用的东西：一次真实运行的硬数字 —— 用**本地 GLM-5.2** 在 SLURM 集群上，对约 1270 万行 YouTube 元数据测量元语言相关性（6 类）与话语框架（7 类）。在押上 GPU-天之前先读它。
+
+**吞吐的墙是解码，而推理模型让它更糟。** 在 Q3、四张 GPU 上，解码只有约 4–9 token/s，于是**一行要 60–150 秒**；开 8–16 路并行也才 **约 0.1–0.4 行/秒/节点**。预填充*不是*瓶颈 —— llama.cpp 会缓存共享的系统 + few-shot 前缀。对上百万行的语料，直接跑本地一遍是数天到数周。
+
+**什么真的削掉了输出 token，什么没有：**
+
+| 杠杆 | 效果 | 结论 |
+|---|---|---|
+| 去掉自由文本 `rationale` 字段 | *在非推理路径上*约 220 → 40 token | 模型不推理时是大胜 |
+| DSPy 用 `Predict` 而不是 `ChainOfThought` | **基本没变化** | 模型在内部照样推理 |
+| `--reasoning-budget 0` | 压住 1000 token 的尖峰；仍剩约 70–200 token 的开场白 | 部分有效 |
+| DSPy `JSONAdapter` 而非 `ChatAdapter` | 约 200 → 70–100 token | 约 2× —— 真实但有限 |
+| `--max-tokens 100` 硬截断 | **约 12% 的 JSON 解析失败** | 太紧；约 150 才是下限 |
+
+叠加起来大约是 **2×，而不是 10×**。本地推理模型有一个硬地板：哪怕只出三个标签，也要约 70–100 个输出 token。
+
+**思维链什么也没买到；买到东西的是 DSPy 的*示例*。** MODE 6 把框架 κ 从 **0.31**（手调 few-shot）推到 **0.76**（DSPy）。在同一个留出集上做的 A/B 显示 `ChainOfThought` κ = 0.705 ≈ `Predict` κ = 0.703 —— 全部增益来自 DSPy *挑对了示范样例*，而不是那个推理字段。手调版之所以失败，值得背下来：朴素的"每个相关性类 k = 2"few-shot 只展示了 **7 个框架里的 1–2 个**，于是从未被示范过的框架**召回率为零**。每一个稀有类都必须出现在示范里。
+
+> 这和 §11A.3 是同一条教训，只是在另一个任务上独立得到的：当问题出在提示词上，再多给几个模型本来就做对的例子并没有用。有用的是改变给它看什么，或者告诉它什么。
+
+**规模化的真答案是蒸馏（MODE 9）**，按实际效果排序：
+
+| 蒸馏器 | 对金标准的 κ | 说明 |
+|---|---|---|
+| 微调多语种 BERT（XLM-RoBERTa） | **0.77** | 用 38k 标签训练约 9 分钟，再用约 15 分钟给 187 万条打分 —— 把约 23 天的一遍变成约 1 小时 |
+| 冻结多语种 embedding + 逻辑回归（bge-m3） | 0.706 | 依赖少、没有微调的脆弱性；标签不多时用它 |
+| TF-IDF + 逻辑回归 | 0.607 | **没过关卡。** 词袋做不了 6 类语义任务 |
+
+以及三条花了真金白银换来的告诫：
+
+- **老师给学生封顶。** 框架蒸馏卡在 κ ≈ 0.67，因为 GLM 这个框架*老师*本身也只有约 0.70–0.76。去蒸馏那些老师 κ 高的变量；难的那些，能留给 LLM 就留给 LLM。
+- **调参不等于更多数据。** 对稀有类过采样再加训练轮数，把框架 κ 从 0.671 *拉回*到 0.648 —— 过拟合了。某一类偏弱，通常的解法是更多标签或更好的老师，不是超参数。
+- **把金标准挡在训练之外**，并用它验证学生；银标签的准确度只到老师那个水平。
+
+这次运行最后收敛出的两遍模式是可以推广的：先把便宜的主变量在全部 *N* 上蒸馏一遍，过滤出正例子集（这里约 25%），再只对这个子集用昂贵的 LLM 去做更难的次变量。
+
+### 11E.6 数据传输规则
+
+把文本送给*云端* API 是一次**外部数据传输**，技能就是这么对待它的：MODE 0 会写一份 AI 使用披露，这个决定被记录下来，而不是被默认。
+
+对敏感、`LOCAL_MODE` 或受限语料，`local` 策略不是退路而是默认 —— 一台本地部署的 OpenAI 兼容服务器，文本从不离开这台机器。在 `LOCAL_MODE` 下，技能绝不 `Read` 原始行；一切走引擎，引擎只吐聚合量；而 MODE 8 会被**强制**为 `strategy=local`，除非你明确授权对公开字段做一次云端批处理。评论、PII 和转录稿一律先匿名化（§6.5、§11C.1）。
+
+### 11E.7 自检
+
+`references/quickstart-hanyu.md` 是一份完整、可直接复制粘贴的范例，用真实的 spec、manifest 和命令走完每一个模式。在你把自己的东西上规模之前，先回答三个问题：
+
+1. **分析单位是什么，标签空间是什么？** 如果你没法用两句话、带一条纳入规则和一条排除规则写出最稀有那一类的编码本条目，你还不能开始标注。
+2. **MODE 8 要花多少钱？** 跑 `--dry-run`，看那本账本。"本地跑所以是免费的"，正是那个会变成三周 GPU 时间的假设。
+3. **你的金标准是什么，它有多可靠？** 两个模型、两位人工，或者一个模型跑 K 次 —— 但总得有一个。对着一个你没审问过的金标准算出来的 κ，是一个数字，不是证据。
+
 ## 12. 像审稿人一样读三张图
 
 `scholar-analyze` 跑出 6 张图。三张承担核心叙事。把它们当审稿人读。
@@ -4126,7 +4482,7 @@ argument-hint: "[draft|revise|polish] [section] on [topic] for [journal],
 
 `scholar-write` 是整套技能里对配置最敏感的一个，因为它要读的来源比任何别的技能都多。下面这套检查只需五分钟，做一次就够 —— 它决定了你拿到的草稿是引用**你自己的文献库**，还是引用公开网络。
 
-**1. 确认套件是以个人级 skills 安装的。** `bash setup.sh`（§2.4.2）会把全部 42 个技能装进 `~/.claude/skills/`，这正是 `/scholar-write` 能在任意目录下可用、而不只在 clone 出来的仓库里可用的原因：
+**1. 确认套件是以个人级 skills 安装的。** `bash setup.sh`（§2.4.2）会把全部 44 个技能装进 `~/.claude/skills/`，这正是 `/scholar-write` 能在任意目录下可用、而不只在 clone 出来的仓库里可用的原因：
 
 ```bash
 $ ls ~/.claude/skills/scholar-write/SKILL.md    # 应该存在
@@ -4268,6 +4624,8 @@ REVISE 会给每一处实质改动标注 `[REVISED: 理由]`，并在末尾附�
 **Theory 章节被绑定在文献综述上。** 起草 Theory 时，技能会定位 Phase 2 的 `scholar-lrh-*.md` 并把它当作准绳。**其中点名的引用至少 70% 必须承接**进 Theory 正文或 `.bib`，由 `lit-review-carry-forward-check.sh` 强制。丢掉任何一条都需要记录理由（`superseded` / `duplicate` / `low-quality` / `out-of-scope`）。技能不得从训练数据里重新编派引用。这就是为什么起草出的理论部分引的是你真读过的文献，而不是模型隐约记得的文献。
 
 **范例只被用来学形状，绝不照抄。** `expansion-quality-check.sh` 会检测与范例的 10-gram 重叠并让整轮失败。
+
+> **用段落而不是记忆来落地（两个版本、三种模式都适用）。** 这一条挨着引用完整性规则，而不在 Step 0 那条阶梯里，因为它对 draft、revise *和* polish 一视同仁。只要 `/scholar-rag status` 显示索引存在（§8F），`scholar-write` 就会从你自己的文献库里取回支撑*段落* —— `rag_search("<主张或子话题>", k=6, hybrid=true)`，或者 `query.py` CLI —— 并照着页面上真正写的东西来措辞，而不是照着一个记住的大意。带页码锚定的原文还有一个作用：防止你在改写的过程中把一条主张的强度悄悄往上抬。让这件事保持诚实的区分是：`scholar-rag` 浮出**文本**，`/scholar-citation` 拥有**书目记录**。检索永远不生成引文；每一条参考文献仍来自 Verified Citation Pool。
 
 > **在公开版上，以上这套机制一概不存在** —— 没有结果锁、没有逐节蓝图、没有读者产出校验器。对应的纪律是流程性的而非机械性的：数字由你提供，而 §14.2 的主张审计才是拦住「行文跑到数字前面」的那道闸。公开版靠**模式内**更强的审计来补，扩展版靠**起草前**更强的契约来补。哪一种都替代不了你自己读一遍草稿。
 
@@ -4805,6 +5163,8 @@ argument-hint: "[draft text or section] [journal or style: ASA|APA|Chicago|
 `[CLAIM-REVERSED]` · `[CLAIM-MISCHARACTERIZED]` · `[CLAIM-OVERCAUSAL]` · `[CLAIM-UNSUPPORTED]` · `[CLAIM-WRONG-POPULATION]` · `[CLAIM-IMPRECISE]` · `[CLAIM-NOT-CHECKABLE]`
 
 新发现的结论会回流进知识图谱，所以这项检查每跑一次就更便宜一点。
+
+这项检查里贵的一直是「再对照该论文的实际文本」—— 为了裁一句话去读一整篇 PDF。一个 `scholar-rag` 索引（§8F）把这一步压扁了：`rag_search("<主张>", doi="<doi>")` 不用打开论文就能取回支撑段落**并带页码**。层级顺序是：知识图谱（快路径）→ `scholar-rag` 全文检索 → PDF 原文。如果你打算在一份长稿件上跑主张层面的检查，先把索引建起来是杠杆最大的一步准备工作。
 
 ### 16.6 支持的格式
 
