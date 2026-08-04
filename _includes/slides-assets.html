@@ -32,6 +32,13 @@
   position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
   background:#fff; display:block;
 }
+.vrs-hotspots{ position:absolute; inset:0; z-index:2; pointer-events:none; }
+.vrs-hot{
+  position:absolute; pointer-events:auto; cursor:pointer; border-radius:3px;
+  background:rgba(168,74,34,0); outline:2px solid transparent;
+  transition:background .12s ease, outline-color .12s ease;
+}
+.vrs-hot:hover, .vrs-hot:focus{ background:rgba(168,74,34,.18); outline-color:rgba(168,74,34,.9); }
 .vrs-nav{
   position:absolute; top:50%; transform:translateY(-50%); z-index:3;
   width:44px; height:44px; border-radius:50%; border:none;
@@ -129,6 +136,8 @@
   var hub = mount.getAttribute("data-hub") || "";
   var other = mount.getAttribute("data-other") || "";
   var otherLabel = mount.getAttribute("data-other-label") || "";
+  var linkData = {};
+  try { linkData = JSON.parse(mount.getAttribute("data-links") || "{}"); } catch (e) { linkData = {}; }
 
   var STR = (lang === "zh")
     ? { slide:"第", of:"张", overview:"总览", closeOverview:"关闭总览", full:"全屏", exit:"退出全屏", hub:"返回主页", hint:"用 ← → 键翻页 · F 全屏 · G 总览" }
@@ -157,7 +166,7 @@
     + '</div>'
     + '<div class="vrs-stage">'
     + '<button class="vrs-nav vrs-prev" type="button" aria-label="Previous">' + chevL + '</button>'
-    + '<figure class="vrs-figure"><img class="vrs-img" alt="" decoding="async"></figure>'
+    + '<figure class="vrs-figure"><img class="vrs-img" alt="" decoding="async"><div class="vrs-hotspots"></div></figure>'
     + '<button class="vrs-nav vrs-next" type="button" aria-label="Next">' + chevR + '</button>'
     + '</div>'
     + '<div class="vrs-bar">'
@@ -175,6 +184,7 @@
   var root = mount.querySelector(".vrs");
   var img = mount.querySelector(".vrs-img");
   var figure = mount.querySelector(".vrs-figure");
+  var hotspots = mount.querySelector(".vrs-hotspots");
   var prevBtn = mount.querySelector(".vrs-prev");
   var nextBtn = mount.querySelector(".vrs-next");
   var numInput = mount.querySelector(".vrs-num");
@@ -199,6 +209,17 @@
     }
   }
 
+  function renderHotspots() {
+    if (!hotspots) { return; }
+    var hits = linkData[current] || [];
+    var out = "";
+    for (var i = 0; i < hits.length; i++) {
+      var h = hits[i];
+      out += '<a class="vrs-hot" href="' + h.u + '" target="_blank" rel="noopener noreferrer" title="' + h.u + '" style="left:' + (h.x * 100) + '%; top:' + (h.y * 100) + '%; width:' + (h.w * 100) + '%; height:' + (h.h * 100) + '%"></a>';
+    }
+    hotspots.innerHTML = out;
+  }
+
   function render() {
     img.src = src(current);
     img.alt = STR.slide + " " + current + " " + STR.of + " " + count;
@@ -211,6 +232,7 @@
     preload(current + 2);
     preload(current - 1);
     markGrid();
+    renderHotspots();
   }
 
   function go(n) {
@@ -226,6 +248,7 @@
   nextBtn.addEventListener("click", function (e) { e.stopPropagation(); next(); });
 
   figure.addEventListener("click", function (e) {
+    if (e.target.closest(".vrs-hot")) { return; }
     var r = figure.getBoundingClientRect();
     if ((e.clientX - r.left) < r.width * 0.32) { prev(); } else { next(); }
   });
