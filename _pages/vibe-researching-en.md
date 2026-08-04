@@ -839,6 +839,8 @@ Claude Code's documented permission modes are `default`, `acceptEdits`, `plan`, 
 
 Press `Shift+Tab` to cycle `default → acceptEdits → plan` (and into `auto` if your account is eligible); press it again to keep cycling. The full six-mode list and their safety implications are in §3.2 below: `acceptEdits` auto-accepts edits, `auto` runs everything behind a background safety classifier, `dontAsk` allows only pre-approved tools, and `bypassPermissions` skips every check.
 
+> **`/sandbox` is not a seventh permission mode.** It is easy to file it as one, and the two are answering different questions: a permission mode decides *whether a tool call runs at all*, while the sandbox decides *what a `Bash` command can reach once it is running*. They compose, and for restricted data you want both. The sandbox's own **auto-allow** mode is likewise not the permission system's `auto` mode — auto-allow skips the prompt because the OS boundary contains the command, whereas `auto` skips it because a classifier judged it safe. See §5A for the panel and both modes.
+
 ### 3.2 The commands you will use most
 
 > **A note on accuracy.** The list below was compiled against Claude Code v2.1.154 (released 2026-05-28 alongside Opus 4.8). The cadence is fast: between this handbook and your installed version, new commands may have shipped and old aliases may have been retired. Run `/help` in your installed version to see the live command list. The "Autonomy and multi-session" subsection covers commands added during the 2.x cycle, including the Dynamic Workflows research preview (`/workflows`) and the background-session work (`claude --bg`, `/resume <bg-id>`); if any of them is unrecognized in your installed version, treat it as a feature not yet shipped in your release. Where two names exist for the same command, the second one is an alias and works identically.
@@ -1492,7 +1494,45 @@ Natural research uses: a morning new-paper digest, a Friday-night data-quality s
 }
 ```
 
-The script inspects the proposed command and exits non-zero (or returns a deny decision) to refuse it — for example, refuse any `rm -rf`, or any write outside `data/processed/`. This is how you turn "please don't touch the raw data" from a polite request in `CLAUDE.md` into a guarantee.
+The script inspects the proposed command and exits non-zero (or returns a deny decision) to refuse it — for example, refuse any `rm -rf`, or any write outside `data/processed/`. This is how you turn "please don't touch the raw data" from a polite request in `CLAUDE.md` into an enforced rule.
+
+Enforced, but still **cooperative**: the harness runs your script and obeys its verdict, and a determined command can encode its way around a denylist (§6.4). The thing that is not cooperative is the sandbox.
+
+### The Bash sandbox — `/sandbox`, and its two modes
+
+Claude Code ships an OS-level sandbox for the `Bash` tool. Where a hook *asks*, the sandbox *enforces*: the operating system refuses the `open()`, for the command and every child process it spawns, no matter how the path is spelled. macOS uses Seatbelt; Linux and WSL2 use `bubblewrap`. **Native Windows is not supported** — Windows participants run Claude Code inside WSL2 (Appendix K); WSL1 will not work either.
+
+You do not have to hand-write JSON to turn it on. **`/sandbox`** opens a panel with three tabs:
+
+| Tab | What it is for |
+|---|---|
+| **Mode** | How sandboxed commands get approved — the two modes below |
+| **Overrides** | Whether a command that *fails* under the sandbox may be retried *outside* it. This is the `allowUnsandboxedCommands` setting; turn it off and the tab reads **Strict sandbox mode** |
+| **Config** | The **resolved** settings after every scope has merged — read this rather than your own file, which is only one input |
+
+A fourth tab, **Dependencies**, appears only when something is missing, and names which of `ripgrep`, `bubblewrap`, `socat`, or the optional seccomp filter your platform lacks. On Linux/WSL2, `sudo apt-get install bubblewrap socat` then restart — the dependency check runs at startup, so the panel will not notice an install until you do.
+
+**The two modes, specifically.** Both enforce *identical* filesystem and network isolation. The only difference is whether you are asked.
+
+| Mode | Behaviour |
+|---|---|
+| **Auto-allow** | A command that *can* be sandboxed runs with **no prompt** — the boundary replaces the prompt. Anything that cannot be sandboxed (a host you have not allowed, an incompatible tool) falls back to the normal permission flow. |
+| **Regular permissions** | *Every* Bash command goes through the normal permission flow, sandboxed or not. Same wall, more approvals. |
+
+Auto-allow is not "no questions asked". Four things still stop you: explicit **`deny` rules**, always; **`rm`/`rmdir` aimed at `/`**, your home directory, or critical system paths; **content-scoped `ask` rules** such as `Bash(git push *)`; and **plan mode**, where commands outside the built-in read-only set prompt regardless. Only a *bare* `Bash` (or `Bash(*)`) ask rule is skipped for sandboxed commands — and even that is not skipped in plan mode.
+
+Choosing a mode in the panel writes to `.claude/settings.local.json`, so it applies to **that project only**. To sandbox everything you do, set `"sandbox": {"enabled": true}` in `~/.claude/settings.json`.
+
+> **The default that will surprise you — and it matters for restricted data.** The sandbox's default **write** scope is the working directory plus the session temp directory. Its default **read** scope is **the entire computer**, minus a few denied directories — which still includes `~/.ssh` and `~/.aws/credentials`. Turning the sandbox on does **not** protect your microdata. You get that wall only by adding `sandbox.filesystem.denyRead`, or a `sandbox.credentials` block (`"mode": "deny"` for files; `"deny"` or `"mask"` for environment variables). Network access is the opposite default: **no domains are pre-allowed**, and the first time a command needs one you are prompted; approving it lasts the rest of the session.
+
+Two more behaviours worth knowing before you rely on this as a safety control:
+
+- **The escape hatch.** When a command fails *because of* sandbox restrictions, Claude may retry it with `dangerouslyDisableSandbox`, which runs it outside the box through the normal permission flow. Setting `"allowUnsandboxedCommands": false` makes that parameter ignored entirely — this is what the Overrides tab calls **Strict sandbox mode**.
+- **It fails open by default.** If the sandbox cannot start — a missing dependency, an unsupported platform — Claude Code prints a warning and **runs your commands unsandboxed**. Set `"failIfUnavailable": true` to make that a hard failure instead. For a DUA-bound project, that is the setting you want.
+
+Finally, a distinction the docs are emphatic about and which is easy to get backwards: **`/sandbox` is not a permission mode** (§3.1). A permission mode decides *whether a call runs*; the sandbox decides *what it can touch once it does*. They compose — and the sandbox's auto-allow is a different mechanism from the permission system's auto mode, which uses a classifier.
+
+This is the same machinery `/scholar-safety level lockdown` configures for you (§6.6) — lockdown generates the OS sandbox config with `denyRead` over `data/`, which is why it is the only genuine containment boundary in the suite, and why it blocks your own `Rscript` too.
 
 ### Skills and plugins — package a procedure once
 
@@ -1973,6 +2013,8 @@ Two fail-closed rules make this trustworthy. A missing, unreadable, or directory
 The skill verifies the redactor is really registered before claiming `strict` protection, rather than reporting a level it cannot deliver.
 
 Lockdown has a sharp edge worth planning around: `denyRead` on `data/` blocks **all** reads of that directory — *including the sanctioned LOCAL_MODE `Rscript`/`python3` loader*. Either run your analysis first and lock down afterwards, or generate the config with `--allow-escalation` so human-approved unsandboxed commands can still run.
+
+> **What lockdown is, underneath.** It writes the configuration for Claude Code's own Bash sandbox (§5A) — the same Seatbelt/`bubblewrap` machinery you can drive by hand with `/sandbox`. Two consequences follow. First, `--allow-escalation` is the suite's name for leaving `allowUnsandboxedCommands` on; omitting it is what the `/sandbox` Overrides tab calls **Strict sandbox mode**. Second, everything the sandbox does *not* do by default still applies here: read access defaults to the whole machine, so the `denyRead` over `data/` is doing all the work, and if the sandbox cannot start at all, Claude Code warns and runs unsandboxed unless `failIfUnavailable` is set. If your DUA requires containment, verify the level rather than assuming it — `/scholar-safety status`, then a deliberate probe on a file you know is `HALTED`.
 
 Everything below lockdown is evadable in principle — by another interpreter (`ruby`, `node`), by an encoding (`base64`, `gzip`, hex), by assembling the path from shell variables, or by copying the file to a benign path and reading that. The suite documents this openly rather than pretending otherwise. Design your workflow so that the *honest* path is also the *easy* path, and reserve lockdown for data where the DUA genuinely requires containment.
 
@@ -8194,4 +8236,169 @@ $ pwd                 # /home/yourname/projects/...
 ```
 
 If all seven commands return clean output, return to §2.4 and install the open-scholar-skill plugin. From there, Windows users follow the rest of the handbook unchanged.
+
+## Appendix L — Built-in command reference: Claude Code and Codex
+
+Both tools carry a large set of built-in commands that the workshop never has time to walk through. This appendix lists them **A–Z**, with what each one does, so you can find the command you half-remember.
+
+> **Verified 2026-08-04** against the official command reference (`code.claude.com/docs/en/commands`) and, for Codex, extracted directly from the installed `codex-cli 0.145.0` binary. **This is the fastest-moving surface in either tool** — commands appear, get renamed, and disappear between releases. Type `/` in either TUI to see what *your* build actually offers, and treat this appendix as a map rather than a contract. Availability also varies by platform, plan, and account.
+
+### L.1 Claude Code — built-in slash commands, A–Z
+
+| Command | What it does |
+|---|---|
+| `/add-dir <path>` | Add another working directory for file access in this session |
+| `/advisor [model\|off]` | Consult a second model for guidance; toggle the advisor tool |
+| `/agents` | Manage subagent configurations |
+| `/background [prompt]` | Detach the session to run as a background agent, freeing the terminal |
+| `/branch [name]` | Branch the conversation to try a different direction |
+| `/btw [question]` | Ask a quick side question without adding it to the conversation |
+| `/cd <path>` | Move this session to a new working directory |
+| `/chrome` | Configure Claude in Chrome settings |
+| `/clear [name]` | Start a new conversation with empty context (aliases `/reset`, `/new`) |
+| `/color [color\|default]` | Set the prompt-bar colour for this session |
+| `/compact [instructions]` | Free context by summarizing the conversation so far |
+| `/config [key=value …]` | Open the settings interface, or set settings directly (alias `/settings`) |
+| `/context [all]` | Visualize current context usage as a coloured grid |
+| `/copy [N]` | Copy the last assistant response to the clipboard |
+| `/cost` | Alias for `/usage` |
+| `/desktop` | Continue this session in the Claude Code desktop app (alias `/app`) |
+| `/diff` | Open an interactive viewer for uncommitted changes |
+| `/exit` | Exit the CLI (alias `/quit`) |
+| `/export [filename]` | Export the conversation as plain text |
+| `/fast [on\|off]` | Toggle fast mode |
+| `/feedback [report]` | Send product feedback |
+| `/focus` | Toggle the focus view |
+| `/fork [prompt]` | Copy this conversation into a new background session |
+| `/goal [condition\|clear]` | Keep working until a stated condition is met |
+| `/heapdump` | Write a JS heap snapshot for diagnosing memory use |
+| `/help` | Show help and available commands |
+| `/hooks` | View hook configurations for tool events (§5A, §6.4) |
+| `/ide` | Manage IDE integrations and show status |
+| `/init` | Initialize the project with a `CLAUDE.md` guide (§3.3) |
+| `/insights` | Generate a report analysing your Claude Code sessions |
+| `/install-github-app` | Install the Claude GitHub App for a repository |
+| `/install-slack-app` | Install the Claude Slack app |
+| `/keybindings` | Open your keyboard-shortcuts file |
+| `/login` · `/logout` | Sign in to / out of your Anthropic account |
+| `/mcp [reconnect <server>\|enable\|disable]` | Manage MCP servers and OAuth (§3.6) |
+| `/memory` | Edit `CLAUDE.md` memory files, or manage auto-memory |
+| `/mobile` | Show a QR code to download the mobile app (aliases `/ios`, `/android`) |
+| `/model [model]` | Switch model and save it as your default (§3.5) |
+| `/passes` | Share a free week of Claude Code |
+| `/permissions` | Manage allow / ask / deny rules (alias `/allowed-tools`; §3.1) |
+| `/plan [description]` | Enter plan mode directly from the prompt |
+| `/remote-control` | Continue this local session from another device |
+| `/resume [name]` | Return to an earlier conversation or checkpoint |
+| `/rewind [target]` | Roll code **and** conversation back to a checkpoint |
+| `/sandbox` | Open the sandbox panel — tabs, modes, and defaults in §5A |
+| `/security-review [--fix] [target]` | Check the diff for security vulnerabilities |
+| `/simplify [--fix] [target]` | Simplify the diff without changing behaviour |
+| `/status` | Show session status and settings |
+| `/subtask <prompt>` | Hand a side task to a subagent that reports back here |
+| `/tasks` | List background work for this session |
+| `/teleport` | Pull a web session into this terminal |
+| `/test` | Run tests and capture output |
+| `/upgrade` | Upgrade to Claude Code Pro |
+| `/usage` | Token usage and costs for this session |
+| `/verify [--fix] [target]` | Verify that code changes are correct |
+| `/web [url]` | Add a web page to the conversation |
+
+### L.2 Claude Code — bundled skills and workflows
+
+These ship with Claude Code and are invoked the same way, but are skills rather than core commands:
+
+| Command | What it does |
+|---|---|
+| `/autofix-pr [prompt]` | Spawn a session that watches this branch's PR and pushes fixes |
+| `/batch <instruction>` | Orchestrate large-scale changes across a codebase in parallel |
+| `/claude-api [migrate\|managed-agents-onboard]` | Load Claude API / Managed Agents reference material |
+| `/code-review [low…max\|ultra] [--fix] [--comment]` | Review the current diff (this is `ultrareview` at `ultra`) |
+| `/dataviz [request]` | Design guidance for charts, graphs, and dashboards |
+| `/debug [description]` | Enable debug logging and troubleshoot |
+| `/deep-research <question>` | Fan out web searches, cross-check sources, synthesize a cited report |
+| `/design-login` · `/design-sync [hint]` | Authorize and sync a React design system to Claude Design |
+| `/doctor` | Setup checkup that diagnoses and can fix issues (alias `/checkup`) |
+| `/fewer-permission-prompts` | Scan transcripts and propose an allowlist to cut prompts |
+| `/loop [interval] [prompt]` | Run a prompt repeatedly while the session stays open (alias `/proactive`) |
+| `/review [pr#]` | Fast single-pass read-only review of a GitHub pull request |
+
+Two Claude Code commands are run from the shell, not the session: **`claude doctor`** (read-only install diagnostics without starting a session) and **`claude agents`** (monitor background sessions).
+
+### L.3 Codex — slash commands, A–Z
+
+Extracted from the shipped `codex-cli 0.145.0` binary, so this is what the workshop's install actually offers. Note that the published Codex documentation currently describes a **different** command set from the released binary — where they disagree, believe your own `/` menu.
+
+| Command | What it does |
+|---|---|
+| `/agent` | Switch the active agent thread (also `/subagents`) |
+| `/app` | Continue this session in the Desktop app |
+| `/apps` | Manage apps (connectors) |
+| `/approve` | Approve one retry of a recent auto-review denial |
+| `/archive` | Archive this session and exit |
+| `/clear` | Clear the terminal and start a new chat |
+| `/compact` | Summarize the conversation to avoid hitting the context limit |
+| `/copy` | Copy the last response as markdown |
+| `/debug-config` | Show config layers and requirement sources, for debugging |
+| `/delete` | Permanently delete this session and exit |
+| `/diff` | Show the git diff, **including untracked files** |
+| `/experimental` | Toggle experimental features |
+| `/feedback` | Send logs to the maintainers |
+| `/fork` | Fork the current chat |
+| `/goal` | Set or view the goal for a long-running task |
+| `/hooks` | View and manage lifecycle hooks |
+| `/ide` | Include current selection, open files, and other IDE context |
+| `/import` | Import setup, this project, and recent chats **from Claude Code** |
+| `/init` | Create an `AGENTS.md` file with instructions for Codex |
+| `/keymap` | Remap TUI shortcuts |
+| `/logout` | Log out of Codex |
+| `/mcp` | List configured MCP tools (`/mcp verbose` for detail) |
+| `/memories` | Configure memory use and generation |
+| `/mention` | Attach / mention a file |
+| `/model` | Choose model **and reasoning effort** |
+| `/new` | Start a new chat mid-conversation |
+| `/permissions` | Choose what Codex is allowed to do (the approval policy) |
+| `/pets` | Choose or hide the terminal pet |
+| `/plan` | Switch to Plan mode |
+| `/plugins` | Browse plugins |
+| `/ps` · `/stop` | List background terminals · stop all of them |
+| `/quit` | Exit Codex |
+| `/rename` | Rename the current thread |
+| `/resume` | Resume a saved chat |
+| `/review` | Review my current changes and find issues |
+| `/rollout` | Print the rollout (session transcript) file path |
+| `/sandbox-add-read-dir <abs path>` | Let the sandbox read one extra directory (**Windows**) |
+| `/setup-default-sandbox` | Set up the elevated agent sandbox (**Windows**) |
+| `/side` · `/btw` | Start a side conversation in an ephemeral fork |
+| `/skills` | Use skills to improve how Codex performs specific tasks |
+| `/statusline` | Configure which items appear in the status line |
+| `/status` | Show session configuration and token usage |
+| `/usage` | View account usage, or a usage-limit reset |
+| `/vim` | Toggle Vim mode for the composer |
+
+The binary also carries a syntax-highlighting **theme** picker, a terminal-**title** configurator, a communication-**style** picker, and a raw-scrollback toggle for copy-friendly selection; their exact invocation names could not be pinned from the binary, so check your `/` menu. `test-approval`, `debug-m-drop`, and `debug-m-update` are internal test hooks marked "DO NOT USE".
+
+### L.4 Codex — shell subcommands
+
+Unlike Claude Code, Codex puts substantial functionality in shell subcommands (`codex-cli 0.145.0`, `codex --help`):
+
+| Subcommand | What it does |
+|---|---|
+| `exec` (alias `e`) | Run Codex non-interactively — the form §23 uses for external review |
+| `review` | Run a code review non-interactively |
+| `apply` (alias `a`) | Apply Codex's latest diff to the working tree via `git apply` |
+| `resume` / `fork` | Resume or fork a previous interactive session (`--last` for the most recent) |
+| `archive` / `unarchive` / `delete` | Manage saved sessions by id or name |
+| `sandbox` | Run commands inside a Codex-provided sandbox |
+| `mcp` / `mcp-server` | Manage external MCP servers · run Codex itself as an MCP server |
+| `plugin` | Manage Codex plugins |
+| `login` / `logout` | Manage authentication |
+| `doctor` | Diagnose install, config, auth, and runtime health |
+| `update` | Update Codex |
+| `completion` | Generate shell-completion scripts |
+| `cloud` | *(experimental)* Browse Codex Cloud tasks and apply changes locally |
+| `app` / `app-server` / `remote-control` | Desktop app and app-server tooling |
+| `debug` / `features` | Debugging tools · inspect feature flags |
+
+Two flags matter for everything in this handbook: **`-c key=value`** overrides any `~/.codex/config.toml` value (`-c model="gpt-5.2-codex"`), and **`--enable` / `--disable`** toggle named features.
 {% endraw %}

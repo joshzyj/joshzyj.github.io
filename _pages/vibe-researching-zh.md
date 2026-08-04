@@ -808,6 +808,8 @@ Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、
 
 按 `Shift+Tab` 循环切换 `default → acceptEdits → plan`（账户符合条件时还会进入 `auto`），再按继续循环。完整的六种模式及各自的安全含义见 §3.2：`acceptEdits` 自动通过编辑，`auto` 在后台安全分类器的审查下自动执行一切，`dontAsk` 只允许预先批准的工具，`bypassPermissions` 跳过所有检查。
 
+> **`/sandbox` 不是第七种权限模式。** 很容易把它归到这一类，但两者回答的是不同问题：权限模式决定*一次工具调用是否执行*，而沙箱决定*一条 `Bash` 命令跑起来之后能够到什么*。它们是叠加的，对受限数据你两个都要。沙箱自己的 **auto-allow** 模式同样不是权限系统的 `auto` 模式 —— auto-allow 跳过提示，是因为 OS 边界已经把命令圈住了；`auto` 跳过提示，是因为一个分类器判断它安全。面板和两种模式见 §5A。
+
 ### 3.2 高频命令
 
 > **关于命令准确性。** 下面的命令对照 Claude Code v2.1.154（与 Opus 4.8 同日发布，2026-05-28）核对。Claude Code 的发布节奏很快——你装的版本可能比本手册更新，或更旧。装好后随时 `/help` 看实时命令列表。"自治与多会话"小节包含 2.x 周期新加的命令，包括 Dynamic Workflows 研究预览（`/workflows`）和后台会话工作链（`claude --bg`、`/resume <bg-id>`）；如果某个命令在你装的版本里识别不出来，就当它还没进你的版本。括号里的第二个名字是别名，效果一致。
@@ -1430,7 +1432,45 @@ tools: Read, WebSearch, WebFetch
 }
 ```
 
-脚本检查待执行的命令，以非零退出（或返回拒绝决定）来回绝它——比如回绝任何 `rm -rf`，或任何写到 `data/processed/` 之外的操作。这就是你把“请别动原始数据”从 `CLAUDE.md` 里一句礼貌请求，变成一项保证的办法。
+脚本检查待执行的命令，以非零退出（或返回拒绝决定）来回绝它——比如回绝任何 `rm -rf`，或任何写到 `data/processed/` 之外的操作。这就是你把“请别动原始数据”从 `CLAUDE.md` 里一句礼貌请求，变成一条被强制执行的规则的办法。
+
+被强制执行，但仍然是**协作式**的：harness 跑你的脚本并服从它的裁决，而一条铁了心的命令可以把自己编码绕过任何黑名单（§6.4）。真正不协作的那个东西，是沙箱。
+
+### Bash 沙箱 —— `/sandbox` 及其两种模式
+
+Claude Code 为 `Bash` 工具自带一个 OS 级沙箱。钩子是*请求*，沙箱是*强制*：操作系统直接拒绝那次 `open()`，对该命令及它派生的每一个子进程都生效，无论路径是怎么拼出来的。macOS 用 Seatbelt，Linux 与 WSL2 用 `bubblewrap`。**原生 Windows 不支持** —— Windows 学员请在 WSL2 里跑 Claude Code（附录 K）；WSL1 同样不行。
+
+你不必手写 JSON 才能打开它。**`/sandbox`** 会打开一个带三个标签页的面板：
+
+| 标签页 | 用来做什么 |
+|---|---|
+| **Mode** | 沙箱内的命令如何获批 —— 就是下面那两种模式 |
+| **Overrides** | 在沙箱下*失败*的命令，能否被拿到沙箱*外面*重试。这就是 `allowUnsandboxedCommands` 设置；把它关掉，这个标签页会显示 **Strict sandbox mode** |
+| **Config** | 所有作用域合并之后**解析出来**的最终设置 —— 要看就看这个，而不是你自己那份文件，它只是其中一个输入 |
+
+第四个标签页 **Dependencies** 只在缺东西时才出现，并指明你的平台缺的是 `ripgrep`、`bubblewrap`、`socat` 还是那个可选的 seccomp 过滤器。在 Linux/WSL2 上先 `sudo apt-get install bubblewrap socat` 再重启 —— 依赖检查在启动时跑一次，所以你不重启，面板就发现不了你刚装好的包。
+
+**两种模式，逐一说清。** 两者强制的文件系统与网络隔离**完全相同**，唯一的差别是会不会问你。
+
+| 模式 | 行为 |
+|---|---|
+| **Auto-allow（自动放行）** | *能*被沙箱化的命令**不提示**直接跑 —— 边界取代了提示。凡是没法沙箱化的（没被允许的主机、与沙箱不兼容的工具），退回常规权限流程。 |
+| **Regular permissions（常规权限）** | *每一条* Bash 命令都走常规权限流程，不管它是否在沙箱里。同一堵墙，多按几次确认。 |
+
+Auto-allow 不等于“什么都不问”。有四件事照样会拦住你：显式的 **`deny` 规则**，永远生效；瞄准 **`/`、你的 home 目录或关键系统路径的 `rm`/`rmdir`**；**内容维度的 `ask` 规则**，比如 `Bash(git push *)`；以及**计划模式（plan mode）**下，只读集合之外的命令一律提示。只有*裸的* `Bash`（或 `Bash(*)`）ask 规则会对沙箱内命令跳过 —— 而且在计划模式下连它也不跳过。
+
+在面板里选模式，会写进 `.claude/settings.local.json`，所以**只对那一个项目生效**。想让你做的一切都在沙箱里，就在 `~/.claude/settings.json` 里设 `"sandbox": {"enabled": true}`。
+
+> **那个会让你意外的默认值 —— 而且它对受限数据很要紧。** 沙箱默认的**写**范围是工作目录加会话临时目录；默认的**读**范围却是**整台电脑**，只减去少数被拒目录 —— 其中**仍然包含 `~/.ssh` 与 `~/.aws/credentials`**。把沙箱打开**并不会**保护你的微观数据。那堵墙只能靠你自己加 `sandbox.filesystem.denyRead`，或者一个 `sandbox.credentials` 块（文件用 `"mode": "deny"`；环境变量用 `"deny"` 或 `"mask"`）。网络的默认值恰好相反：**没有任何域名被预先允许**，命令第一次需要某个域名时会提示你，批准之后在本次会话剩余时间内有效。
+
+在你把它当成一项安全控制来依赖之前，还有两个行为值得知道：
+
+- **逃生舱。** 当一条命令是*因为*沙箱限制而失败时，Claude 可能带上 `dangerouslyDisableSandbox` 重试它 —— 那次重试在沙箱外跑，走常规权限流程。设 `"allowUnsandboxedCommands": false` 会让这个参数被彻底忽略，这正是 Overrides 标签页所说的 **Strict sandbox mode**。
+- **它默认是 fail-open 的。** 如果沙箱压根起不来（缺依赖、平台不支持），Claude Code 打印一条警告，然后**不带沙箱地跑你的命令**。设 `"failIfUnavailable": true` 才会把它变成硬失败。对一个受 DUA 约束的项目，你要的就是这个设置。
+
+最后是一个文档反复强调、而且很容易搞反的区分：**`/sandbox` 不是一种权限模式**（§3.1）。权限模式决定*一次调用是否执行*；沙箱决定*它一旦跑起来能碰到什么*。两者叠加使用 —— 而且沙箱的 auto-allow 与权限系统的 auto 模式是不同的机制，后者靠的是一个分类器。
+
+这也正是 `/scholar-safety level lockdown` 替你配置的那套机器（§6.6）—— lockdown 生成的就是对 `data/` 做 `denyRead` 的 OS 沙箱配置，这既是它成为套件里唯一真正隔离边界的原因，也是它连你自己的 `Rscript` 一起挡住的原因。
 
 ### 技能与插件 —— 把一套流程打包一次
 
@@ -1912,6 +1952,8 @@ argument-hint: "[scan|gate|protocol|status|level] [file path / operation
 技能会先核实脱敏器确实注册了，才敢声称 `strict` 保护 —— 而不是报一个它兑现不了的级别。
 
 lockdown 有一处需要提前规划的锋利边缘：对 `data/` 的 `denyRead` 会阻断该目录的**所有**读取 —— *包括那个被认可的 LOCAL_MODE `Rscript`/`python3` 加载器*。要么先跑完分析再上锁，要么用 `--allow-escalation` 生成配置，好让经人工批准的非沙箱命令仍然能跑。
+
+> **lockdown 底下究竟是什么。** 它写的就是 Claude Code 自带 Bash 沙箱的配置（§5A）—— 和你用 `/sandbox` 手动驱动的是同一套 Seatbelt/`bubblewrap` 机器。由此有两个推论。其一，`--allow-escalation` 是套件对「保持 `allowUnsandboxedCommands` 开启」的叫法；不加它，就是 `/sandbox` Overrides 标签页所说的 **Strict sandbox mode**。其二，沙箱默认*不*做的事在这里同样成立：读权限默认覆盖整台机器，所以真正干活的是那条对 `data/` 的 `denyRead`；而如果沙箱根本起不来，除非设了 `failIfUnavailable`，Claude Code 会警告一声然后不带沙箱地跑。如果你的 DUA 要求隔离，就去**验证**这个级别，而不是假定它 —— 先 `/scholar-safety status`，再拿一个你确知是 `HALTED` 的文件做一次故意的探针测试。
 
 lockdown 以下的一切在原理上都可绕过 —— 换个解释器（`ruby`、`node`）、换种编码（`base64`、`gzip`、十六进制）、用 shell 变量拼出路径，或者把文件拷到一个无害路径再读。套件把这一点公开写出来，而不是假装不存在。把你的工作流设计成*诚实的路径同时也是最省事的路径*，并把 lockdown 留给 DUA 真正要求隔离的数据。
 
@@ -8110,4 +8152,169 @@ $ pwd                 # /home/yourname/projects/...
 ```
 
 如果六条都输出正常，回到 §2.4 装 open-scholar-skill 插件。从那以后，Windows 用户与本手册其他章节同步前进。
+
+## 附录 L —— 内置命令参考：Claude Code 与 Codex
+
+两个工具都带着一大堆内置命令，工作坊没有时间逐条讲。本附录按 **A–Z** 列出它们，并说明每条做什么，方便你回头查那个「记得有但想不起来叫什么」的命令。
+
+> **2026-08-04 核验过**：Claude Code 部分对照官方命令参考（`code.claude.com/docs/en/commands`）；Codex 部分直接从本机安装的 `codex-cli 0.145.0` 二进制里提取。**这是两个工具里变动最快的一层** —— 命令会新增、改名、消失。在任一 TUI 里敲 `/` 就能看到*你这个版本*真正有什么；本附录是地图，不是契约。可用性还取决于平台、套餐和账户。
+
+### L.1 Claude Code —— 内置斜杠命令，A–Z
+
+| 命令 | 作用 |
+|---|---|
+| `/add-dir <path>` | 本次会话再加一个可访问的工作目录 |
+| `/advisor [model\|off]` | 让第二个模型提供参谋意见；开关 advisor 工具 |
+| `/agents` | 管理子智能体配置 |
+| `/background [prompt]` | 把会话转为后台智能体运行，腾出终端 |
+| `/branch [name]` | 从当前对话分叉，换个方向试 |
+| `/btw [question]` | 问一个不进入对话记录的临时小问题 |
+| `/cd <path>` | 把会话切到新的工作目录 |
+| `/chrome` | 配置 Claude in Chrome |
+| `/clear [name]` | 清空上下文开新对话（别名 `/reset`、`/new`） |
+| `/color [color\|default]` | 设置本次会话提示栏颜色 |
+| `/compact [instructions]` | 摘要至今的对话以腾出上下文 |
+| `/config [key=value …]` | 打开设置界面，或直接改设置（别名 `/settings`） |
+| `/context [all]` | 用彩色格子可视化当前上下文占用 |
+| `/copy [N]` | 把最后一条回复复制到剪贴板 |
+| `/cost` | `/usage` 的别名 |
+| `/desktop` | 在桌面版里接着这个会话（别名 `/app`） |
+| `/diff` | 打开未提交改动的交互式差异查看器 |
+| `/exit` | 退出 CLI（别名 `/quit`） |
+| `/export [filename]` | 把对话导出为纯文本 |
+| `/fast [on\|off]` | 开关 fast 模式 |
+| `/feedback [report]` | 提交产品反馈 |
+| `/focus` | 切换专注视图 |
+| `/fork [prompt]` | 把当前对话复制成一个新的后台会话 |
+| `/goal [condition\|clear]` | 设一个目标，让它一直干到条件满足 |
+| `/heapdump` | 导出 JS 堆快照，用于诊断内存占用 |
+| `/help` | 显示帮助与可用命令 |
+| `/hooks` | 查看工具事件的 hook 配置（§5A、§6.4） |
+| `/ide` | 管理 IDE 集成并查看状态 |
+| `/init` | 为项目生成 `CLAUDE.md`（§3.3） |
+| `/insights` | 生成一份分析你 Claude Code 会话的报告 |
+| `/install-github-app` | 为仓库安装 Claude GitHub App |
+| `/install-slack-app` | 安装 Claude Slack app |
+| `/keybindings` | 打开快捷键配置文件 |
+| `/login` · `/logout` | 登录 / 登出 Anthropic 账户 |
+| `/mcp [reconnect <server>\|enable\|disable]` | 管理 MCP 服务器与 OAuth（§3.6） |
+| `/memory` | 编辑 `CLAUDE.md` 记忆文件，或管理自动记忆 |
+| `/mobile` | 显示下载手机 App 的二维码（别名 `/ios`、`/android`） |
+| `/model [model]` | 切换模型并存为默认（§3.5） |
+| `/passes` | 分享一周免费 Claude Code |
+| `/permissions` | 管理 allow / ask / deny 规则（别名 `/allowed-tools`；§3.1） |
+| `/plan [description]` | 直接从提示行进入计划模式 |
+| `/remote-control` | 从另一台设备接管这个本地会话 |
+| `/resume [name]` | 回到更早的对话或检查点 |
+| `/rewind [target]` | 把代码**和**对话一起回滚到检查点 |
+| `/sandbox` | 打开沙箱面板 —— 标签页、模式与默认值见 §5A |
+| `/security-review [--fix] [target]` | 检查 diff 里的安全漏洞 |
+| `/simplify [--fix] [target]` | 在不改变行为的前提下简化 diff |
+| `/status` | 显示会话状态与设置 |
+| `/subtask <prompt>` | 把一个支线任务交给子智能体，结果回报到本对话 |
+| `/tasks` | 列出本会话的后台工作 |
+| `/teleport` | 把一个网页端会话拉进这个终端 |
+| `/test` | 跑测试并捕获输出 |
+| `/upgrade` | 升级到 Claude Code Pro |
+| `/usage` | 本次会话的 token 用量与成本 |
+| `/verify [--fix] [target]` | 验证代码改动是否正确 |
+| `/web [url]` | 把一个网页加入对话 |
+
+### L.2 Claude Code —— 随附的技能与工作流
+
+它们随 Claude Code 一起发布，调用方式相同，但本质是技能而非核心命令：
+
+| 命令 | 作用 |
+|---|---|
+| `/autofix-pr [prompt]` | 起一个会话盯着本分支的 PR 并推送修复 |
+| `/batch <instruction>` | 在代码库上并行编排大规模改动 |
+| `/claude-api [migrate\|managed-agents-onboard]` | 载入 Claude API / Managed Agents 参考资料 |
+| `/code-review [low…max\|ultra] [--fix] [--comment]` | 审当前 diff（`ultra` 就是 ultrareview） |
+| `/dataviz [request]` | 图表与仪表盘的设计指导 |
+| `/debug [description]` | 打开调试日志并排查问题 |
+| `/deep-research <question>` | 扇出网络搜索、交叉核对来源、合成一份带引用的报告 |
+| `/design-login` · `/design-sync [hint]` | 授权并同步 React 设计系统到 Claude Design |
+| `/doctor` | 安装体检，能诊断也能修（别名 `/checkup`） |
+| `/fewer-permission-prompts` | 扫描历史记录，提出一份减少权限提示的白名单 |
+| `/loop [interval] [prompt]` | 会话开着时反复跑同一个提示（别名 `/proactive`） |
+| `/review [pr#]` | 对 GitHub PR 做一次只读的快速单遍审查 |
+
+有两个 Claude Code 命令是在 shell 里跑、而不是在会话里：**`claude doctor`**（不启动会话的只读安装诊断）与 **`claude agents`**（监看后台会话）。
+
+### L.3 Codex —— 斜杠命令，A–Z
+
+下表从本机安装的 `codex-cli 0.145.0` 二进制中提取，所以这就是工作坊这套安装真正提供的东西。注意：Codex 现行的公开文档描述的命令集与已发布的二进制**并不一致** —— 两者冲突时，以你自己 `/` 菜单里看到的为准。
+
+| 命令 | 作用 |
+|---|---|
+| `/agent` | 切换当前 agent 线程（也叫 `/subagents`） |
+| `/app` | 在桌面 App 里接着这个会话 |
+| `/apps` | 管理 apps（连接器） |
+| `/approve` | 对最近一次自动审查拒绝，批准重试一次 |
+| `/archive` | 归档本会话并退出 |
+| `/clear` | 清屏并开一个新对话 |
+| `/compact` | 摘要对话，避免撞上下文上限 |
+| `/copy` | 以 markdown 复制最后一条回复 |
+| `/debug-config` | 显示配置层级与要求来源，用于排错 |
+| `/delete` | 永久删除本会话并退出 |
+| `/diff` | 显示 git diff，**包含未跟踪文件** |
+| `/experimental` | 开关实验特性 |
+| `/feedback` | 把日志发给维护者 |
+| `/fork` | 分叉当前对话 |
+| `/goal` | 设置或查看长任务的目标 |
+| `/hooks` | 查看与管理生命周期 hooks |
+| `/ide` | 纳入当前选区、已打开文件等 IDE 上下文 |
+| `/import` | **从 Claude Code** 导入配置、本项目与近期对话 |
+| `/init` | 生成给 Codex 用的 `AGENTS.md` |
+| `/keymap` | 重映射 TUI 快捷键 |
+| `/logout` | 登出 Codex |
+| `/mcp` | 列出已配置的 MCP 工具（`/mcp verbose` 看细节） |
+| `/memories` | 配置记忆的使用与生成 |
+| `/mention` | 附上 / 提及一个文件 |
+| `/model` | 选模型**以及推理强度** |
+| `/new` | 对话中途开一个新对话 |
+| `/permissions` | 选择 Codex 被允许做什么（审批策略） |
+| `/pets` | 选择或隐藏终端宠物 |
+| `/plan` | 切到 Plan 模式 |
+| `/plugins` | 浏览插件 |
+| `/ps` · `/stop` | 列出后台终端 · 全部停掉 |
+| `/quit` | 退出 Codex |
+| `/rename` | 重命名当前线程 |
+| `/resume` | 恢复一个已保存的对话 |
+| `/review` | 审查我当前的改动并找问题 |
+| `/rollout` | 打印 rollout（会话记录）文件路径 |
+| `/sandbox-add-read-dir <绝对路径>` | 让沙箱多读一个目录（**仅 Windows**） |
+| `/setup-default-sandbox` | 设置提权的 agent 沙箱（**仅 Windows**） |
+| `/side` · `/btw` | 在一个临时分叉里开支线对话 |
+| `/skills` | 用技能改进 Codex 在特定任务上的表现 |
+| `/statusline` | 配置状态栏显示哪些项 |
+| `/status` | 显示会话配置与 token 用量 |
+| `/usage` | 查看账户用量或用量上限重置 |
+| `/vim` | 开关 composer 的 Vim 模式 |
+
+二进制里还带着语法高亮**主题**选择器、终端**标题**配置项、沟通**风格**选择器，以及一个便于复制选择的原始回滚模式开关；它们确切的调用名无法从二进制里确定，请查你的 `/` 菜单。`test-approval`、`debug-m-drop`、`debug-m-update` 是标着「DO NOT USE」的内部测试钩子。
+
+### L.4 Codex —— shell 子命令
+
+与 Claude Code 不同，Codex 把相当一部分功能放在 shell 子命令里（`codex-cli 0.145.0`，`codex --help`）：
+
+| 子命令 | 作用 |
+|---|---|
+| `exec`（别名 `e`） | 非交互式运行 Codex —— §23 做外部审查用的就是这个形态 |
+| `review` | 非交互式跑一次代码审查 |
+| `apply`（别名 `a`） | 用 `git apply` 把 Codex 最新的 diff 打到工作树上 |
+| `resume` / `fork` | 恢复或分叉此前的交互式会话（`--last` 取最近一次） |
+| `archive` / `unarchive` / `delete` | 按 id 或名字管理已保存的会话 |
+| `sandbox` | 在 Codex 提供的沙箱里跑命令 |
+| `mcp` / `mcp-server` | 管理外部 MCP 服务器 · 把 Codex 自己作为 MCP 服务器跑 |
+| `plugin` | 管理 Codex 插件 |
+| `login` / `logout` | 管理认证 |
+| `doctor` | 诊断安装、配置、认证与运行时健康状况 |
+| `update` | 更新 Codex |
+| `completion` | 生成 shell 补全脚本 |
+| `cloud` | *（实验性）* 浏览 Codex Cloud 任务并把改动应用到本地 |
+| `app` / `app-server` / `remote-control` | 桌面 App 与 app-server 相关工具 |
+| `debug` / `features` | 调试工具 · 查看特性开关 |
+
+有两个 flag 对本手册的一切都要紧：**`-c key=value`** 覆盖 `~/.codex/config.toml` 里的任意值（`-c model="gpt-5.2-codex"`），以及 **`--enable` / `--disable`** 开关具名特性。
 {% endraw %}
