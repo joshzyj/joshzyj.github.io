@@ -65,6 +65,11 @@ I have presented *Vibe Researching* in invited workshops, seminars, and courses 
 
 If you need *Vibe Researching* with coding agents workshops or lectures, please reach out to me directly: yongjun.zhang at stonybrook.edu.
 
+## Upcoming Talks/Workshops
+
+- **The Chinese University of Hong Kong (CUHK)** — *Applications of Agentic AI for Social Science Research*, a hands-on workshop (31 August – 3 September 2026).
+- **The Hong Kong University of Science and Technology (Guangzhou)** — *Responsible Vibe Researching for Social Science*, an invited talk (4 September 2026).
+
 ## Summer CSS Workshop
 
 I am co-organizing the 2026 NYU Shanghai site for the Summer Institute of Computational Social Science (SICSS), June 24–30, 2026. [See HERE](https://sicss.io/2026/nyu-shanghai/)
