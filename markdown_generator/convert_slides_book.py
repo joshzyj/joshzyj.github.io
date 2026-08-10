@@ -22,19 +22,51 @@ import sys
 FRONT = """---
 title: {title}
 excerpt: {excerpt}
-permalink: /course/{slug}/
+permalink: /course/{prefix}{slug}/
 author_profile: false
 handbook: true
 course: true
-lang: en
+lang: {lang}
 ---
 """
 
+# Per-language: slug -> (short heading, next slug, next label).
+# A slug missing here falls back to the deck's own title, which is what day5
+# has always done in English; do not "fix" that without rebuilding EN.
 NAV = {
-    "day1": ("The Model", "day2", "Day 2 · Agents"),
-    "day2": ("Agents", "day3", "Day 3 · Claude Code"),
-    "day3": ("Claude Code", "day4", "Day 4 · The Pipeline"),
-    "day4": ("The Pipeline", None, None),
+    "en": {
+        "day1": ("The Model", "day2", "Day 2 · Agents"),
+        "day2": ("Agents", "day3", "Day 3 · Claude Code"),
+        "day3": ("Claude Code", "day4", "Day 4 · The Pipeline"),
+        "day4": ("The Pipeline", None, None),
+    },
+    "zh": {
+        "day1": ("模型", "day2", "第 2 天 · 智能体"),
+        "day2": ("智能体", "day3", "第 3 天 · Claude Code"),
+        "day3": ("Claude Code", "day4", "第 4 天 · 流水线"),
+        "day4": ("流水线", None, None),
+        "day5": ("汉语项目", None, None),
+    },
+}
+
+# Everything that differs between the English and Chinese page chrome.
+# `prefix` lands in the permalink: EN stays at /course/dayN/ so no existing
+# URL moves; ZH gets /course/zh/dayN/ -> /vibe-researching-lecture/zh/dayN/.
+LANG = {
+    "en": {
+        "prefix": "",
+        "home": "&larr; Course home",
+        "other_href": "/course/zh/{slug}/",
+        "other_label": "中文版",
+        "excerpt": '"Agentic AI for Social Science Research — {short}."',
+    },
+    "zh": {
+        "prefix": "zh/",
+        "home": "&larr; 课程主页",
+        "other_href": "/course/{slug}/",
+        "other_label": "English version",
+        "excerpt": '"面向社会科学研究的智能体 AI —— {short}。"',
+    },
 }
 
 # ---------------------------------------------------------------- helpers
@@ -596,10 +628,14 @@ def flushleft_ttfamily_blocks(body):
 
 # ---------------------------------------------------------------- main
 
-def convert(src_path, slug, failed):
+def convert(src_path, slug, failed, lang="en"):
     text = open(src_path, encoding="utf-8").read()
     build_colormap(text)
     body, title, subtitle = strip_front_matter(text)
+
+    # Diagrams are per-language: 84 of the 97 tikz pictures carry translated
+    # labels, so ZH renders its own set under images/course/zh/<slug>/.
+    img_dir = LANG[lang]["prefix"] + slug
 
     # strip build/tag comments and section-divider decoration
     body = re.sub(r"<!--.*?-->", "", body, flags=re.DOTALL)
@@ -637,7 +673,7 @@ def convert(src_path, slug, failed):
             parts = ['<a href="%s">%s</a>' % (u, esc(re.sub(r"^https?://", "", u).rstrip("/"))) for u in urls]
             cap = '<figcaption class="s-fig-links">&#8599; ' + " &middot; ".join(parts) + "</figcaption>"
         return (f'\n\n<figure class="s-fig" markdown="0"><img loading="lazy" '
-                f'src="/images/course/{slug}/tikz-{n:02d}.png" alt="Diagram {n}">{cap}</figure>\n\n')
+                f'src="/images/course/{img_dir}/tikz-{n:02d}.png" alt="Diagram {n}">{cap}</figure>\n\n')
     body = re.sub(r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}", tikz_img, body, flags=re.DOTALL)
 
     # \includegraphics{...figures/foo.png} -> embedded raster figure
@@ -687,12 +723,18 @@ def convert(src_path, slug, failed):
     # collapse blank lines
     body = re.sub(r"\n{3,}", "\n\n", body).strip("\n")
 
-    short, nxt, nxt_label = NAV.get(slug, (title, None, None))
-    excerpt = f'"Agentic AI for Social Science Research — {short}."'
-    fm = FRONT.format(title=f'"Agentic AI for Social Science Research"', excerpt=excerpt, slug=slug)
+    L = LANG[lang]
+    short, nxt, nxt_label = NAV[lang].get(slug, (title, None, None))
+    excerpt = L["excerpt"].format(short=short)
+    fm = FRONT.format(title='"Agentic AI for Social Science Research"',
+                      excerpt=excerpt, slug=slug, prefix=L["prefix"], lang=lang)
 
-    back = ('<p class="hb-backlink"><a href="/course/">&larr; Course home</a>'
-            + (f' &nbsp;·&nbsp; <a href="/course/{nxt}/">{nxt_label} &rarr;</a>' if nxt else "")
+    # data-hb-lang drives the viewer's own localisation (目录 / 搜索 / 复制 / 上一节)
+    # in _includes/handbook-assets.html — not decorative.
+    back = (f'<p class="hb-backlink" data-hb-lang="{lang}">'
+            + f'<a href="/course/">{L["home"]}</a>'
+            + f' &nbsp;·&nbsp; <a href="{L["other_href"].format(slug=slug)}">{L["other_label"]}</a>'
+            + (f' &nbsp;·&nbsp; <a href="/course/{L["prefix"]}{nxt}/">{nxt_label} &rarr;</a>' if nxt else "")
             + "</p>\n\n")
 
     lead = f"# {short}\n\n*{convert_inline(subtitle)}*\n\n" if subtitle else f"# {short}\n\n"
@@ -707,6 +749,9 @@ if __name__ == "__main__":
     failed = set()
     if len(sys.argv) > 4 and sys.argv[4]:
         failed = set(int(x) for x in sys.argv[4].split(",") if x.strip())
-    result = convert(src, slug, failed)
+    lang = sys.argv[5] if len(sys.argv) > 5 and sys.argv[5] else "en"
+    if lang not in LANG:
+        sys.exit(f"convert_slides_book: unknown lang {lang!r} (want one of {sorted(LANG)})")
+    result = convert(src, slug, failed, lang)
     open(dst, "w", encoding="utf-8").write(result)
-    sys.stderr.write(f"[{slug}] wrote {dst} ({len(result)} bytes)\n")
+    sys.stderr.write(f"[{slug}/{lang}] wrote {dst} ({len(result)} chars)\n")
