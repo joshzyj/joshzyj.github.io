@@ -154,6 +154,8 @@ $ codex login    # 输入 OpenAI API key
 
 > **你应当看到：** 一个窗口式的智能体，能打开文件夹、读写文件、跑命令、操作 git —— 跟 CLI 一样的能力，只是用按钮代替了敲键。
 
+**第三个桌面智能体 —— ZCode（Z.ai）。** 如果这两家的付费方式对你都不合适，Z.ai 出了 **ZCode**：一个基于 GLM-5.2 的桌面智能体，它能读取 Claude Code 的 skills，因此可以直接跑 `open-scholar-skill` 套件。这是另一家公司的产品，有自己的配置体系，也有自己的数据管辖含义，所以单独讲：见 §2.6.7。
+
 **让桌面 App 替你把 CLI 装上。** §2.2 里那几条 `npm` 命令，你不必自己敲。桌面 App 打开后，用大白话吩咐它 —— *「在我这台机器上装好 Claude Code CLI，再一步步带我登录」* —— 智能体会检查你的 Node 版本、跑安装程序、修好 `PATH`，最后把一个能用的 `claude` 命令交到你手里。这跟它后面替你搭整套研究工具链（§2.7）是同一个智能体；只不过这次，它先给自己搭好了终端的家。
 
 **…… 但这次工作坊，还是请你把 CLI 也装上、用起来。** 桌面 App 用来「第一次接触」和日常工作都很棒，工作坊之后你尽可以继续用。要你也花十分钟去终端练手，*不是*因为桌面版弱 —— 到现在它也能读你的文件、跑代码、在一次会话里记住上下文、连上 MCP server，跟 CLI 一模一样。真正的理由，是有那么几件事，**图形界面从结构上就做不到**。桌面 App 需要一块屏幕、需要一个人点鼠标；而 CLI 只是文字进、文字出，凡是有 shell 的地方它都能跑：
@@ -430,17 +432,19 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
 
 **自检：** 打开 `~/.claude/settings.json`，找到 PreToolUse 那一条。脚本路径有没有被引号包起来？如果你的安装位置路径里带空格 —— `My Drive`、`Application Support` —— 没加引号的命令会静默地永远不触发，于是你会在自以为有守卫的情况下，其实一道守卫都没有。
 
-### 2.6 让 Claude Code 接入 GLM、DeepSeek 或本地模型
+### 2.6 用 GLM、DeepSeek 或本地模型跑这套流程 —— 以及 Z.ai 的 ZCode
 
 **目标：** 继续使用同一个 Claude Code CLI、同一套 `open-scholar-skill` 插件、同一种项目结构，只是把模型调用切到 Z.ai/GLM、DeepSeek，或者你自己机器上跑的本地模型。
 
 你**不需要**装新的 CLI，也不需要替换脚本，更不应该每次会话前手动改 JSON。Claude Code 只看两个环境变量——`ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`——只要对方暴露 Anthropic-compatible endpoint，Claude Code 就能直接对话。GLM（Z.ai 国际站和国内 BigModel）以及 DeepSeek 都已经提供这类入口。对**真正本地**的模型（DeepSeek-R1 蒸馏版、Qwen2.5-Coder、Llama、GLM），Claude Code 仍然需要一个 Anthropic-compatible 的前端：Ollama、vLLM、llama.cpp 暴露的都是 OpenAI 风格的接口，所以要在前面加一层小转换层——`claude-code-router` 或 `litellm`——把响应重写成 Anthropic schema。其余流程完全一致。
 
+下面的方案 A–C 都是保留 Claude Code、只换底下的模型。§2.6.7 讲的是另一个方向：**ZCode** —— Z.ai 自己出的、以 GLM-5.2 为核心的智能体应用，它换掉的是模型*加*外壳；而由于它能读取 Claude Code 的 skills，`open-scholar-skill` 套件同样可以在里面跑起来。
+
 #### 2.6.1 提供商速查表
 
 | 提供商 | Endpoint host | 需要设置的模型 |
 | ----- | ------------- | ------------- |
-| GLM / Z.ai（国际） | `api.z.ai` | Opus → `glm-5.1`；Sonnet → `glm-5-turbo`；Haiku → `glm-4.5-air`。同时 `API_TIMEOUT_MS=3000000`。 |
+| GLM / Z.ai（国际） | `api.z.ai` | Opus 与 Sonnet → `glm-5.2`；Haiku → `glm-4.7`。同时 `API_TIMEOUT_MS=3000000`。 |
 | GLM 中国大陆 | `open.bigmodel.cn` | 同样思路；按账号可用的 GLM 系列选择。 |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`；Haiku 与 subagents → `deepseek-v4-flash`。 |
 | 本地 —— Ollama（经 CCR/代理） | CCR → `http://localhost:11434/v1/chat/completions` | 你拉下来的任意 tag（如 `qwen2.5-coder:32b`）；需要一层转换。详见 §2.6.5。 |
@@ -448,7 +452,7 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
 
 完整 `ANTHROPIC_BASE_URL`：Z.ai 为 `https://api.z.ai/api/anthropic`，BigModel 为 `https://open.bigmodel.cn/api/anthropic`，DeepSeek 为 `https://api.deepseek.com/anthropic`。后缀 `/anthropic` 是让 endpoint 走 compatibility shim 的关键，漏掉它是最常见的配置错误。
 
-**模型名变得很快。** 本节里的模型 ID（`glm-5.1`、`glm-5-turbo`、`deepseek-v4-pro` 等）只是示例。开工前先查 provider 当前的模型列表——Z.ai/BigModel 和 DeepSeek 各自都有——用你账号能调用的确切名字；粘一个已下线的 tag，是仅次于漏掉 `/anthropic` 后缀的第二常见错误。
+**模型名变得很快。** 本节里的模型 ID（`glm-5.2`、`glm-4.7`、`deepseek-v4-pro` 等）只是示例。开工前先查 provider 当前的模型列表——Z.ai/BigModel 和 DeepSeek 各自都有——用你账号能调用的确切名字；粘一个已下线的 tag，是仅次于漏掉 `/anthropic` 后缀的第二常见错误。GLM 尤其快：本手册第一版写作时旗舰还是 `glm-5.1`，2026 年 6 月已被 `glm-5.2` 取代，上下文窗口升到 100 万 token。如果你之前照抄过旧的那三行进 `settings.json`，记得更新。
 
 #### 2.6.2 方案 A —— 在 `~/.claude/settings.json` 里写死后端
 
@@ -461,13 +465,16 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
   "env": {
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_zai_key",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.1",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5-turbo",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7",
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
     "API_TIMEOUT_MS": "3000000"
   }
 }
 ```
+
+这是 Z.ai 官方推荐的映射：Opus 与 Sonnet 两档都走 GLM-5.2，Claude Code 用来跑后台小调用的 Haiku 档走更便宜的 `glm-4.7`。`CLAUDE_CODE_AUTO_COMPACT_WINDOW` 是告诉 Claude Code：可以把 GLM-5.2 的 100 万 token 窗口填满再自动压缩上下文 —— 不设这一项，你会比实际需要早得多地触发 compact；当智能体同时抱着一本代码本和三个脚本时，这个差别很明显。
 
 **DeepSeek 示例：**
 
@@ -501,9 +508,10 @@ export DEEPSEEK_API_KEY="..."
 glm() {
   export ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic"
   export ANTHROPIC_AUTH_TOKEN="$ZAI_API_KEY"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5-turbo"
-  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.1"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2"
+  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.7"
+  export CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000
   export API_TIMEOUT_MS=3000000
   claude "$@"
 }
@@ -522,6 +530,7 @@ claude-anthropic() {
   unset ANTHROPIC_DEFAULT_SONNET_MODEL
   unset ANTHROPIC_DEFAULT_OPUS_MODEL
   unset ANTHROPIC_DEFAULT_HAIKU_MODEL
+  unset CLAUDE_CODE_AUTO_COMPACT_WINDOW API_TIMEOUT_MS
   claude "$@"
 }
 ```
@@ -613,6 +622,124 @@ Open Scholar 技能**不是 model-agnostic** 的。它们依赖长上下文阅�
 把每一项的结果用一行写到 `logs/backend-test.md`。**不要对外宣称任何模型与 open-scholar-skill 套件“完全兼容”** —— 你只能说：在某月某日跑过烟测，列出的几个 skill 通过。
 
 > **工作坊纪律：** 工作坊现场，一台笔记本只用一个后端。在流水线中途换 provider，是让一篇论文前后两半对同一个 CFPS 变量定义打架的最快方法。
+
+#### 2.6.7 方案 D —— ZCode：用 Z.ai 自家的智能体应用跑 scholar 技能
+
+方案 A–C 都是保留 Claude Code CLI、只把底下的模型换掉。**ZCode** 走的是另一条路：它是 Z.ai 自己出的智能体应用，以 GLM-5.2 为核心，换掉的是模型*连同*外壳。Z.ai 把它叫做 *Agentic Development Environment*（ADE）—— 一个桌面应用，带 Goal 模式来跑多步长任务，还有浏览器自动化、远程开发、手机远程操控等通道。它不是 Anthropic 的产品，也不是 Claude Code，而是另一个程序，配置目录在 `~/.zcode/`。
+
+它值得写进本手册，是因为 Z.ai 做了一个设计决定：**ZCode 能读取 Claude Code 的 skills、plugins、commands 和 hooks。** 也就是说，你在 §2.4 装好的 `open-scholar-skill` 套件可以在它里面跑，干活的是 GLM-5.2。如果你所在的院系没法报销 Anthropic 订阅，或者你需要一条国内可付费的通道，这就是从「没有 Claude 预算」到「scholar 流水线能在我笔记本上跑起来」的最短路径。
+
+**你到底该选哪个？**
+
+| 你想要的 | 用哪个 |
+| ------- | ----- |
+| 本手册里一模一样的流程，但按 GLM 的价格 | 方案 A 或 B —— Claude Code CLI 接 GLM 后端（§2.6.2–2.6.3） |
+| 图形界面、Goal 模式、GLM 原生工具链 | 方案 D —— ZCode（本节） |
+| 按项目在两者之间切换 | Claude Code 侧用方案 C（CC Switch），ZCode 并行装着 |
+
+本手册第 II–IV 部分默认你面对的是 `$` 提示符和 `/scholar-*` 命令。在 ZCode 里，*技能文件是同一批*，但调用方式、项目记忆、hook 三处都不一样。开始在 ZCode 里跑 CFPS 之前，先读完下面三个「差异」段落 —— 第三个是安全问题。
+
+**安装。** ZCode 是桌面应用 —— macOS（Apple 芯片与 Intel）、Windows（x64 与 ARM64）、Linux（x64 AppImage）。没有 `npm install` 这一说。从官方安装页下载，那里始终是当前版本：
+
+- 中文文档：<https://zcode.z.ai/cn/docs/install>
+- English docs: <https://zcode.z.ai/en/docs/install>
+
+```bash
+# macOS —— 打开 .dmg，把 ZCode.app 拖进 /Applications。
+# 首次启动如果被 Gatekeeper 拦住：
+$ xattr -dr com.apple.quarantine /Applications/ZCode.app
+
+# Linux —— 给 AppImage 加执行权限后运行
+$ chmod +x ZCode-*.AppImage && ./ZCode-*.AppImage
+```
+
+Windows 直接跑 `.exe` 安装程序，按向导走完。
+
+**接上模型。** 首次启动会让你选一个工作区目录，并配置模型连接。三条路，选哪条取决于你人在哪里：
+
+- **Z.ai 账号**（国际站）—— 登录即可，用量走 GLM Coding Plan 权益。Coding endpoint 为 `https://api.z.ai/api/coding/paas/v4`（OpenAI 风格）与 `https://api.z.ai/api/anthropic`（Anthropic 风格）。
+- **BigModel**（中国大陆）—— 智谱开放平台，同样的 GLM 模型：`https://open.bigmodel.cn/api/coding/paas/v4` 与 `https://open.bigmodel.cn/api/anthropic`。
+- **API Key** —— 任何 Anthropic 或 OpenAI 兼容的 provider。ZCode 自带的清单里包括 Anthropic、OpenRouter、Moonshot、OpenAI、MiniMax 以及自定义 endpoint，所以你也可以让 ZCode 这个界面去跑 Claude 模型，从而在模型不变的前提下比较两个外壳。
+
+可选的 GLM 模型是 **GLM-5.2**（旗舰，100 万 token 上下文）和 **GLM-5-Turbo**；其余取决于你账号的权限。**不要把 coding endpoint 换成通用 endpoint** —— 它们按区域和计费区分，不可互换。这相当于 §2.6.1 里漏掉 `/anthropic` 后缀：同一类一行之差的错误，症状也一样 —— 什么都跑不通，而且没有有用的报错。
+
+确认连接的办法，照 Z.ai 自己的快速开始来：让智能体列一下当前目录的文件。如果它报出来的是你真实的文件名，说明模型和工具循环都活着。
+
+**把 `open-scholar-skill` 装进 ZCode。** 先跑 `bash setup.sh`（§2.4.2），哪怕你根本不打算打开 Claude Code。这个脚本负责把技能和 agents 放到 ZCode 找得到的位置，也负责检查 `jq`、`python3` 等依赖是否齐全。
+
+*路线 1 —— 导入（就用这条）。* ZCode 会自动检测已经装给 Claude Code 的 skills —— 以及 Codex CLI、OpenClaw、Augment、Windsurf 的 —— 并提示导入。进 **Settings → Skills → import**，选 **symlink（符号链接）**模式，这样以后在技能仓库里 `git pull`，ZCode 这边也跟着更新；选 **copy（复制）**则是冻结一份快照。导入进来的技能，和你自己在 `~/.zcode/skills/<name>/SKILL.md` 手写的完全等价。
+
+*路线 2 —— 手动建符号链接；agents 只能走这条。* 导入界面只管 skills。同行评审、代码审查、结果核验那批 subagents 得你自己放到 `~/.zcode/agents/<name>.md`：
+
+```bash
+$ SRC="${SCHOLAR_SKILL_DIR:-$HOME/open-scholar-skill}"   # 你 clone 到哪儿就写哪儿
+$ mkdir -p ~/.zcode/skills ~/.zcode/agents
+$ for d in "$SRC"/.claude/skills/*/;   do ln -sfn "$d" ~/.zcode/skills/"$(basename "$d")"; done
+$ for f in "$SRC"/.claude/agents/*.md; do ln -sfn "$f" ~/.zcode/agents/"$(basename "$f")"; done
+$ ls ~/.zcode/skills | wc -l      # 应当等于：ls ~/.claude/skills | wc -l
+```
+
+然后 **Settings → Skills → Refresh**。注意 ZCode 的 subagents **只有用户级**，没有按工作区分的 agents 目录 —— 这台机器上所有项目共用同一套审稿人面板。
+
+*路线 3 —— 插件商店。* **Settings → Plugins** 会打开一个商店：**Public** 是 ZCode 精选目录，**Personal** 里你可以自己加 marketplace，来源可以是 GitHub 仓库（`owner/repo`）、Git URL，或本地文件 / 目录；Claude Code 的 marketplace 已经预置好了。但 marketplace 需要 `.claude-plugin/marketplace.json`，而 `open-scholar-skill` 目前提供的是 `.claude-plugin/plugin.json` —— 它是一个 plugin，不是一个 marketplace —— 所以注册不进去。在这一点改变之前，走路线 1 或 2。而 ZCode *确实*加载一个 plugin 时，五类组件会一起注册：`skills/`、`commands/`、`agents/`、`.mcp.json`、`hooks/hooks.json`。
+
+**差异 1 —— 怎么调用技能。** 在 Claude Code 里你敲 `/scholar-init`。在 ZCode 里，`/` 是给命令用的（`/goal`、`/compact`，以及 `~/.zcode/commands/` 下你自己写的），技能用 `$` 引用：
+
+```
+$scholar-init 为 CFPS 数字鸿沟这篇论文初始化一个项目
+```
+
+敲 `$` 会弹出技能选择器，或者用斜杠菜单里的 **Skills** 分组。subagents 用 `@` 引用，也可以由主智能体自行派发。第 II–IV 部分里每一个 `/scholar-*` 命令，在这里都写成 `$scholar-*`；提示词的其余部分一个字都不用改。
+
+**差异 2 —— 它不读 `CLAUDE.md`。** ZCode 的项目指令来自 **`AGENTS.md`**：先是用户全局的 `~/.zcode/AGENTS.md`，再是工作区根目录下的 `AGENTS.md`，按这个顺序拼接。`CLAUDE.md` 只在初次接入时被用作一次性迁移来源，运行时不会再读。所以你在 §3.3 写的项目简报必须复制一份过去：
+
+```bash
+$ cp CLAUDE.md AGENTS.md     # 在项目根目录 —— 之后两份要保持同步
+```
+
+ZCode 不会跨目录层级合并多个 `AGENTS.md`，不扫描子目录，也不展开 `@import`。把数据边界规则 —— §3.3 里那段 **Forbidden（禁止）** —— 放在工作区 `AGENTS.md` 的最上面，放在不可能被漏看的位置。
+
+**差异 3 —— 安全 hook 必须重新声明。这一条会真的伤到你。** `setup.sh` 把 PreToolUse 数据守卫注册在 `~/.claude/settings.json` 里。**ZCode 根本不读那个文件。** 在你自己声明之前，ZCode 是完全没有数据守卫在跑的，而且失败是静默的：智能体读了一个受限文件，没有任何东西拦它，你可能很久之后才发现，也可能永远不会发现。
+
+好消息是，ZCode 的 hook 约定足够接近，同一个脚本可以原样复用。ZCode 会往 hook 的 stdin 写一行 JSON，而按 Z.ai 自己的说法，这个 payload「同时带有 ZCode 的 camelCase 字段和 Claude Code 的 snake_case 别名，好让既有插件继续读 snake_case」—— 这正是 `pretooluse-data-guard.sh` 解析的那几个字段（`.tool_name`、`.tool_input.file_path`、`.cwd`）。退出码 2 表示拦截，与 Claude Code 的约定一致。
+
+在 `~/.zcode/cli/config.json`（对所有项目生效）或 `<workspace>/.zcode/config.json`（只对一个项目生效）里声明：
+
+```json
+{
+  "hooks": {
+    "enabled": true,
+    "events": {
+      "PreToolUse": [
+        {
+          "matcher": "Read|NotebookRead|NotebookEdit|Grep|Glob|Bash|Edit|Write|MultiEdit",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bash '/Users/you/open-scholar-skill/scripts/gates/pretooluse-data-guard.sh'",
+              "timeoutMs": 10000
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+`"hooks.enabled": true` 是必需的 —— 没有它什么都不会触发。脚本路径里若有空格一定要加引号；§2.5.3 里关于 `My Drive` 的那条警告，在这里一字不差地适用。
+
+然后**验证它真的会触发**，因为一个写错了工具名的 matcher 会「失败即放行」（fail open），外观上和正常工作的守卫完全一样：
+
+```
+> 读取 data/raw/cfps2020_adult.dta，把前五行给我看看
+```
+
+你要看到的是一次明确引用守卫的拒绝。如果文件被读出来了，说明 hook 没接上。就停在这里，先修好；在你亲眼看到一次故意的读取被拦下来之前，不要把受限数据放到 ZCode 面前。把结果写进 `logs/backend-test.md`，和 §2.6.6 的检查记在一起。
+
+**在交给它跑整条流水线之前。** ZCode 同时换掉了外壳*和*模型，所以 §2.6.6 的两半都适用：跑那三步烟测（tool-use round-trip、长 prompt 稳定性、技能调用 —— 这里用 `$scholar-init` 而不是 `/scholar-init`），外加上面那条 hook 测试。记下日期，以及具体哪几个技能通过了。**不要凭一次烟测就对外说这套件「兼容 ZCode」** —— 只说你跑了什么、什么时候跑的。
+
+**两条数据边界提醒，都不是可选项。** 第一，无论你选 Z.ai 还是 BigModel，GLM 的调用都在中国法律下处理。对于受限数据、受 IRB 管辖的数据、或有数据使用协议（DUA）约束的受访者数据，这是要问你的 IRB 和 DUA 的问题，不是个人偏好 —— 与 §2.6.4 对社区中转（relay）适用的是同一条标准。第二，ZCode 的那些增值能力 —— 浏览器自动化、远程开发、手机与机器人通道 —— 都在扩大能伸进你项目目录的面。只开你真正需要的那些，并保持 §4 的目录布局，让原始数据待在任何自动化默认够不到的地方。
 
 ### 2.7 让智能体替你安装研究工具链
 

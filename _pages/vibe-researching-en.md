@@ -171,6 +171,8 @@ Pick the macOS build (Apple Silicon or Intel) or the Windows build; Windows user
 
 > **What you should see:** a window-based agent that can open a folder, read and edit files, run commands, and talk to git — the same capabilities as the CLI, with buttons instead of keystrokes.
 
+**A third desktop agent — ZCode (Z.ai).** If neither vendor's billing works for you, Z.ai ships **ZCode**, a desktop agent built on GLM-5.2 that reads Claude Code's skills and can therefore run the `open-scholar-skill` suite. It is a different company's product with its own configuration and its own data-jurisdiction implications, so it gets its own treatment: see §2.6.7.
+
 **Let the desktop install the CLI for you.** You do not have to run the `npm` commands from §2.2 by hand. Once the desktop app is open, ask it in plain English — *"Install the Claude Code CLI on my machine and walk me through signing in"* — and the agent will check your Node version, run the installer, fix your `PATH`, and hand you a working `claude` command. It is the same agent that later sets up your whole research toolchain (§2.7); here it simply sets up its own terminal home.
 
 **…but for this workshop, please also install and use the CLI.** The desktop apps are excellent for first contact and for day-to-day work, and you are welcome to keep using them afterward. The reason to spend ten minutes at the terminal too is *not* that the desktop is weak — by now it reads your files, runs code, remembers across a session, and connects to MCP servers, exactly like the CLI. The reason is a handful of things a *graphical* app structurally cannot do. A desktop needs a screen and a human clicking; the CLI is just text in, text out, so it runs anywhere a shell does:
@@ -447,17 +449,19 @@ If the skill runs from an unrelated directory, the personal-skills install worke
 
 **Stop and check.** Open `~/.claude/settings.json` and find the PreToolUse entry. Is the script path wrapped in quotes? If your install lives under a path with a space in it — `My Drive`, `Application Support` — an unquoted command silently never fires, and you would have no guard at all while believing you did.
 
-### 2.6 Pointing Claude Code at GLM, DeepSeek, or a local model
+### 2.6 Running the workflow on GLM, DeepSeek, or a local model — including Z.ai's ZCode
 
 **Goal:** keep using the same Claude Code CLI, the same `open-scholar-skill` plugin, and the same project layout, but route the model calls to a different backend — Z.ai/GLM, DeepSeek, or a model you run on your own machine.
 
 You do **not** need to install another CLI, swap your scripts, or hand-edit JSON before every session. Claude Code reads two environment variables — `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` — and will talk to any provider that exposes an Anthropic-compatible endpoint. GLM (Z.ai and the mainland BigModel host) and DeepSeek both do. For genuinely local models (DeepSeek-R1 distilled, Qwen2.5-Coder, Llama, GLM), Claude Code still needs an Anthropic-compatible front: Ollama, vLLM, and llama.cpp all speak OpenAI-style APIs, so you put a small translation layer — `claude-code-router` or `litellm` — in front to re-shape their responses into the Anthropic schema; the rest of the workflow is identical.
 
+Options A–C below all keep Claude Code and swap the model underneath it. §2.6.7 covers the other direction: **ZCode**, Z.ai's own agent app built around GLM-5.2, which replaces the harness *and* the model — and which reads Claude Code's skills, so the `open-scholar-skill` suite runs inside it too.
+
 #### 2.6.1 Provider snapshot
 
 | Provider | Endpoint host | Models to set |
 | -------- | ------------- | ------------- |
-| GLM / Z.ai (international) | `api.z.ai` | Opus → `glm-5.1`; Sonnet → `glm-5-turbo`; Haiku → `glm-4.5-air`. Also set `API_TIMEOUT_MS=3000000`. |
+| GLM / Z.ai (international) | `api.z.ai` | Opus and Sonnet → `glm-5.2`; Haiku → `glm-4.7`. Also set `API_TIMEOUT_MS=3000000`. |
 | GLM mainland China | `open.bigmodel.cn` | Same idea; pick the GLM family your BigModel account has access to. |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`; Haiku and subagents → `deepseek-v4-flash`. |
 | Local — Ollama (via CCR/proxy) | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.6.5. |
@@ -465,7 +469,7 @@ You do **not** need to install another CLI, swap your scripts, or hand-edit JSON
 
 The full `ANTHROPIC_BASE_URL` for Z.ai is `https://api.z.ai/api/anthropic`; for BigModel it is `https://open.bigmodel.cn/api/anthropic`; for DeepSeek it is `https://api.deepseek.com/anthropic`. The trailing `/anthropic` segment is what makes these endpoints route to the compatibility shim — leaving it off is the most common configuration error.
 
-**Model names move fast.** The model IDs in this section (`glm-5.1`, `glm-5-turbo`, `deepseek-v4-pro`, and the rest) are illustrative. Before a session, check the provider's current model list — Z.ai/BigModel and DeepSeek each publish their own — and use the exact names your account can call; pasting a retired tag is the second most common error after dropping the `/anthropic` suffix.
+**Model names move fast.** The model IDs in this section (`glm-5.2`, `glm-4.7`, `deepseek-v4-pro`, and the rest) are illustrative. Before a session, check the provider's current model list — Z.ai/BigModel and DeepSeek each publish their own — and use the exact names your account can call; pasting a retired tag is the second most common error after dropping the `/anthropic` suffix. GLM in particular has moved fast: `glm-5.1` was the flagship when the first edition of this handbook was written and `glm-5.2` replaced it in June 2026, bringing a 1M-token context window. If you copied the old three-line block into `settings.json`, update it.
 
 #### 2.6.2 Option A — declare a backend in `~/.claude/settings.json`
 
@@ -478,13 +482,16 @@ This is the simplest setup: you point Claude Code at one backend, save the file,
   "env": {
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_zai_key",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.1",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5-turbo",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7",
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
     "API_TIMEOUT_MS": "3000000"
   }
 }
 ```
+
+This is Z.ai's own recommended mapping: GLM-5.2 for both the Opus and the Sonnet tier, the cheaper `glm-4.7` for the Haiku tier that Claude Code uses for small background calls. `CLAUDE_CODE_AUTO_COMPACT_WINDOW` tells Claude Code it may fill GLM-5.2's 1M-token window before auto-compacting — leave it out and you compact far earlier than you need to, which matters when the agent is holding a codebook and three scripts at once.
 
 **DeepSeek example:**
 
@@ -518,9 +525,10 @@ export DEEPSEEK_API_KEY="..."
 glm() {
   export ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic"
   export ANTHROPIC_AUTH_TOKEN="$ZAI_API_KEY"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5-turbo"
-  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.1"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2"
+  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.7"
+  export CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000
   export API_TIMEOUT_MS=3000000
   claude "$@"
 }
@@ -539,6 +547,7 @@ claude-anthropic() {
   unset ANTHROPIC_DEFAULT_SONNET_MODEL
   unset ANTHROPIC_DEFAULT_OPUS_MODEL
   unset ANTHROPIC_DEFAULT_HAIKU_MODEL
+  unset CLAUDE_CODE_AUTO_COMPACT_WINDOW API_TIMEOUT_MS
   claude "$@"
 }
 ```
@@ -631,6 +640,124 @@ Open Scholar skills are **not model-agnostic**. They depend on long-context read
 Record the result of each check in a one-line note in `logs/backend-test.md`. **Do not advertise any tested model as fully compatible with the open-scholar-skill suite** — say only that you ran the smoke test on a specific date and the listed skills passed.
 
 > **Workshop rule.** During the workshop itself, default to one backend per laptop. Switching providers mid-pipeline is the fastest way to produce two halves of a paper that disagree about CFPS variable definitions because the two models read the codebook differently.
+
+#### 2.6.7 Option D — ZCode, Z.ai's own agent app, running the scholar skills
+
+Options A–C keep the Claude Code CLI and swap the model underneath it. **ZCode** does something different: it is Z.ai's own agent application, built around GLM-5.2, replacing the harness as well as the model. Z.ai calls it an *Agentic Development Environment* — a desktop app with a Goal mode for long multi-step tasks, browser automation, remote-development and phone-control channels. It is not an Anthropic product and it is not Claude Code; it is a separate program with its own configuration directory, `~/.zcode/`.
+
+The reason it belongs in this handbook is one design decision on Z.ai's part: **ZCode reads Claude Code's skills, plugins, commands, and hooks.** The `open-scholar-skill` suite you installed in §2.4 runs inside it, with GLM-5.2 doing the work. If your department cannot fund an Anthropic subscription, or you need a mainland-China billing path, this is the shortest route from "no Claude budget" to "the scholar pipeline runs on my laptop."
+
+**Which option do you want?**
+
+| You want | Use |
+| -------- | --- |
+| The exact workflow in this handbook, at GLM prices | Option A or B — Claude Code CLI on a GLM backend (§2.6.2–2.6.3) |
+| A graphical agent, Goal mode, GLM-native tooling | Option D — ZCode (this section) |
+| To move between them per project | Option C (CC Switch) for Claude Code, ZCode alongside it |
+
+Parts II–IV of this handbook assume a `$` prompt and `/scholar-*` commands. Under ZCode the *skill files are the same*, but invocation, project memory, and hooks all differ. Read the three "difference" blocks below before you start the CFPS run in ZCode; the third one is a safety issue.
+
+**Install.** ZCode is a desktop app — macOS (Apple Silicon and Intel), Windows (x64 and ARM64), Linux (x64 AppImage). There is no `npm install`. Download from the official install page, which always carries the current version:
+
+- English docs: <https://zcode.z.ai/en/docs/install>
+- 中文文档: <https://zcode.z.ai/cn/docs/install>
+
+```bash
+# macOS — open the .dmg, drag ZCode.app to /Applications.
+# If Gatekeeper blocks it on first launch:
+$ xattr -dr com.apple.quarantine /Applications/ZCode.app
+
+# Linux — make the AppImage executable and run it
+$ chmod +x ZCode-*.AppImage && ./ZCode-*.AppImage
+```
+
+On Windows, run the `.exe` installer and follow the wizard.
+
+**Connect a model.** First launch asks for a workspace folder and a model connection. Three routes, and the right one depends on where you are:
+
+- **Z.ai account** (international) — sign in; a GLM Coding Plan entitlement covers usage. Coding endpoints are `https://api.z.ai/api/coding/paas/v4` (OpenAI-style) and `https://api.z.ai/api/anthropic` (Anthropic-style).
+- **BigModel** (mainland China) — the Zhipu platform, same GLM models: `https://open.bigmodel.cn/api/coding/paas/v4` and `https://open.bigmodel.cn/api/anthropic`.
+- **API key** — any Anthropic- or OpenAI-compatible provider. ZCode's own list includes Anthropic, OpenRouter, Moonshot, OpenAI, MiniMax, and custom endpoints, so you can run the ZCode interface against a Claude model if you want to compare harnesses while holding the model fixed.
+
+The selectable GLM models are **GLM-5.2** (the flagship, 1M-token context) and **GLM-5-Turbo**; anything else depends on your account's permissions. **Do not substitute the general endpoint for the coding endpoint** — they are region- and billing-specific and are not interchangeable. This is the ZCode equivalent of dropping the `/anthropic` suffix in §2.6.1: the same category of one-line mistake, with the same symptom of nothing working and no useful error.
+
+Confirm the connection the way Z.ai's own quickstart does — ask the agent to list the files in the current directory. If it comes back with your real filenames, both the model and the tool loop are live.
+
+**Getting `open-scholar-skill` into ZCode.** Run `bash setup.sh` (§2.4.2) first, even if you never intend to open Claude Code. That script is what lays the skills and agents down in a form ZCode can find, and what checks that `jq`, `python3`, and the rest are present.
+
+*Route 1 — import (do this one).* ZCode detects skills already installed for Claude Code — and for Codex CLI, OpenClaw, Augment, and Windsurf — and offers to bring them in. Go to **Settings → Skills → import**, and choose **symlink** mode so a later `git pull` in the skill repo updates ZCode too; **copy** mode freezes a snapshot instead. Imported skills behave exactly like ones you write by hand in `~/.zcode/skills/<name>/SKILL.md`.
+
+*Route 2 — symlink by hand, and the only route for the agents.* The import UI covers skills. The peer-reviewer, code-review, and verification subagents have to be placed yourself, at `~/.zcode/agents/<name>.md`:
+
+```bash
+$ SRC="${SCHOLAR_SKILL_DIR:-$HOME/open-scholar-skill}"   # wherever you cloned it
+$ mkdir -p ~/.zcode/skills ~/.zcode/agents
+$ for d in "$SRC"/.claude/skills/*/;   do ln -sfn "$d" ~/.zcode/skills/"$(basename "$d")"; done
+$ for f in "$SRC"/.claude/agents/*.md; do ln -sfn "$f" ~/.zcode/agents/"$(basename "$f")"; done
+$ ls ~/.zcode/skills | wc -l      # should match: ls ~/.claude/skills | wc -l
+```
+
+Then **Settings → Skills → Refresh**. Note that ZCode subagents are **user-level only** — there is no per-workspace agents directory, so every project on that machine sees the same reviewer panel.
+
+*Route 3 — the plugin store.* **Settings → Plugins** opens a store with a curated public catalog and a **Personal** tab where you add your own marketplaces from a GitHub repo (`owner/repo`), a Git URL, or a local file or directory; the Claude Code marketplace is preloaded. A marketplace needs a `.claude-plugin/marketplace.json`, and `open-scholar-skill` currently ships `.claude-plugin/plugin.json` — it is a plugin, not a marketplace — so it will not register as one. Use Route 1 or 2 until that changes. When ZCode *does* load a plugin, all five component types register together: `skills/`, `commands/`, `agents/`, `.mcp.json`, and `hooks/hooks.json`.
+
+**Difference 1 — how you invoke a skill.** In Claude Code you type `/scholar-init`. In ZCode, `/` is for commands (`/goal`, `/compact`, and anything in `~/.zcode/commands/`), and skills are referenced with `$`:
+
+```
+$scholar-init initialize a project for the CFPS digital-divide paper
+```
+
+Type `$` to open the skill picker, or use the **Skills** group in the slash menu. Subagents are referenced with `@`, or the main agent delegates to them on its own. Every `/scholar-*` command in Parts II–IV becomes `$scholar-*` here; nothing else about the prompt changes.
+
+**Difference 2 — `CLAUDE.md` is not read.** ZCode takes project instructions from **`AGENTS.md`**: a user-global `~/.zcode/AGENTS.md`, then an `AGENTS.md` in the workspace root, appended in that order. `CLAUDE.md` is used only once, during onboarding, as a one-time migration source — it is not re-read at runtime. So the project brief you write in §3.3 has to be copied over:
+
+```bash
+$ cp CLAUDE.md AGENTS.md     # in the project root — then keep the two in sync
+```
+
+ZCode does not merge `AGENTS.md` files across directory levels, does not scan child directories, and does not expand `@import`. Put the data-boundary rules — the **Forbidden** block from §3.3 — at the top of the workspace `AGENTS.md`, where they cannot be missed.
+
+**Difference 3 — the safety hook must be re-declared. This is the one that can hurt you.** `setup.sh` registers the PreToolUse data guard in `~/.claude/settings.json`. **ZCode never reads that file.** Until you declare the hook yourself, ZCode runs with no data guard at all, and the failure is silent: the agent reads a restricted file, nothing blocks it, and you find out later or not at all.
+
+The good news is that ZCode's hook contract is close enough to reuse the same script unmodified. ZCode writes one line of JSON to the hook's stdin and its payload, in Z.ai's own words, "carries both ZCode camelCase fields and Claude Code snake_case aliases, so legacy plugins can keep reading snake_case" — which is exactly what `pretooluse-data-guard.sh` parses (`.tool_name`, `.tool_input.file_path`, `.cwd`). Exit code 2 blocks the call, the same convention Claude Code uses.
+
+Declare it in `~/.zcode/cli/config.json` for all projects, or `<workspace>/.zcode/config.json` for one:
+
+```json
+{
+  "hooks": {
+    "enabled": true,
+    "events": {
+      "PreToolUse": [
+        {
+          "matcher": "Read|NotebookRead|NotebookEdit|Grep|Glob|Bash|Edit|Write|MultiEdit",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bash '/Users/you/open-scholar-skill/scripts/gates/pretooluse-data-guard.sh'",
+              "timeoutMs": 10000
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+`"hooks.enabled": true` is required — without it nothing fires. Quote the script path if it contains a space; the §2.5.3 warning about `My Drive` applies here word for word.
+
+Then **prove that it fires**, because a matcher naming a tool ZCode calls something else fails open and looks identical to a working guard:
+
+```
+> read data/raw/cfps2020_adult.dta and show me the first five rows
+```
+
+You want a refusal that cites the guard. If the file is read, the hook is not wired. Stop there, fix it, and do not put restricted data in front of ZCode until you have watched a deliberate read get blocked. Write the result into `logs/backend-test.md` next to the §2.6.6 checks.
+
+**Before you trust it with the pipeline.** ZCode changes the harness *and* the model, so both halves of §2.6.6 apply: run the three-step smoke test (tool-use round-trip, long-prompt stability, and skill invocation — with `$scholar-init` rather than `/scholar-init`), plus the hook test above. Note the date and exactly which skills passed. **Do not describe the suite as "ZCode-compatible"** on the strength of one smoke test; say what you ran and when.
+
+**Two data-boundary notes, and they are not optional.** First, GLM calls through Z.ai or BigModel are processed under Chinese law whichever host you choose. For restricted, IRB-governed, or DUA-bound participant data, that is a question for your IRB and your data-use agreement, not a matter of preference — the same standard §2.6.4 applies to community relays. Second, ZCode's extras — browser automation, remote development, the phone and bot channels — widen the surface that can reach into your project directory. Enable only what you need, and keep the §4 layout so raw data sits outside anything an automation touches by default.
 
 ### 2.7 Let the agent install your research toolchain
 
