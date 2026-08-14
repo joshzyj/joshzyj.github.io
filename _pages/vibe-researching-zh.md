@@ -195,6 +195,8 @@ $ codex login    # 输入 OpenAI API key
 
 装的方式有两种。如果 `git`、SSH 钥匙、shell 脚本对你来说还陌生，用**新手快捷路径**（§2.4.0）—— 让 Claude Code 自己装。如果你想看每一条命令，用 §2.4.1–§2.4.5 的**手动路径**。
 
+> **也可以按插件来装。** 该仓库同时发布了 marketplace 清单，所以 `claude plugin marketplace add joshzyj/open-scholar-skill` 加上 `claude plugin install open-scholar-skill@open-scholar` 两条命令就能拿到 skills 和 agents；ZCode 走的也是这条路（§2.6.7）。**但它不能替代 `setup.sh`**：插件写不了那三样落在仓库之外的东西 —— 带 Zotero 与 CrossRef 配置的 `.env`、技能里 shell 脚本的可执行位，以及 `~/.claude/settings.json` 里的 PreToolUse 数据安全 hook。工作坊请照常 clone 并跑 `setup.sh`；插件路线更适合当作「在第二台机器上先快速铺好、随后照样补跑 `setup.sh`」的捷径。
+
 #### 2.4.0 新手快捷路径——让 Claude Code 帮你装
 
 装好 Claude Code（§2.2）并在任意目录启动后，把下面这段提示词贴进去：
@@ -613,13 +615,13 @@ $ ccr code        # 通过 CCR 启动 Claude Code
 
 #### 2.6.6 信任新后端前必做的三项检查
 
-Open Scholar 技能**不是 model-agnostic** 的。它们依赖长上下文阅读、tool use 和结构化 JSON 输出。在用非 Anthropic 后端跑 CFPS 流水线之前，必须先过下面三步烟测：
+Open Scholar 技能**不是 model-agnostic** 的。它们依赖长上下文阅读、tool use 和结构化 JSON 输出。在用非 Anthropic 后端跑 CFPS 流水线之前，必须先过下面三步冒烟测试：
 
 1. **Tool-use round-trip。** 在沙盒项目里说：“读取 `grades.csv`，跑一段 Python 计算平均值，把结果写入 `out.txt`”。如果后端悄悄跳过 `Bash` 调用、自己编造文件内容、或者只用文字给出答案而没有生成 `out.txt`，那么所有依赖产物的 scholar-skill 都会失败。
 2. **长 prompt 稳定性。** 粘贴一段 30 页的 CFPS 代码本节选，让 agent 抽出变量名与对应波次。有效上下文窗口偏小的后端会在后面几页静默丢内容。
 3. **技能调用。** 跑一遍 `/scholar-init --slug smoke-test` 和 `/scholar-safety scan`。如果模型拒绝调用 skill、返回错误路径、或者“忘记”了 PreToolUse hook，就**不要**用它处理真实数据。
 
-把每一项的结果用一行写到 `logs/backend-test.md`。**不要对外宣称任何模型与 open-scholar-skill 套件“完全兼容”** —— 你只能说：在某月某日跑过烟测，列出的几个 skill 通过。
+把每一项的结果用一行写到 `logs/backend-test.md`。**不要对外宣称任何模型与 open-scholar-skill 套件“完全兼容”** —— 你只能说：在某月某日跑过冒烟测试，列出的几个 skill 通过。
 
 > **工作坊纪律：** 工作坊现场，一台笔记本只用一个后端。在流水线中途换 provider，是让一篇论文前后两半对同一个 CFPS 变量定义打架的最快方法。
 
@@ -665,11 +667,30 @@ Windows 直接跑 `.exe` 安装程序，按向导走完。
 
 确认连接的办法，照 Z.ai 自己的快速开始来：让智能体列一下当前目录的文件。如果它报出来的是你真实的文件名，说明模型和工具循环都活着。
 
-**把 `open-scholar-skill` 装进 ZCode。** 先跑 `bash setup.sh`（§2.4.2），哪怕你根本不打算打开 Claude Code。这个脚本负责把技能和 agents 放到 ZCode 找得到的位置，也负责检查 `jq`、`python3` 等依赖是否齐全。
+**把 `open-scholar-skill` 装进 ZCode。** 一共三条路线。用第一条；另外两条是留给两种情况的：你已经有一套 Claude Code 安装、想直接复用；或者哪里没注册上，你想亲眼把每个文件放到位。
 
-*路线 1 —— 导入（就用这条）。* ZCode 会自动检测已经装给 Claude Code 的 skills —— 以及 Codex CLI、OpenClaw、Augment、Windsurf 的 —— 并提示导入。进 **Settings → Skills → import**，选 **symlink（符号链接）**模式，这样以后在技能仓库里 `git pull`，ZCode 这边也跟着更新；选 **copy（复制）**则是冻结一份快照。导入进来的技能，和你自己在 `~/.zcode/skills/<name>/SKILL.md` 手写的完全等价。
+*路线 1 —— 插件商店（就用这条）。* 该仓库已经发布了 marketplace 清单，ZCode 一步就能装上；而且以 plugin 方式安装会**一次性**注册它的全部组件类型 —— `skills/`、`commands/`、`agents/`、`.mcp.json`、`hooks/hooks.json` —— 这也正是为什么只有这条路线能把同行评审、代码审查、结果核验那批 subagents 一并带进来，不用额外操作。
 
-*路线 2 —— 手动建符号链接；agents 只能走这条。* 导入界面只管 skills。同行评审、代码审查、结果核验那批 subagents 得你自己放到 `~/.zcode/agents/<name>.md`：
+打开 **Settings → Plugins**，点右上角 **Create → Add marketplace**，填：
+
+```
+joshzyj/open-scholar-skill
+```
+
+ZCode 会先校验清单再添加。之后这个 marketplace 会以 `open-scholar` 的名字出现在 **Personal** 分段里；找到 **open-scholar-skill** 那张卡片，点 **Install**。新装的插件默认启用，启用会立即重载智能体运行时 —— 不用重启。以后上游发新版，用搜索框上方的齿轮图标打开 **Marketplace sources** 刷新一下，就能拿到新技能。
+
+同一份清单在 Claude Code 里也能用 —— 如果你更愿意用插件方式而不是 `setup.sh`：
+
+```bash
+$ claude plugin marketplace add joshzyj/open-scholar-skill
+$ claude plugin install open-scholar-skill@open-scholar
+```
+
+**即便用插件装好了，`bash setup.sh`（§2.4.2）仍然要跑一次。** 插件给你的是技能和 agents，但不包括 `setup.sh` 写在仓库之外的那三样：带有 Zotero、BibTeX、CrossRef 配置的 `.env`（§2.5.1）；技能里那些 shell 脚本的可执行位；以及 PreToolUse 数据安全守卫。而最后这一样，无论如何你都得在 ZCode 里手动声明一遍 —— 见下面的*差异 3*。
+
+*路线 2 —— 从已有的 Claude Code 安装导入。* 如果你已经跑过 `setup.sh`，ZCode 会自动检测已经装给 Claude Code 的 skills —— 以及 Codex CLI、OpenClaw、Augment、Windsurf 的 —— 并提示导入。进 **Settings → Skills → import**，选 **symlink（符号链接）**模式，这样以后在技能仓库里 `git pull`，ZCode 这边也跟着更新；选 **copy（复制）**则是冻结一份快照。导入进来的技能，和你自己在 `~/.zcode/skills/<name>/SKILL.md` 手写的完全等价。注意这条路线**只管 skills** —— subagents 要靠路线 1 或路线 3。
+
+*路线 3 —— 手动建符号链接。* 当注册出问题、你想自己把每个文件放到位时的兜底方案：
 
 ```bash
 $ SRC="${SCHOLAR_SKILL_DIR:-$HOME/open-scholar-skill}"   # 你 clone 到哪儿就写哪儿
@@ -679,9 +700,7 @@ $ for f in "$SRC"/.claude/agents/*.md; do ln -sfn "$f" ~/.zcode/agents/"$(basena
 $ ls ~/.zcode/skills | wc -l      # 应当等于：ls ~/.claude/skills | wc -l
 ```
 
-然后 **Settings → Skills → Refresh**。注意 ZCode 的 subagents **只有用户级**，没有按工作区分的 agents 目录 —— 这台机器上所有项目共用同一套审稿人面板。
-
-*路线 3 —— 插件商店。* **Settings → Plugins** 会打开一个商店：**Public** 是 ZCode 精选目录，**Personal** 里你可以自己加 marketplace，来源可以是 GitHub 仓库（`owner/repo`）、Git URL，或本地文件 / 目录；Claude Code 的 marketplace 已经预置好了。但 marketplace 需要 `.claude-plugin/marketplace.json`，而 `open-scholar-skill` 目前提供的是 `.claude-plugin/plugin.json` —— 它是一个 plugin，不是一个 marketplace —— 所以注册不进去。在这一点改变之前，走路线 1 或 2。而 ZCode *确实*加载一个 plugin 时，五类组件会一起注册：`skills/`、`commands/`、`agents/`、`.mcp.json`、`hooks/hooks.json`。
+然后 **Settings → Skills → Refresh**。无论走哪条路线都请注意：ZCode 的 subagents **只有用户级**，没有按工作区分的 agents 目录 —— 这台机器上所有项目共用同一套审稿人面板。
 
 **差异 1 —— 怎么调用技能。** 在 Claude Code 里你敲 `/scholar-init`。在 ZCode 里，`/` 是给命令用的（`/goal`、`/compact`，以及 `~/.zcode/commands/` 下你自己写的），技能用 `$` 引用：
 
@@ -737,7 +756,7 @@ ZCode 不会跨目录层级合并多个 `AGENTS.md`，不扫描子目录，也�
 
 你要看到的是一次明确引用守卫的拒绝。如果文件被读出来了，说明 hook 没接上。就停在这里，先修好；在你亲眼看到一次故意的读取被拦下来之前，不要把受限数据放到 ZCode 面前。把结果写进 `logs/backend-test.md`，和 §2.6.6 的检查记在一起。
 
-**在交给它跑整条流水线之前。** ZCode 同时换掉了外壳*和*模型，所以 §2.6.6 的两半都适用：跑那三步烟测（tool-use round-trip、长 prompt 稳定性、技能调用 —— 这里用 `$scholar-init` 而不是 `/scholar-init`），外加上面那条 hook 测试。记下日期，以及具体哪几个技能通过了。**不要凭一次烟测就对外说这套件「兼容 ZCode」** —— 只说你跑了什么、什么时候跑的。
+**在交给它跑整条流水线之前。** ZCode 同时换掉了外壳*和*模型，所以 §2.6.6 的两半都适用：跑那三步冒烟测试（tool-use round-trip、长 prompt 稳定性、技能调用 —— 这里用 `$scholar-init` 而不是 `/scholar-init`），外加上面那条 hook 测试。记下日期，以及具体哪几个技能通过了。**不要凭一次冒烟测试就对外说这套件「兼容 ZCode」** —— 只说你跑了什么、什么时候跑的。
 
 **两条数据边界提醒，都不是可选项。** 第一，无论你选 Z.ai 还是 BigModel，GLM 的调用都在中国法律下处理。对于受限数据、受 IRB 管辖的数据、或有数据使用协议（DUA）约束的受访者数据，这是要问你的 IRB 和 DUA 的问题，不是个人偏好 —— 与 §2.6.4 对社区中转（relay）适用的是同一条标准。第二，ZCode 的那些增值能力 —— 浏览器自动化、远程开发、手机与机器人通道 —— 都在扩大能伸进你项目目录的面。只开你真正需要的那些，并保持 §4 的目录布局，让原始数据待在任何自动化默认够不到的地方。
 
@@ -1792,6 +1811,25 @@ argument-hint: "[quant|qual|mixed|experiment|power|methods-section|pap|
 - **删掉一个文件会静默地折断链条。** 你要是 `rm` 了 `design/results-lock-*.md`，`scholar-write` 不会报错 —— 它会凭想象起草。能抓住这件事的只有验证，所以 §15 不是可选项。
 - **每个技能都能单独跑。** 这一部分里的每个技能都能独立工作，只依赖磁盘上碰巧存在的文件。第三部分的编排器加的是关卡和顺序，它们不提供单个技能没有的能力。
 
+### 5B.4 轨迹契约 —— 每一步都写下来
+
+第一部分讲过 agent 的那个 loop：**Thought → Action → Observation**。现在套件里的每个技能都会把那个 loop *写下来*，每一个有意义的步骤追加一条记录，落在 `logs/trace-<skill>-<date>.ndjson`：**reasoning**（为什么）、**action**（做了什么）、**observation**（返回了什么），外加 `refs`、`status` 和派发它的 agent 的 id。第二部分里到处引用的那份可读的 `process-log-*.md`，是这个文件的**渲染视图**，绝不手写。**一个产生不出有效轨迹的阶段，会被它的关卡判 RED。**
+
+> **诚实的那部分 —— 这段请仔细读。** 外壳没法记录模型隐藏的思维链。被记下来的是*陈述出来的理由* —— 一句简短、能说清楚的“为什么”。
+>
+> 所以轨迹**不是**模型*当时在想什么*的证据。它是模型**声称自己在做什么**的证据，旁边并排放着它实际做了什么、以及返回了什么。那才是你能审的部分，也是从来就唯一可查的部分。任何比这更强的读法，都是你撑不住的主张。
+
+两条规则让轨迹可以拿出去共享：
+
+- **只放聚合量。** `reasoning` 和 `observation` 里装的是指标、判定、计数和文件路径 —— **绝不放数据行、引文或 PII**。记的是你*看到了*什么、它是什么形状，而不是具体的值。
+- **那引文放哪？** 放在 `evidence/` —— 也就是 §8A.6 那个账本。捕获了锚的轨迹步骤只按 `anchor_id` 引它，绝不把原文内联进来。两份产物，一次运行，一次刻意的切分。
+
+子智能体没有自己的 shell，所以它们各自吐一个 `.trace.ndjson` 边车文件，由编排方折叠进主轨迹 —— 并与派发清单交叉核对，因此**一个 agent 没法被悄悄从记录里抹掉**。
+
+同一份契约也归档代码：每一个被执行的 R/Python/Stata/Julia 脚本 —— **包括** `LOCAL_MODE` 下的 `Rscript -e` 与 `python3 -c` heredoc —— 都会带着该技能的编号前缀和一段运行头，逐字写进项目的 `scripts/` 目录。正是这一条，让 §13.7 那句“被审的字节必须就是被执行的字节”在事后仍然可查，而不是只在运行的那一刻成立。
+
+项目会自动获得这套规则：`scholar-init` 把它写进项目 `CLAUDE.md` 的自动规则块（精简档是 **§F**，完整档是 **§14**），已有项目在下一次运行时刷新。在这条规则存在之前，一个跑独立技能的精简档项目，加载的 `CLAUDE.md` 里关于可追溯性**一条规则都没有**，全靠每个技能自己记得自己的协议。
+
 ## 6. `scholar-init` + `scholar-safety` —— 从安全开始
 
 **目标：** 创建标准项目结构、对每个文件分类、装好强制执行这些分类的守卫，并写下后续所有技能都会查阅的安全契约。
@@ -2512,7 +2550,24 @@ output/<slug>/
 2. **每条假设都必须从命名机制推出。** 假设上方没有机制段就是断链。
 3. **因果语言审计。** 在草稿里搜 "causes"、"leads to"、"effect of"。观测设计、未做识别的，每一处命中都是修订候选。
 
-**自检：** 在草稿里指一处引用，打开 BibTeX，找得到对应 key 吗？找不到就先跑 `/scholar-citation verify`（§16）再走。
+### 8A.6 证据账本 —— 你真正读到的，和你写下的，并排放（v5.28）
+
+§8A.1 那张层级表说的是**一条引用可以从哪来**。它没说**你在写下那句话之前到底读了什么**。从 v5.28 起，那是一个单独的文件，也正是本节“每句 paraphrase 都能追到源头”这个承诺背后的产物。
+
+每当一段原文成为某条已定稿主张的依据，就往 `evidence/claim-anchors.ndjson` 追加一条记录：**逐字引文**（≤ 60 词）、一个**定位符**、取到它的**工具**，以及对这份证据实际有多硬的一个诚实标签。
+
+真正干活的是两条规则：
+
+1. **检索不等于采集。** 一次命中 25 条的搜索产生*零*个锚。采集发生在一条主张**定稿**的时候 —— 一格 landscape map、一个效应量、一条假设前提、一句已写进草稿的话。搜过，不算读过。
+2. **采集要对层级诚实。** 用你*手头已有*的最好证据去锚定。摘要片段是**合法**的锚（`T3_abstract`）。当没有任何可引的东西时，这条记录写 `evidence_quote: null` —— 这让“只凭元数据就引了”**变得可见，而不是静悄悄**。
+
+> **账本里的 tier 标签要仔细读 —— 它不是上面那套 Tier 0–2。** 账本的 `access_tier` 回答的是*我读到的证据有多硬*：`T1_fulltext`（一份 PDF，或一次 `rag_search` 命中）> `T2_oa_fulltext` > `T3_abstract` > `T4_none`。引用层级回答的是*这条引用可以从哪来*。同一个词，两个轴。一篇文章完全可以是 Tier-1 已验证，同时锚在 `T3_abstract` —— 你确认了它存在，但你从头到尾只读过摘要。
+
+往下游，这会产出一份**证据档案（Evidence Dossier）**，把“原文说了什么”和“我们写了什么”并排放；以及一行必需的日志 `Evidence anchors: N created / M reused`。`scholar-write` 和 `scholar-citation` 是**消费**这个账本，而不是重新推一遍（§14、§16），Phase 7 还带一道 tag 关卡来查它。
+
+**引文只存在 `evidence/` 下，并且默认被排除在 replication 包之外** —— 逐字的第三方文本，正是你最不想一不小心随包分发出去的东西。
+
+**自检：** 在草稿里指一处引用，打开 BibTeX，找得到对应 key 吗？找不到就先跑 `/scholar-citation verify`（§16）再走。然后打开 `evidence/claim-anchors.ndjson`，数一数你已定稿的主张里有多少锚在 `T3_abstract` 或 `T4_none`。那个数字，就是你没真读过就引了的部分的诚实大小。
 
 ## 8B. `scholar-conceptual` —— 造理论“对象”，不是写理论文字
 
@@ -4425,6 +4480,18 @@ $ python3 assets/annotate_engine.py validate \
 
 失败时，技能规定先动最便宜的杠杆：把编码本的定义与边界规则写锐利 → 重新做 few-shot 优化（MODE 6）→ 重新验证。换更强的模型是**最后**才伸手的东西，不是第一个。
 
+> **这道关卡自己出过 bug，而它是本手册里最值得记住的一个（2026-08-12 修复）。** 一个**在 40% 的文档上直接失败**的标注器，能堂堂正正地过关。三个彼此独立的缺陷叠在一起：
+>
+> 1. **预测是用 INNER JOIN 接到金标准上的。** 标注器噎住的每一份文档都从分母里消失了 —— 于是**把难的做砸，反而把报出来的 κ 抬高了**。它能处理的那个子集就是简单子集，而关卡量的正是那个子集。
+> 2. **NaN 的 κ 能过**，因为在 IEEE-754 里 `nan < gate` 是 `False`。“算不出来”被静默读成了“没有低于阈值”。
+> 3. **只有第一个 `--on` 字段能让关卡失败。** 一个 κ = 0.000 的次要字段会打印 `FAIL`，然后照样 exit 0。
+>
+> 拿一份刻意做坏的 fixture 去跑，出厂的关卡在两个字段上都打印了 `FAIL`，紧接着打印 `PASS —— cleared for MODE 8`，exit 0。现在：**金标准是分母**，覆盖率既报告也强制，每一行被排除的都要有交代，NaN 直接判失败，每个 `--on` 字段各自独立把关。
+>
+> 这条教训远不止这一个技能。**只在你的工具能处理的那些案例上算出来的信度，不是信度** —— 它是对简单子集的描述。以后别人递给你一个 κ，先问分母是什么，再问它有没有过 0.70。
+
+**覆盖率与构念匹配 —— 关卡的两半。** κ ≥ 0.70 现在是第*二*件被检查的事，不再是唯一那件。**覆盖率**问的是这个工具到底有没有真的去做这份语料：金标准里有多大比例真的拿到了预测，剩下的去了哪。**构念匹配**把编码本里命名的那个构念和被打分的字段绑定起来，好让一个漂亮的 κ 没法拿错列冒充效度。一次运行可以每个字段都过 0.70，仍然因为缺了这两半中的任何一半而被拒。按这个顺序读：先覆盖率，再构念，最后 κ。
+
 ### 11E.3 没有两位人工编码员时怎么造金标准
 
 不是每个项目都能人工双编码 500 份文档，技能对替代方案很坦诚：
@@ -4635,7 +4702,31 @@ argument-hint: "[full|correctness|robustness|statistics|reproducibility|style|
 
 它有意与 `scholar-verify`（§15）相互独立：这个技能检查**代码**对不对；`scholar-verify` 检查**手稿是否与输出一致**。两者互不替代，也互不调用。
 
-**自检。** 读 `reports/code-review-statistics-2026-05-04-iter1.md`。找一条标为 WARN 的问题。决定你会（a）现在就修，（b）写进 `analysis/limitations-accepted.md` 接受它，还是（c）降级到"讨论"。然后找一条标为 UNVERIFIABLE 的，问问自己：什么文档——不是什么数据文件——本可以让它变得可验证。
+### 13.7 在它跑起来之前 —— `DRAFTED` → `REVIEWED+HASHED` → `EXECUTABLE`（v5.29）
+
+上面这一整套，审的都是**已经跑过**的代码。从 v5.29 起，在这次运行的另一侧还有第二道审查，更早、也更窄：模型写的代码，在被允许产出任何数字**之前**先被审一遍。理由是经济学的。一个 bug，在脚本里修很便宜；等它已经产出了一张你开始围着写行文的表之后再修，就很贵。
+
+一个符合条件的脚本要走过三个状态：
+
+| 状态 | 含义 |
+|---|---|
+| `DRAFTED` | 已写成文件 —— **绝不**内联执行 |
+| `REVIEWED+HASHED` | 三个 agent 读过，且每个脚本在清单里都带一个 SHA-256 |
+| `EXECUTABLE` | 关卡为 GREEN；这个文件可以被调用了 |
+
+**什么算符合条件。** 任何拟合模型、构造或重编分析变量、限制样本的东西，以及任何**产出可能进入手稿的数字**的东西。*试跑*要豁免，必须同时满足：有上限、不喂给下游、并且被记为试跑。“全语料”只是触发“上规模”的其中一个条件，不是它的定义。
+
+**长牙的那条规则：被审的字节必须就是被执行的字节。** 你调用的是那个被审过的*文件* —— `Rscript scripts/04-main-models.R`。把审过的代码块复制回 REPL 里跑，是**被禁止的**；清单里的 SHA-256 正是让这一条可查、而不是停留在口号的东西。这就是工作坊第三天那条“不许内联执行”的纪律，外加一个哈希。
+
+在第一次带模型的运行之前，技能会打出一张回执：
+
+```
+Pre-execution review: report <path> · review_id <id> · scripts 4 hashed · gate GREEN
+```
+
+铺开覆盖了六个技能：`scholar-analyze`、`scholar-eda`、`scholar-ling`（v5.29.1），然后是 `scholar-compute`、`scholar-data`、`scholar-simulate`（v5.29.2，同时把 `scholar-respond` 也做了哈希绑定）。如果你跑了其中之一却没看到这张回执，说明关卡根本没跑 —— 那是一个发现，不是一件省事。
+
+**自检。** 读 `reports/code-review-statistics-2026-05-04-iter1.md`。找一条标为 WARN 的问题。决定你会（a）现在就修，（b）写进 `analysis/limitations-accepted.md` 接受它，还是（c）降级到"讨论"。然后找一条标为 UNVERIFIABLE 的，问问自己：什么文档——不是什么数据文件——本可以让它变得可验证。最后，打开你最近一次分析的日志，找那张 pre-execution 回执：如果产出你头号表格的那个脚本从没走过 `REVIEWED+HASHED`，那你对它的了解比你以为的要少。
 
 ## 14. `scholar-write` —— 从锁定结果起草，不是凭空编
 
@@ -5334,6 +5425,8 @@ argument-hint: "[draft text or section] [journal or style: ASA|APA|Chicago|
 新发现的结论会回流进知识图谱，所以这项检查每跑一次就更便宜一点。
 
 这项检查里贵的一直是「再对照该论文的实际文本」—— 为了裁一句话去读一整篇 PDF。一个 `scholar-rag` 索引（§8F）把这一步压扁了：`rag_search("<主张>", doi="<doi>")` 不用打开论文就能取回支撑段落**并带页码**。层级顺序是：知识图谱（快路径）→ `scholar-rag` 全文检索 → PDF 原文。如果你打算在一份长稿件上跑主张层面的检查，先把索引建起来是杠杆最大的一步准备工作。
+
+**证据账本把它进一步短路（v5.28.2）。** 如果这条主张在写下来的时候就被锚过（§8A.6），那段当初为它背书的原文已经躺在 `evidence/claim-anchors.ndjson` 里了 —— 连同它的定位符和 `access_tier`。faithfulness 那一层会先读账本再去外面找，于是「重新找出那句支撑句」变成了「把我们写的，和当时采下来的引文，比一比」。锚在 `T4_none` 的那些主张，恰恰是这一步短路不了的 —— 也恰恰是值得你花时间的那些。
 
 ### 16.6 支持的格式
 

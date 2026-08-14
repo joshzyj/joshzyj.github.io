@@ -193,6 +193,8 @@ Skills are not built into Claude Code; you install them by cloning the repositor
 
 There are two ways to do this. If `git`, SSH keys, and shell scripts are new to you, use the **beginner shortcut** (§2.4.0) — ask Claude Code itself to do the install. If you'd rather see every command, follow the **manual path** in §2.4.1–§2.4.5.
 
+> **Or install it as a plugin.** The repo also publishes a marketplace manifest, so `claude plugin marketplace add joshzyj/open-scholar-skill` followed by `claude plugin install open-scholar-skill@open-scholar` gets you the skills and agents in two commands, and is the route ZCode uses (§2.6.7). **It is not a substitute for `setup.sh`**: the plugin cannot write the three things that live outside the repo — your `.env` with the Zotero and CrossRef settings, the executable bits on the skills' shell scripts, and the PreToolUse data-safety hook in `~/.claude/settings.json`. For the workshop, clone and run `setup.sh`; treat the plugin route as the fast path for a second machine where you will run `setup.sh` afterwards anyway.
+
 > **Two editions — which one you have determines which skills exist.**
 >
 > | Edition | Repo | Skills | Access |
@@ -683,11 +685,30 @@ The selectable GLM models are **GLM-5.2** (the flagship, 1M-token context) and *
 
 Confirm the connection the way Z.ai's own quickstart does — ask the agent to list the files in the current directory. If it comes back with your real filenames, both the model and the tool loop are live.
 
-**Getting `open-scholar-skill` into ZCode.** Run `bash setup.sh` (§2.4.2) first, even if you never intend to open Claude Code. That script is what lays the skills and agents down in a form ZCode can find, and what checks that `jq`, `python3`, and the rest are present.
+**Getting `open-scholar-skill` into ZCode.** Three routes. Take the first one; the other two are there for when you already have a Claude Code install you would rather reuse, or when something does not register and you want to see the files with your own eyes.
 
-*Route 1 — import (do this one).* ZCode detects skills already installed for Claude Code — and for Codex CLI, OpenClaw, Augment, and Windsurf — and offers to bring them in. Go to **Settings → Skills → import**, and choose **symlink** mode so a later `git pull` in the skill repo updates ZCode too; **copy** mode freezes a snapshot instead. Imported skills behave exactly like ones you write by hand in `~/.zcode/skills/<name>/SKILL.md`.
+*Route 1 — the plugin store (do this one).* The repo publishes a marketplace manifest, so ZCode can install it in one step, and a plugin install registers **all** of its component types at once — `skills/`, `commands/`, `agents/`, `.mcp.json`, `hooks/hooks.json` — which is what makes this the only route that brings the reviewer, code-review, and verification subagents along without extra work.
 
-*Route 2 — symlink by hand, and the only route for the agents.* The import UI covers skills. The peer-reviewer, code-review, and verification subagents have to be placed yourself, at `~/.zcode/agents/<name>.md`:
+Open **Settings → Plugins**, click **Create → Add marketplace** in the top right, and enter:
+
+```
+joshzyj/open-scholar-skill
+```
+
+ZCode validates the manifest before adding it. The marketplace then appears in the **Personal** segment as `open-scholar`; find the **open-scholar-skill** card and click **Install**. Newly installed plugins are enabled by default, and enabling one reloads the agent runtime immediately — no restart. Later, the gear icon above the search box opens **Marketplace sources**, where you refresh to pick up new skills after an upstream release.
+
+The same manifest works in Claude Code, if you would rather install by plugin than by `setup.sh`:
+
+```bash
+$ claude plugin marketplace add joshzyj/open-scholar-skill
+$ claude plugin install open-scholar-skill@open-scholar
+```
+
+**Still run `bash setup.sh` (§2.4.2) once, even after a plugin install.** The plugin gives you the skills and agents. It does not give you the three things `setup.sh` writes outside the repo: the `.env` with your Zotero, BibTeX, and CrossRef settings (§2.5.1); the executable bits on the skills' shell scripts; and the PreToolUse data-safety guard. That last one you must declare in ZCode by hand in any case — see *Difference 3* below.
+
+*Route 2 — import an existing Claude Code install.* If you already ran `setup.sh`, ZCode detects skills installed for Claude Code — and for Codex CLI, OpenClaw, Augment, and Windsurf — and offers to bring them in. Go to **Settings → Skills → import**, and choose **symlink** mode so a later `git pull` in the skill repo updates ZCode too; **copy** mode freezes a snapshot instead. Imported skills behave exactly like ones you write by hand in `~/.zcode/skills/<name>/SKILL.md`. Note that this route covers **skills only** — the subagents need Route 1 or Route 3.
+
+*Route 3 — symlink by hand.* The fallback when a registration misbehaves and you want to place every file yourself:
 
 ```bash
 $ SRC="${SCHOLAR_SKILL_DIR:-$HOME/open-scholar-skill}"   # wherever you cloned it
@@ -697,9 +718,7 @@ $ for f in "$SRC"/.claude/agents/*.md; do ln -sfn "$f" ~/.zcode/agents/"$(basena
 $ ls ~/.zcode/skills | wc -l      # should match: ls ~/.claude/skills | wc -l
 ```
 
-Then **Settings → Skills → Refresh**. Note that ZCode subagents are **user-level only** — there is no per-workspace agents directory, so every project on that machine sees the same reviewer panel.
-
-*Route 3 — the plugin store.* **Settings → Plugins** opens a store with a curated public catalog and a **Personal** tab where you add your own marketplaces from a GitHub repo (`owner/repo`), a Git URL, or a local file or directory; the Claude Code marketplace is preloaded. A marketplace needs a `.claude-plugin/marketplace.json`, and `open-scholar-skill` currently ships `.claude-plugin/plugin.json` — it is a plugin, not a marketplace — so it will not register as one. Use Route 1 or 2 until that changes. When ZCode *does* load a plugin, all five component types register together: `skills/`, `commands/`, `agents/`, `.mcp.json`, and `hooks/hooks.json`.
+Then **Settings → Skills → Refresh**. Whichever route you take, note that ZCode subagents are **user-level only** — there is no per-workspace agents directory, so every project on that machine sees the same reviewer panel.
 
 **Difference 1 — how you invoke a skill.** In Claude Code you type `/scholar-init`. In ZCode, `/` is for commands (`/goal`, `/compact`, and anything in `~/.zcode/commands/`), and skills are referenced with `$`:
 
@@ -1854,6 +1873,25 @@ Two consequences you should internalize now:
 - **Deleting a file breaks the chain silently.** If you `rm` `design/results-lock-*.md`, `scholar-write` will not error — it will draft from imagination. Verification is what catches this, which is why §15 is not optional.
 - **You can run any skill standalone.** Every skill in this part works on its own, against whatever files happen to be on disk. The orchestrators in Part III add gates and ordering; they add no capability the individual skills lack.
 
+### 5B.4 The trace contract — every step, written down
+
+Part I introduced the agent loop: **Thought → Action → Observation**. Every skill in the suite now *writes that loop down*, one append-only record per meaningful step, in `logs/trace-<skill>-<date>.ndjson`: the **reasoning** (why), the **action** (what it did), the **observation** (what came back), plus `refs`, `status`, and the dispatching agent's id. The readable `process-log-*.md` you will see referenced throughout Part II is a **rendered view** of that file, never hand-written. **A phase that produces no valid trace RED-fails its gate.**
+
+> **The honest bit — read this one carefully.** The harness cannot log the model's hidden chain of thought. What is recorded is the *stated rationale* — a short, articulable "why."
+>
+> So the trace is **not** evidence of what the model *was thinking*. It is evidence of what it **said it was doing**, next to what it actually did and what came back. That is the part you can audit, and it is the only part that was ever checkable. Treat any stronger reading of it as a claim you cannot support.
+
+Two rules keep the trace shareable:
+
+- **Aggregates only.** `reasoning` and `observation` carry metrics, verdicts, counts and file paths — **never data rows, quotes, or PII**. Record *that* you saw something and what shape it had, not the value.
+- **So where do the quotes live?** Under `evidence/` — the ledger in §8A.6. A trace step that captures an anchor cites it by `anchor_id`; it never inlines the passage. Two artifacts, one run, one deliberate split.
+
+Sub-agents have no shell of their own, so they emit a `.trace.ndjson` sidecar that the orchestrator folds in — cross-checked against the dispatch manifest, so **an agent cannot be quietly dropped from the record**.
+
+The same contract also archives code: every executed R/Python/Stata/Julia script — *including* `LOCAL_MODE` `Rscript -e` and `python3 -c` heredocs — is written verbatim into the project `scripts/` directory with the skill's numbering prefix and a run header. This is what makes §13.7's "the reviewed bytes must be the executed bytes" auditable after the fact rather than at the moment of the run.
+
+Projects pick this up automatically: `scholar-init` writes it into the project `CLAUDE.md` auto-rules block (**§F** in the lean profile, **§14** in the full one), and existing projects refresh on the next run. Before this existed, a lean project running standalone skills loaded a `CLAUDE.md` with **zero** traceability rules and relied entirely on each skill remembering its own protocol.
+
 ## 6. `scholar-init` + `scholar-safety` — start with safety
 
 **Goal:** create the standard project structure, classify every file, install the guard that enforces those classifications, and write the safety contract all later skills consult.
@@ -2585,7 +2623,24 @@ output/<slug>/
 2. **Every hypothesis must derive from a named mechanism.** If the hypothesis appears without a mechanism step in the prose above it, the chain is broken.
 3. **Causal-language audit.** Search the draft for "causes," "leads to," "effect of." For observational designs without identification, every hit is a candidate for revision.
 
-**Stop and check.** Can you point at one citation in the draft, open the BibTeX file, and find the matching key? If not, run `/scholar-citation verify` (§16) before going further.
+### 8A.6 The evidence ledger — what you actually read, next to what you wrote (v5.28)
+
+The tier hierarchy in §8A.1 says **where a citation may come from**. It does not say **what you read before you wrote the sentence**. Since v5.28 that is a separate file, and it is the artifact behind this section's promise that every paraphrased sentence traces to a source.
+
+Whenever a source passage becomes the basis of a finalized claim, one record is appended to `evidence/claim-anchors.ndjson`: the **verbatim quote** (≤ 60 words), a **locator**, the **tool** that retrieved it, and an honest label for how good the evidence actually was.
+
+Two rules do all the work:
+
+1. **Discovery is not capture.** A 25-hit search produces *no* anchors. Capture happens when a claim is **finalized** — a landscape-map cell, an effect magnitude, a hypothesis premise, a drafted sentence. Searching is not reading.
+2. **Capture is tier-honest.** Anchor with the best evidence *already in context*. An abstract snippet is a **legal** anchor (`T3_abstract`). When nothing is quotable the record carries `evidence_quote: null` — which makes "cited on metadata alone" **visible instead of silent**.
+
+> **Read the ledger's tier label carefully — it is not the Tier 0–2 hierarchy above.** The ledger's `access_tier` answers *how good is the evidence I read*: `T1_fulltext` (a PDF, or a `rag_search` hit) > `T2_oa_fulltext` > `T3_abstract` > `T4_none`. The citation tiers answer *where may this citation come from*. Same word, different axis. A paper can be Tier-1 verified and still anchored at `T3_abstract` — you confirmed it exists; you only ever read the abstract.
+
+Downstream this produces an **Evidence Dossier** pairing "what the source said" against "what we wrote," and a required log row `Evidence anchors: N created / M reused`. `scholar-write` and `scholar-citation` consume the ledger rather than re-deriving it (§14, §16), and Phase 7 carries a tag gate that checks it.
+
+**Quotes live only under `evidence/`, and are excluded from replication packages by default** — verbatim third-party text is exactly what you do not want to redistribute by accident.
+
+**Stop and check.** Can you point at one citation in the draft, open the BibTeX file, and find the matching key? If not, run `/scholar-citation verify` (§16) before going further. Then open `evidence/claim-anchors.ndjson` and count how many of your finalized claims are anchored at `T3_abstract` or `T4_none`. That number is the honest size of what you are citing without having read.
 
 ## 8B. `scholar-conceptual` — build the theory object, not the prose
 
@@ -4504,6 +4559,18 @@ Alongside the gate, all four Lin & Zhang (2025) epistemic risks must be assessed
 
 When it fails, the skill prescribes the cheapest lever first: sharpen the codebook's definitions and boundary rules → re-optimize few-shot (MODE 6) → re-validate. A stronger model is the *last* thing to reach for, not the first.
 
+> **The gate itself had a bug, and it is the most instructive one in this handbook (fixed 2026-08-12).** An annotator that *failed 40% of the documents* could pass it. Three independent defects stacked:
+>
+> 1. **Predictions were INNER-joined onto gold.** Every document the annotator choked on left the denominator — so **failing the hard cases raised the reported κ**. The subset it could handle was the easy subset, and the gate scored that.
+> 2. **A NaN κ passed**, because in IEEE-754 `nan < gate` is `False`. "Could not be computed" was silently read as "not below threshold."
+> 3. **Only the first `--on` field could fail the gate.** A secondary field sitting at κ = 0.000 printed `FAIL` and still exited 0.
+>
+> Run against a deliberately broken fixture, the shipped gate printed `FAIL` on both fields and then `PASS — cleared for MODE 8`, exit 0. Now **gold is the denominator**, coverage is reported *and* enforced, every excluded row is accounted for, a NaN fails closed, and every `--on` field gates independently.
+>
+> The lesson generalizes well past this skill. **A reliability number computed only over the cases your instrument could handle is not a reliability number** — it is a description of the easy subset. Whenever you are handed a κ, ask what the denominator was before you ask whether it cleared 0.70.
+
+**Coverage and construct match — the two halves of the gate.** κ ≥ 0.70 is now the *second* thing checked, not the only one. **Coverage** asks whether the instrument actually attempted the corpus: what fraction of gold rows received a prediction at all, and where the rest went. **Construct match** binds the codebook's named construct to the field being scored, so a healthy κ against the wrong column cannot pass itself off as validity. A run can clear 0.70 on every field and still be refused for missing either half. Read them in that order — coverage, then construct, then κ.
+
 ### 11E.3 Gold without two human coders
 
 Not every project can double-code 500 documents by hand, and the skill is honest about the substitutes:
@@ -4714,7 +4781,31 @@ Beyond the scorecard, two sections of the consolidated report are unique to this
 
 It is deliberately independent of `scholar-verify` (§15): this skill checks whether the **code** is right; `scholar-verify` checks whether the **manuscript matches the outputs**. Neither substitutes for the other, and neither calls the other.
 
-**Stop and check.** Read `reports/code-review-statistics-2026-05-04-iter1.md`. Find one issue marked WARN. Decide whether you would (a) fix it now, (b) accept it in `analysis/limitations-accepted.md`, or (c) demote it to "discussion". Then find one marked UNVERIFIABLE and ask yourself what document — not what data file — would have made it verifiable.
+### 13.7 Before it runs — `DRAFTED` → `REVIEWED+HASHED` → `EXECUTABLE` (v5.29)
+
+Everything above audits code that has **already executed**. Since v5.29 there is a second review, earlier and narrower, on the other side of the run: model-authored code is reviewed *before* it is allowed to produce a number. The reasoning is economic. A bug is cheap to fix in a script and expensive to fix after it has produced a table you have started writing prose around.
+
+A qualifying script moves through three states:
+
+| State | Meaning |
+|---|---|
+| `DRAFTED` | written to a file — **never** run inline |
+| `REVIEWED+HASHED` | three agents have read it, and each script carries a SHA-256 in the manifest |
+| `EXECUTABLE` | the gate is GREEN; the file may be invoked |
+
+**What qualifies.** Anything that fits a model, constructs or recodes an analysis variable, restricts a sample, or otherwise **produces a number that could reach a manuscript**. A *pilot* is exempt only if it is capped, feeds nothing downstream, and is logged as a pilot. "Full corpus" is one trigger for at-scale work, not the definition of it.
+
+**The rule with teeth: the reviewed bytes must be the executed bytes.** You invoke the reviewed *file* — `Rscript scripts/04-main-models.R`. Copying a reviewed block back into a REPL is prohibited, and the manifest's SHA-256 is what makes that checkable rather than aspirational. This is the no-inline-execution discipline from earlier in the workshop with a hash attached to it.
+
+Before the first model-bearing run, the skill emits a receipt:
+
+```
+Pre-execution review: report <path> · review_id <id> · scripts 4 hashed · gate GREEN
+```
+
+The rollout covers six skills: `scholar-analyze`, `scholar-eda`, `scholar-ling` (v5.29.1), then `scholar-compute`, `scholar-data`, `scholar-simulate` (v5.29.2, which also hash-binds `scholar-respond`). If you run one of those and see no receipt, the gate did not run — that is a finding, not a convenience.
+
+**Stop and check.** Read `reports/code-review-statistics-2026-05-04-iter1.md`. Find one issue marked WARN. Decide whether you would (a) fix it now, (b) accept it in `analysis/limitations-accepted.md`, or (c) demote it to "discussion". Then find one marked UNVERIFIABLE and ask yourself what document — not what data file — would have made it verifiable. Finally, open your most recent analysis log and look for the pre-execution receipt: if the script that produced your headline table never passed through `REVIEWED+HASHED`, you know less about it than you thought.
 
 ## 14. `scholar-write` — draft from locked results, not from imagination
 
@@ -5418,6 +5509,8 @@ Existence is the easy half. A citation can be perfectly real and still be cited 
 Newly discovered findings feed back into the knowledge graph, so the check gets cheaper each time you run it.
 
 The expensive part of this check has always been "then the paper's actual text" — reading a whole PDF to adjudicate one sentence. A `scholar-rag` index (§8F) collapses that step: `rag_search("<claim>", doi="<doi>")` retrieves the supporting passage *with its page number* without opening the paper. The tier order is knowledge graph (fast path) → `scholar-rag` full-text retrieval → PDF text. If you intend to run claim-level checking over a long manuscript, building the index first is the single highest-leverage setup step.
+
+**The evidence ledger short-circuits it further (v5.28.2).** If the claim was anchored when it was written (§8A.6), the passage that justified it is already on disk in `evidence/claim-anchors.ndjson` — with its locator and its `access_tier`. The faithfulness layer reads the ledger before it goes looking, which turns "find the supporting sentence again" into "compare what we wrote against the quote we captured at the time." Claims anchored at `T4_none` are exactly the ones this step cannot short-circuit, and they are the ones worth your attention.
 
 ### 16.6 Styles supported
 
