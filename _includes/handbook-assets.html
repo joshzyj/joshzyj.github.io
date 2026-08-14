@@ -259,6 +259,24 @@
         else { if (cItem) cItem.subs.push(h); }
       });
 
+      /* ---- full-text index: a heading maps to the prose underneath it, so the
+         search box searches the handbook and not just its table of contents.
+         An H2 gets its whole section; an H3 gets its own slice of one. Built
+         once and lowercased once -- the section bodies never change. ---- */
+      var idx = {};
+      units.forEach(function (u) {
+        var whole = '', cur3 = null;
+        [].slice.call(u.wrap.children).forEach(function (n) {
+          var t = ' ' + (n.textContent || '');
+          whole += t;
+          if (n.tagName === 'H3') { cur3 = n; idx[n.id] = t; }
+          else if (cur3) { idx[cur3.id] += t; }
+        });
+        idx[u.head.id] = whole;
+      });
+      Object.keys(idx).forEach(function (k) { idx[k] = idx[k].toLowerCase(); });
+      function haystack(h) { return idx[h.id] || (h.textContent || '').toLowerCase(); }
+
       var aside = document.createElement('aside'); aside.className = 'hb-sidebar'; aside.setAttribute('aria-label', 'Handbook navigation');
       var sh = document.createElement('div'); sh.className = 'hb-sidebar-head';
       sh.innerHTML = '<div class="hb-sidebar-title"></div><div class="hb-search"><input type="search" class="hb-search-input" aria-label="Search sections"></div>';
@@ -389,11 +407,11 @@
         var q = input.value.trim().toLowerCase(); var any = false;
         sections.forEach(function (sec) {
           var secLi = sec.head._hbSecLi;
-          var secHit = !q || sec.head.textContent.toLowerCase().indexOf(q) !== -1; var shown = 0;
+          var secHit = !q || haystack(sec.head).indexOf(q) !== -1; var shown = 0;
           sec.items.forEach(function (it) {
             var itLi = it.head._hbItemLi;
-            var itHit = secHit || it.head.textContent.toLowerCase().indexOf(q) !== -1; var subShown = 0;
-            it.subs.forEach(function (s3) { var hit = itHit || s3.textContent.toLowerCase().indexOf(q) !== -1; s3._hbSubLi.style.display = hit ? '' : 'none'; if (hit) subShown++; });
+            var itHit = secHit || haystack(it.head).indexOf(q) !== -1; var subShown = 0;
+            it.subs.forEach(function (s3) { var hit = itHit || haystack(s3).indexOf(q) !== -1; s3._hbSubLi.style.display = hit ? '' : 'none'; if (hit) subShown++; });
             var itShow = itHit || subShown > 0; itLi.style.display = itShow ? '' : 'none';
             if (q && subShown > 0) itLi.classList.add('hb-open'); if (itShow) shown++;
           });
@@ -422,7 +440,16 @@
       var toggleBtn = document.createElement('button'); toggleBtn.type = 'button'; toggleBtn.className = 'hb-drawer-toggle';
       toggleBtn.innerHTML = '<span aria-hidden="true">☰</span> ' + T.menu;
       var overlay = document.createElement('div'); overlay.className = 'hb-overlay';
-      document.body.appendChild(toggleBtn); document.body.appendChild(overlay);
+      /* Both go next to the drawer, NOT on document.body. The theme puts
+         "animation: intro .3s both" on #main, and an animation of opacity with
+         fill-mode both leaves #main a permanent stacking context. The drawer
+         lives inside it, so its z-index:100 is scoped to #main -- a body-level
+         overlay at z-index:90 then paints OVER the open drawer and swallows
+         every tap on a section link (the tap hits the overlay, which closes the
+         drawer). Same context = the z-indexes compare as written. Both are
+         position:fixed and #main animates opacity, not transform, so they stay
+         viewport-positioned. ---- */
+      wrap.appendChild(toggleBtn); wrap.appendChild(overlay);
       function drawer(o){ aside.classList.toggle('hb-open', o); overlay.classList.toggle('hb-show', o); }
       toggleBtn.addEventListener('click', function(){ drawer(!aside.classList.contains('hb-open')); });
       overlay.addEventListener('click', function(){ drawer(false); });
@@ -431,7 +458,8 @@
     /* ---- back to top ---- */
     var top = document.createElement('button'); top.id = 'hb-top'; top.type = 'button'; top.innerHTML = '&uarr;'; top.setAttribute('aria-label', 'Back to top');
     top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    document.body.appendChild(top);
+    /* inside #main's stacking context too, so it stays UNDER the mobile drawer */
+    wrap.appendChild(top);
     window.addEventListener('scroll', function () { if (window.pageYOffset > 600) top.classList.add('show'); else top.classList.remove('show'); }, { passive: true });
   });
 })();
