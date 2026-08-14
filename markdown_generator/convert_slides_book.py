@@ -396,8 +396,13 @@ def strip_inline(s):
                      (r"\\bullet\b", "•"), (r"\\circ\b", "∘"), (r"\\mapsto\b", "↦"),
                      (r"\\emptyset\b", "∅"), (r"\\equiv\b", "≡"), (r"\\propto\b", "∝")):
         s = re.sub(pat, rep, s)
-    # escaped chars
-    s = s.replace(r"\%", "%").replace(r"\&", "&amp;").replace(r"\#", "#")
+    # escaped chars. \# becomes the entity, not a bare "#": the decks quote sample
+    # markdown inside \ttfamily blocks (day4's my-four-layer-blueprint.md), and a
+    # line reading "## ..." after unescaping is a heading to kramdown — four lines
+    # of sample text became four walkable sections in day4's sidebar. &#35; renders
+    # identically and cannot open an ATX heading. Code spans and fences never reach
+    # this function; they are stashed before inline conversion runs.
+    s = s.replace(r"\%", "%").replace(r"\&", "&amp;").replace(r"\#", "&#35;")
     s = s.replace(r"\_", "_").replace(r"\$", "$").replace(r"\{", "{").replace(r"\}", "}")
     s = s.replace(r"\textasciitilde", "~").replace("~", " ")
     s = s.replace("{,}", ",").replace("{.}", ".")   # math digit separators
