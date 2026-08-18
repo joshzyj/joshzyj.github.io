@@ -78,7 +78,7 @@ The handbook is built around one running example — a *Social Forces*-style pap
 <strong>Built for copy-and-paste.</strong> Commands prefixed with <code>$</code> go in your terminal (without the <code>$</code>); commands prefixed with <code>&gt;</code> go inside a running Claude Code session. Hover any code block and hit <strong>Copy</strong>.
 </div>
 
-## The paper
+## The papers
 
 The peer-reviewed study behind these workshops and the talk is now published in *Chinese Sociological Review* — read the full text free below.
 
@@ -89,6 +89,17 @@ The peer-reviewed study behind these workshops and the talk is now published in 
   <div class="vr-btns">
     <a class="vr-btn vr-btn-primary" href="https://www.tandfonline.com/eprint/A7U8VWGZ9GD3ESISGS9U/full?target=10.1080/21620555.2026.2707167">Read the full text (free) &rarr;</a>
     <a class="vr-btn vr-btn-ghost" href="https://doi.org/10.1080/21620555.2026.2707167">View via DOI</a>
+  </div>
+</div>
+
+The companion paper is the measurement one. It is where the workshop's κ ≥ 0.70 gate comes from, and where the four risks you are asked to assess before scaling an annotation — validity, reliability, replicability, transparency — are set out.
+
+<div class="vr-paper">
+  <div class="vr-eyebrow">Peer-reviewed article · Social Science Computer Review</div>
+  <h3>Navigating the Risks of Using Large Language Models for Text Annotation in Social Science Research</h3>
+  <p class="vr-cite">Lin, H., &amp; Zhang, Y. (2025). Navigating the risks of using large language models for text annotation in social science research. <em>Social Science Computer Review</em>, 44(3), 403–427. <a href="https://doi.org/10.1177/08944393251366243">https://doi.org/10.1177/08944393251366243</a></p>
+  <div class="vr-btns">
+    <a class="vr-btn vr-btn-primary" href="https://doi.org/10.1177/08944393251366243">View via DOI &rarr;</a>
   </div>
 </div>
 
