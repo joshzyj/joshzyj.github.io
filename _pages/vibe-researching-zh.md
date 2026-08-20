@@ -86,6 +86,30 @@ lang: zh
 - 一个 **Anthropic API key**（或 Claude Pro/Max 订阅）+ 一个 **OpenAI API key**（用于 Codex）
 - 可选：**R 4.3+** 与 **Python 3.11+**，因为多数 scholar-skills 在它们上面跑分析
 
+> **实验用的 notebook 找 key 的方式和 Claude Code 不一样，这一点常把人绊住。**
+> Claude Code 和 Codex 各自登录各自的。四个**实验 notebook** 用的不是那两个登录，
+> 它们按下面的顺序解析 provider，谁先能用就用谁：
+>
+> | | Provider | 怎么找到它 |
+> |---|---|---|
+> | **1** | **OpenAI**（*本工作坊默认*） | `OPENAI_API_KEY`，否则读单行的 **`labs/openai.txt`** |
+> | **2** | **本地 Ollama** | `127.0.0.1:11434` 上的服务 —— 免费、私密、不需要 key |
+> | **3** | Anthropic | `ANTHROPIC_API_KEY` |
+> | **4** | GLM / Z.ai | `ZAI_API_KEY` |
+> | **5** | *离线* | 内置的 `[OFFLINE FALLBACK]` 答案，保证每个 cell 仍然能跑完 |
+>
+> 所以 notebook 里报 *"The api_key client option must be set"* 时，通常一行就能解决
+> （在仓库根目录执行）：
+>
+> ```bash
+> printf '%s' 'PASTE_YOUR_KEY_HERE' > labs/openai.txt
+> chmod 600 labs/openai.txt
+> ```
+>
+> `labs/openai.txt` 已被 gitignore，也必须一直保持如此。如果你一分钱都不想花，
+> 那就跑 `ollama serve`，notebook 会直接用它，完全不需要 key。完整步骤见课前准备
+> 指南（`teaching/03-pre-workshop-setup.md`）。
+
 > **Windows 用户请注意：** 本节命令默认你已经在 macOS、Linux 或类 Unix 的 shell 里。如果你用的是 Windows，**不要**直接在 PowerShell 或 `cmd.exe` 里跑这些命令。先翻到 **附录 K —— Windows 安装指引**，按它一步步把 WSL2（Windows Subsystem for Linux）与 Ubuntu 装好。等你在 WSL2 里有了一个能用的 Ubuntu shell，§2 与 §3 的所有命令都能直接照搬，无需修改。每台机器只需要读一次附录 K。
 
 检查 Node 版本：
@@ -98,6 +122,45 @@ v20.11.0
 如果没有或版本太低，装 [nvm](https://github.com/nvm-sh/nvm) 然后 `nvm install 20`。
 
 > **懒得手动装一堆东西？** 只要 Claude Code 或 Codex 跑起来了（哪怕你机器上只有 Node），就可以让智能体替你安装 Python、R、Git 以及社会科学常用包栈。具体提示词见 §2.7 ——「让智能体替你安装研究工具链」。
+
+### 2.1A 账号、订阅、API key —— 最容易混淆的三件事
+
+付费有**两条完全不同的路**，而且两者不能互相替代。这一点几乎每个人都会踩，所以最后一行请读两遍。
+
+| | **订阅** | **API key** |
+|---|---|---|
+| 它是什么 | 绑定在你**登录账号**上的月付计划 | 一串密钥，按 **token 用量**计费 |
+| Claude | [claude.ai](https://claude.ai) 的 **Claude Pro** / **Claude Max** | [console.anthropic.com](https://console.anthropic.com) → **API Keys** |
+| OpenAI | [chatgpt.com](https://chatgpt.com) 的 **ChatGPT Plus / Pro / Business** | [platform.openai.com](https://platform.openai.com/api-keys) → **API keys** |
+| 能跑 Claude Code 吗？ | ✅ 用账号登录即可 | ✅ 粘贴 key |
+| 能跑 Codex CLI 吗？ | ✅ 用账号登录即可 | ✅ 粘贴 key |
+| 能跑**实验 notebook** 吗？ | ❌ **不能** | ✅ 能 |
+
+> **最后一行是最花时间的那一行。** ChatGPT Plus 订阅**不会**给你 API key；Claude Pro 订阅也
+> **不会**给实验 notebook 任何可用的东西。订阅是把**你本人**认证给某个 App；而 notebook 是
+> 你自己的 Python 在调 API，那需要一个 key（或者一个本地模型，见 §2.1）。
+
+**开通 Claude 订阅（给 Claude Code 用）。** 打开 [claude.ai](https://claude.ai) 注册，然后进
+**Settings → Plans**。Pro 是入门档；Max 把用量上限抬高——第三天全班同时跑 agent 的时候，这个差别
+很明显。之后运行 `claude`，选 **Login with Anthropic Console**，不需要 key。
+
+**申请 Anthropic API key（另一条路）。** 打开 [console.anthropic.com](https://console.anthropic.com)
+→ **API Keys** → **Create Key**，**立刻复制**（只显示一次），然后到 **Billing** 里充值——新开的
+console 余额为零，不充值调用会直接报计费错误。当前每 token 价格见
+[定价页](https://www.anthropic.com/pricing)；截至 2026 年 8 月，Claude Opus 5 是每百万 input /
+output token \$5 / \$25，Claude Haiku 4.5 是 \$1 / \$5。
+
+**让 Codex 跑起来。** 要么用 ChatGPT Plus/Pro 账号登录（`codex login`，选浏览器登录），要么在
+[platform.openai.com/api-keys](https://platform.openai.com/api-keys) 建一个 OpenAI key 粘贴进去。
+OpenAI 的 API 计费和 ChatGPT 订阅是**分开的**——余额为零的坑同样适用。
+
+**这个工作坊到底需要什么。** Claude Code，两条路都行。Codex，两条路都行，而且只有第四天做外部
+review 时才用。实验 notebook 需要的是**放在 `labs/openai.txt` 里的 OpenAI API key**——或者干脆
+什么都不需要：跑 `ollama serve`，本地、免费，如果你不想花钱，我们推荐这条。
+
+> **成本，说实话。** 四天的实验跑在默认的 `gpt-4o-mini` 上，总共远不到一美元。真正花钱的是第
+> 三、四天的 agent，那才是 Max 订阅或充值 console 的用武之地。如果是自掏腰包，就把实验跑在
+> Ollama 上，把预算留给 agent 那两天。
 
 ### 2.2 安装 Claude Code
 
@@ -4203,15 +4266,20 @@ $ cd ../textgrad-demo
 $ pip install -r requirements.txt && python make_data.py && python optimize_prompt.py
 ```
 
-结果是关于提示词优化器差异的一堂小而清晰的课。在一个 20 条的标注任务上，基线 κ = 0.667：
+结果是关于提示词优化器差异的一堂小而清晰的课。这个任务是 20 条训练、8 条验证、**12 条留出测试**，下表里的数字是**测试集准确率**，*不是* κ。（12 条测试样本，意味着一条样本就是 0.083，所以表里每个 Δ 都只是一两条样本。）
 
-| 优化器 | κ | Δ |
-|---|---|---|
-| 基线提示词 | 0.667 | —— |
-| `BootstrapFewShot` | 0.667 | **+0.000** |
-| `MIPROv2` / TextGrad | 0.750 | **+0.083** |
+| 优化器 | 优化什么 | 测试集准确率 | Δ | 冷跑中有提升的次数 |
+|---|---|---|---|---|
+| 基线提示词 | —— | 0.667 | —— | —— |
+| `BootstrapFewShot` | 示范样例 | 0.667 | **+0.000** | 0/4 |
+| `MIPROv2`（搜 10 轮） | 指令 | **0.750–0.917** | **+0.083–0.250** | **4/4** |
+| TextGrad（只走 1 步） | 指令 | 0.667–0.750 | +0.000–0.083 | 1/7 |
 
-`BootstrapFewShot` 只会自举那些模型*本来就做对*的例子，所以它修不了难例。`MIPROv2` 和 TextGrad 改写的是*指令*——那才是真正的瓶颈。当问题出在提示词本身时，再加一堆"已经能做对"的例子也没用。
+`BootstrapFewShot` 只会自举那些模型*本来就做对*的例子，所以它修不了难例。当问题出在提示词本身时，再加一堆"已经能做对"的例子也没用。
+
+但"改写指令就会有提升"这个说法太漂亮了。`MIPROv2` 和 TextGrad 改写的都是指令，可只有一个能稳定地推动测试集。区别在于它们各自*朝着什么*优化：`MIPROv2` 会在 dev 集上给 10 个候选指令打分；TextGrad 只走一步梯度，然后在一个 8 条样本的验证集上存检查点——而那个验证集只动了一条样本，这一条传不到测试集上。把 TextGrad 放到 3 步、5 步，测试集准确率一次都没动。**真正的轴是搜索预算，以及你用来导航的那个信号有多宽——不是"指令 vs 示范样例"。**
+
+> **在你相信这里任何一个数字之前，先确认它是跑出来的。** 两个框架都会把每次模型调用缓存到磁盘。重跑一次约 1 秒就返回，准确率和上一次*一模一样*，看上去和复现毫无区别。而一次冷跑要约 20 分钟。请用 `DSPY_COLD=1` / `TG_COLD=1`，并在相信任何数字之前先看 `outputs/summary.json` 里的 `wall_time_s`。这张表的上一个版本报的就是一个单次数字，而它来自一次 0.1 秒、根本没有调用模型的运行。
 
 完整的 DSPy 优化器菜单都有文档：`LabeledFewShot`、`BootstrapFewShot`、`BootstrapFewShotWithRandomSearch`、`KNNFewShot`、`COPRO`、**`MIPROv2`**（主力）、`GEPA`、`SIMBA`、`InferRules`、`BootstrapFinetune`、`BetterTogether`、`Ensemble`。
 

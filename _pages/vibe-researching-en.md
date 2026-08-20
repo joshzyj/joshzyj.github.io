@@ -88,6 +88,30 @@ You need:
 - An **Anthropic API key** for Claude (or a Claude Pro/Max subscription) and an **OpenAI API key** for Codex.
 - Optional: **R 4.3+** and **Python 3.11+**, since most scholar-skills run analyses in those.
 
+> **The lab notebooks find a key differently from Claude Code, and this trips people up.**
+> Claude Code and Codex each authenticate themselves. The four **lab notebooks** do not use
+> either of those logins — they resolve a provider in this order, first one that works:
+>
+> | | Provider | How it is found |
+> |---|---|---|
+> | **1** | **OpenAI** *(the workshop default)* | `OPENAI_API_KEY`, else a one-line **`labs/openai.txt`** |
+> | **2** | **Local Ollama** | a server on `127.0.0.1:11434` — free, private, no key |
+> | **3** | Anthropic | `ANTHROPIC_API_KEY` |
+> | **4** | GLM / Z.ai | `ZAI_API_KEY` |
+> | **5** | *offline* | canned `[OFFLINE FALLBACK]` answers, so every cell still runs |
+>
+> So the usual fix for *"The api_key client option must be set"* in a notebook is one line,
+> from the repository root:
+>
+> ```bash
+> printf '%s' 'PASTE_YOUR_KEY_HERE' > labs/openai.txt
+> chmod 600 labs/openai.txt
+> ```
+>
+> `labs/openai.txt` is gitignored and must stay that way. If you would rather spend nothing,
+> run `ollama serve` instead and the notebooks will use it with no key at all. The full
+> walkthrough is in the pre-workshop setup guide (`teaching/03-pre-workshop-setup.md`).
+
 > **Windows users:** The commands in this section assume macOS, Linux, or a Linux-like shell. If you are on Windows, do **not** try to run them in PowerShell or `cmd.exe`. Go to **Appendix K — Windows setup walkthrough** first and follow it through WSL2 (Windows Subsystem for Linux). Once you have a working Ubuntu shell inside WSL2, every command in §2 and §3 works unchanged. You only need to read Appendix K once per laptop.
 
 Check your Node version:
@@ -100,6 +124,52 @@ v20.11.0
 If `node` is missing or older than 18, install [nvm](https://github.com/nvm-sh/nvm) and run `nvm install 20`.
 
 > **Prefer not to install anything by hand?** Once Claude Code or Codex is running (even with only Node installed), you can ask the agent to install Python, R, Git, and the standard social-science packages for you. See §2.7 — "Let the agent install your research toolchain" — for the exact prompts.
+
+### 2.1A Accounts, plans, and keys — the three things people confuse
+
+There are **two different ways to pay**, and they are not interchangeable. This trips up
+almost everyone, so read the last row twice.
+
+| | A **subscription** | An **API key** |
+|---|---|---|
+| What it is | A monthly plan tied to your *login* | A secret string tied to *usage*, billed per token |
+| Claude | **Claude Pro** or **Claude Max** at [claude.ai](https://claude.ai) | [console.anthropic.com](https://console.anthropic.com) → **API Keys** |
+| OpenAI | **ChatGPT Plus / Pro / Business** at [chatgpt.com](https://chatgpt.com) | [platform.openai.com](https://platform.openai.com/api-keys) → **API keys** |
+| Runs Claude Code? | ✅ sign in with your account | ✅ paste the key |
+| Runs Codex CLI? | ✅ sign in with your account | ✅ paste the key |
+| Runs the **lab notebooks**? | ❌ **no** | ✅ yes |
+
+> **The last row is the one that costs people an hour.** A ChatGPT Plus subscription does
+> **not** give you an API key, and a Claude Pro subscription does **not** give the lab
+> notebooks anything to use. Subscriptions authenticate *you* to an app; the notebooks are
+> your own Python calling an API, and that needs a key (or a local model — see §2.1).
+
+**Getting a Claude plan (for Claude Code).** Go to [claude.ai](https://claude.ai), sign up,
+then **Settings → Plans**. Pro is the entry tier; Max raises the usage limits, which matters
+on Day 3 when everyone runs agents at once. Then run `claude` and choose **Login with
+Anthropic Console** — no key needed.
+
+**Getting an Anthropic API key (the alternative).** Go to
+[console.anthropic.com](https://console.anthropic.com) → **API Keys** → **Create Key**, copy
+it immediately (it is shown once), and add credit under **Billing** — a new console has a
+zero balance and calls will fail with a billing error until you do. Current per-token rates
+are on the [pricing page](https://www.anthropic.com/pricing); as of August 2026 Claude Opus 5
+is \$5 / \$25 per million input / output tokens and Claude Haiku 4.5 is \$1 / \$5.
+
+**Getting Codex working.** Either sign in with a ChatGPT Plus/Pro account (`codex login`,
+then pick the browser sign-in), or create an OpenAI key at
+[platform.openai.com/api-keys](https://platform.openai.com/api-keys) and paste it. OpenAI
+billing is separate from ChatGPT billing — the same warning about a zero balance applies.
+
+**What this workshop actually needs.** Claude Code, by either route. Codex, by either route,
+and only on Day 4 for external review. The lab notebooks need **an OpenAI API key in
+`labs/openai.txt`** — or nothing at all if you run `ollama serve`, which is free and local
+and is what we recommend if you would rather not spend anything.
+
+> **Cost, honestly.** Four days of lab work on the default `gpt-4o-mini` is well under a
+> dollar. The expensive thing is agents on Day 3–4, which is what a Max plan or a funded
+> console is for. If you are paying out of pocket, run the labs on Ollama and spend your
+> budget on the agent days.
 
 ### 2.2 Installing Claude Code
 
@@ -4282,15 +4352,20 @@ $ cd ../textgrad-demo
 $ pip install -r requirements.txt && python make_data.py && python optimize_prompt.py
 ```
 
-The result is a small, clarifying lesson about how prompt optimizers differ. On a 20-item annotation task, baseline κ = 0.667:
+The result is a small, clarifying lesson about how prompt optimizers differ. The task is 20 training items, 8 validation, and **12 held-out test items**, and the number below is **test accuracy** — *not* κ. (With 12 test items, one item is 0.083, so every Δ here is one or two items.)
 
-| Optimizer | κ | Δ |
-|---|---|---|
-| Baseline prompt | 0.667 | — |
-| `BootstrapFewShot` | 0.667 | **+0.000** |
-| `MIPROv2` / TextGrad | 0.750 | **+0.083** |
+| Optimizer | What it optimizes | Test accuracy | Δ | Cold runs that improved |
+|---|---|---|---|---|
+| Baseline prompt | — | 0.667 | — | — |
+| `BootstrapFewShot` | the demonstrations | 0.667 | **+0.000** | 0 of 4 |
+| `MIPROv2` (10 trials) | the instruction | **0.750–0.917** | **+0.083–0.250** | **4 of 4** |
+| TextGrad (1 step) | the instruction | 0.667–0.750 | +0.000–0.083 | 1 of 7 |
 
-`BootstrapFewShot` only bootstraps examples the model *already gets right*, so it cannot fix the hard cases. `MIPROv2` and TextGrad rewrote the *instruction* — which was the actual bottleneck. When your prompt is the problem, adding examples of what already works will not help.
+`BootstrapFewShot` only bootstraps examples the model *already gets right*, so it cannot fix the hard cases. When your prompt is the problem, adding examples of what already works will not help.
+
+But "rewrite the instruction and it improves" is too neat. Both `MIPROv2` and TextGrad rewrite the instruction, and only one of them reliably moves the test split. The difference is what each optimizes *against*: `MIPROv2` scores 10 candidate instructions on the dev set, while TextGrad takes one gradient step and checkpoints on an 8-item validation split — and that split moves by a single item, which does not transfer. At 3 and 5 steps TextGrad's test accuracy never moves at all. **Search budget, and the width of the signal you steer on, is the real axis — not "instruction vs demonstrations."**
+
+> **Before you trust any number here, check it was earned.** Both frameworks cache every model call to disk. A re-run returns in ~1 second, reproduces the previous accuracy *exactly*, and looks indistinguishable from a replication. A cold run takes ~20 minutes. Use `DSPY_COLD=1` / `TG_COLD=1` and check `outputs/summary.json`'s `wall_time_s` before believing anything. An earlier version of this table reported a single figure that came from a 0.1-second run in which no model was called.
 
 The full DSPy optimizer menu is documented: `LabeledFewShot`, `BootstrapFewShot`, `BootstrapFewShotWithRandomSearch`, `KNNFewShot`, `COPRO`, **`MIPROv2`** (the workhorse), `GEPA`, `SIMBA`, `InferRules`, `BootstrapFinetune`, `BetterTogether`, `Ensemble`.
 
