@@ -2850,6 +2850,13 @@ python3 ask.py "why doesn't closing the access gap close the divide?"
 
 `ask.py` prints the exact navigation path (`index.md → topics/… → concepts/… → papers/…`), making the contrast with RAG's opaque top-*K* concrete.
 
+> **This graph is also the seed for `scholar-rag`'s GraphRAG (§8F).** `rag_py graphrag.py
+> seed` imports these concepts and citation edges before any LLM extraction runs — it is the
+> fast, no-LLM head start. On a 5.5k-paper library the seed edges alone reached about **12%**
+> of the corpus, which is why §8F.6's citation and semantic stages exist. The two skills are
+> complementary: `scholar-knowledge` answers *what does the field claim*, `scholar-rag`
+> answers *show me the passage, cited*.
+
 ### 8C.1 What lives where
 
 ```
@@ -2957,6 +2964,23 @@ The last one — `from output` — is the **feedback loop**. After every paper y
 
 Returns paper IDs, titles, ranked relevance, and a short rationale per hit. Feeds directly into `scholar-lit-review-hypothesis` (§8A) — instead of asking external APIs first, the lit-review skill reads `papers.ndjson` first.
 
+#### Mode 3 — RELATE: the edges you assert yourself
+
+Ingestion extracts findings; it does not claim two papers *disagree*. That edge is a
+scholarly judgement, so you make it — and then it is queryable.
+
+```bash
+> /scholar-knowledge relate [Paper A] contradicts [Paper B]
+> /scholar-knowledge relate [Paper A] extends [Paper B]
+> /scholar-knowledge relate show relationships for [Paper A]
+> /scholar-knowledge relate show all contradicts
+> /scholar-knowledge relate map residential segregation
+```
+
+Both papers must already be in the graph; if one is missing the skill offers to ingest it
+first rather than inventing a node. `contradicts` is the one worth the effort — a literature
+review that can enumerate its own disagreements is doing something a summary cannot.
+
 #### Mode 4 — STATUS (the dashboard)
 
 ```
@@ -2990,6 +3014,18 @@ Project tags:
   segregation-paper-2026       (108 papers)
   …
 ```
+
+#### Mode 5 — EXPORT: a subset, for one project or one bibliography
+
+```bash
+> /scholar-knowledge export for project digital divide
+> /scholar-knowledge export for collection [zotero collection]
+> /scholar-knowledge export by author [name]
+> /scholar-knowledge export all as bibtex
+```
+
+Markdown is the default; `as bibtex` writes a `.bib`. Use this to hand a collaborator the
+slice of your graph that touches one paper, without handing them your whole library.
 
 #### Mode 6 — COMPILE: turn the graph into an Obsidian wiki
 
@@ -3498,7 +3534,7 @@ They share paper identity (`doc_id` = sha256 of the normalized DOI or title), so
 
 > **It is self-contained.** The engine provisions its own CPython 3.12 venv via `uv`, reads Zotero directly, and bundles its own logging. It has no hard dependency on the rest of the plugin, and degrades gracefully when `scholar-knowledge` is absent.
 
-### 8F.1 The six modes
+### 8F.1 The nine modes
 
 | Mode | Triggers | What it does |
 |---|---|---|
@@ -3508,6 +3544,9 @@ They share paper identity (`doc_id` = sha256 of the normalized DOI or title), so
 | **3 mcp** | `mcp`, `register`, `serve`, `connect` | Register the stdio MCP server with Claude Code and Codex |
 | **4 graph** | `graph`, `graphrag`, `neighbors`, `communities`, `global` | Seed → LLM entity extraction → Leiden communities → summaries; then `local`/`global`/`neighbors` search |
 | **5 status** | `status`, `stats`, `coverage` | Documents by stage, chunk counts, no-PDF coverage, graph counts |
+| **6 citations** | `citations`, `cites`, `coupling` | One OpenAlex call per DOI → direct citations + bibliographic coupling + co-citation → Leiden **paper** communities. The research lineages in your library |
+| **7 keywords** | `keywords`, `tags`, `topics` | Loads Zotero tags (~69% of items), OpenAlex topics (~95% of DOI'd papers), and the in-text "Keywords:" line (~39%). Merged under the same identity as LLM entities |
+| **8 semantic** | `semantic`, `knn`, `duplicates` | Re-uses the chunk vectors you already have: paper↔paper kNN, entity synonym linking, duplicate detection |
 
 `full` runs 0 → 1 → 3. GraphRAG (mode 4) is deliberately **not** in `full`, because it is the long, LLM-bound stage — hours of local inference over a real library.
 
@@ -3600,6 +3639,17 @@ $ rag_py graphrag.py extract     # LLM entity/relation extraction per paper — 
 $ rag_py graphrag.py build       # dedup entities → Leiden communities
 $ rag_py graphrag.py summarize   # LLM community summaries (the global-search corpus)
 $ rag_py graphrag.py run --limit 50                                     # the whole chain, bounded
+```
+
+> **`run` is the SHORT chain, and that is a trap.** It executes exactly
+> `seed → extract → build → summarize`. It does **not** run citations, keywords, or
+> semantic — the three stages that must land *before* `build`, because `build` is what
+> dedups entities and computes the Leiden communities. Run `build` early and those
+> communities are computed on a graph with no bibliographic edges, no keyword nodes,
+> and no entity merges; fixing it afterwards means re-running `build` **and**
+> `summarize`, which is the expensive LLM stage. Use the order in §8F.6.
+
+```bash
 $ rag_py graphrag.py local  "mechanisms linking neighborhood to health" # entity-grounded passages
 $ rag_py graphrag.py global "what are the major theoretical camps here?" # map-reduce over communities
 $ rag_py graphrag.py neighbors <doc_id>
@@ -3607,7 +3657,51 @@ $ rag_py graphrag.py neighbors <doc_id>
 
 > **Model selection is the thing that will bite you.** Extraction defaults to `deepseek-r1:32b`, which runs and honors `format=json` but is a *reasoning* model — slow for bulk work. `gpt-oss:20b` is the faster ideal, but fails with a `tensor "blk.0.ffn_down_exps.weight" size overflow` on older ollama builds; `brew upgrade ollama`, restart the server, then `export RAG_GRAPH_MODEL=gpt-oss:20b`. If that is unavailable, a fast instruct model is the practical answer: `ollama pull qwen2.5:7b-instruct`. Extraction is section-bounded (12k chars by default) and resumable per document, so run it detached and let it cross sessions.
 
-### 8F.6 Where it lives
+### 8F.6 The three stages that make the graph worth having
+
+Entity co-mention answers "which papers use the same words." These three answer
+"which papers actually build on each other," "what does the field already call this,"
+and "which papers are plainly about the same thing." All three were added after the
+first version of this handbook and none of them is in `graph run`.
+
+```bash
+$ rag_py citations.py fetch      # one OpenAlex call per DOI — resumable, cached
+$ rag_py citations.py build      # direct cites + coupling + co-citation → paper communities
+$ rag_py keywords.py load        # Zotero tags + OpenAlex topics + the in-text Keywords line
+$ rag_py semantic.py entities    # link entity synonyms the normalizer cannot merge
+$ rag_py semantic.py docs        # paper↔paper kNN — reaches papers with no DOI at all
+$ rag_py semantic.py duplicates  # the same work ingested twice
+```
+
+Why each earns its runtime:
+
+- **citations** — `seed` alone covered about **12%** of a 5.5k-paper corpus. Coupling
+  (A and B cite the same work) reaches far more pairs than direct citation, and stays
+  useful for recent papers that nothing cites yet.
+- **keywords** — inherently *multi-document*: one tag covers dozens of papers, which is
+  exactly what an entity graph built per-paper is short of. And no hallucination risk.
+- **semantic** — a paper with **no DOI never enters the OpenAlex cache**, so it is
+  invisible to the whole bibliographic layer. Adding semantic edges lifted paper-graph
+  coverage from **72% to 95%** (3,923 → 5,189 papers) on that same corpus. It also merges
+  `residential segregation` / `neighborhood segregation` / `spatial segregation`, which
+  normalize to three distinct keys and are one concept.
+
+**The order is not arbitrary** — later stages consume earlier ones, keywords need the
+OpenAlex cache, and every graph stage must precede `build`:
+
+```
+setup → ingest → mcp → citations fetch → citations build
+      → graph seed → graph extract → keywords load → semantic entities
+      → graph build → graph summarize
+```
+
+> **Thresholds are not interchangeable between `docs` and `entities`.** Document
+> similarity sits far higher than phrase similarity: the median top-10 *paper* neighbour
+> scored 0.886, so a 0.55 floor keeps essentially everything (10 edges/paper, including a
+> historical-sociology monograph next to an LLM benchmark paper). The 0.90 default gives
+> 3.5 edges/paper. Check the distribution before trusting a cutoff.
+
+### 8F.7 Where it lives
 
 ```
 ~/.claude/scholar-rag/                      (override with $SCHOLAR_RAG_DIR)
@@ -3627,7 +3721,7 @@ It is **user-scoped, not project-scoped** — the same store serves every projec
 
 Configuration, all via `.env` or environment: `SCHOLAR_RAG_DIR` · `SCHOLAR_ZOTERO_DIR` (auto-detected) · `EMBED_MODEL` (default `BAAI/bge-m3`) · `RAG_CHUNK_CHARS` / `RAG_CHUNK_OVERLAP` · `RAG_GRAPH_MODEL` / `RAG_SUMMARY_MODEL` · `RAG_OCR_MODEL` · `OLLAMA_HOST`.
 
-### 8F.7 Inspect
+### 8F.8 Inspect
 
 ```bash
 $ rag_py ingest.py status      # documents by stage, chunk counts, no_pdf coverage

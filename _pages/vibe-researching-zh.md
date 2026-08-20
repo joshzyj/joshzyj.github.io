@@ -2770,6 +2770,12 @@ python3 ask.py "why doesn't closing the access gap close the divide?"
 
 `ask.py` 会打印出确切的导航路径（`index.md → topics/… → concepts/… → papers/…`），把它与 RAG 不透明的 top-*K* 之间的差别摆到明面上。
 
+> **这张图谱同时也是 `scholar-rag` GraphRAG 的\*\*种子\*\*（见 §8F）。** `rag_py graphrag.py seed`
+> 会在任何 LLM 抽取跑起来之前，先把这里的概念和引用边导进去 —— 这是那一步快速、不用 LLM 的
+> 起跑优势。在一个 5.5k 篇的文献库上，光靠种子边只覆盖了约 **12%** 的语料，这正是 §8F.6 里
+> citations 与 semantic 两个阶段存在的理由。两个技能是互补的：`scholar-knowledge` 回答
+> \*这个领域主张什么\*，`scholar-rag` 回答\*把那一段原文带出处给我看\*。
+
 ### 8C.1 文件长什么样
 
 ```
@@ -2876,6 +2882,22 @@ python3 ask.py "why doesn't closing the access gap close the divide?"
 
 返回论文 ID、题目、相关性排序、每条命中一句解释。它直接喂 `scholar-lit-review-hypothesis`（§8A）—— lit-review 技能查外部 API **之前**先读 `papers.ndjson`。
 
+#### 模式 3 —— RELATE：由你亲自断言的那些边
+
+导入阶段抽的是发现，它不会替你判断两篇论文\*\*互相矛盾\*\*。那条边是一个学术判断，所以得你来下 ——
+下完之后它就变成可查询的了。
+
+```bash
+> /scholar-knowledge relate [论文 A] contradicts [论文 B]
+> /scholar-knowledge relate [论文 A] extends [论文 B]
+> /scholar-knowledge relate show relationships for [论文 A]
+> /scholar-knowledge relate show all contradicts
+> /scholar-knowledge relate map residential segregation
+```
+
+两篇论文都必须已经在图谱里；缺一篇的话，技能会先问你要不要导入，而不是凭空造一个节点。
+真正值得花力气的是 `contradicts` —— 一篇能把自己领域的分歧一条条列出来的综述，做到了摘要做不到的事。
+
 #### 模式 4 —— STATUS（仪表盘）
 
 ```
@@ -2909,6 +2931,18 @@ Project tags:
   segregation-paper-2026       (108 papers)
   …
 ```
+
+#### 模式 5 —— EXPORT：只导出一个子集，给一个项目或一份参考文献
+
+```bash
+> /scholar-knowledge export for project digital divide
+> /scholar-knowledge export for collection [zotero 分类]
+> /scholar-knowledge export by author [作者名]
+> /scholar-knowledge export all as bibtex
+```
+
+默认是 markdown；`as bibtex` 会写出一个 `.bib`。用它把与某一篇论文相关的那一小片图谱交给合作者，
+而不必把整个文献库都交出去。
 
 #### 模式 6 —— COMPILE：把图谱编译成 Obsidian wiki
 
@@ -3413,7 +3447,7 @@ argument-hint: "[setup|ingest|query|mcp|graph|status] [args], e.g. 'ingest' or
 
 > **它是自包含的。** 引擎用 `uv` 自建 CPython 3.12 虚拟环境，直接读 Zotero，自带日志。它对插件其余部分没有硬依赖，`scholar-knowledge` 不在时也能优雅降级。
 
-### 8F.1 六个模式
+### 8F.1 九个模式
 
 | 模式 | 触发词 | 做什么 |
 |---|---|---|
@@ -3423,6 +3457,9 @@ argument-hint: "[setup|ingest|query|mcp|graph|status] [args], e.g. 'ingest' or
 | **3 mcp** | `mcp`、`register`、`serve`、`connect` | 把 stdio MCP 服务器注册进 Claude Code 与 Codex |
 | **4 graph** | `graph`、`graphrag`、`neighbors`、`communities`、`global` | 播种 → LLM 抽实体 → Leiden 社区 → 摘要；然后做 `local`/`global`/`neighbors` 检索 |
 | **5 status** | `status`、`stats`、`coverage` | 按阶段统计文档、块数、无 PDF 的覆盖率、图谱计数 |
+| **6 citations** | `citations`、`cites`、`coupling` | 每个 DOI 一次 OpenAlex 调用 → 直接引用 + 文献耦合 + 共被引 → Leiden **论文**社区。也就是你库里的学术谱系 |
+| **7 keywords** | `keywords`、`tags`、`topics` | 载入 Zotero 标签（约占条目 69%）、OpenAlex 主题（约占有 DOI 论文 95%）、正文里的 "Keywords:" 行（约 39%）。与 LLM 抽出的实体归一到同一身份 |
+| **8 semantic** | `semantic`、`knn`、`duplicates` | 复用你已经算好的 chunk 向量：论文↔论文 kNN、实体同义词连边、重复条目检测 |
 
 `full` 跑 0 → 1 → 3。GraphRAG（模式 4）**故意**不在 `full` 里 —— 它是那个漫长的、受 LLM 限速的阶段，在真实规模的文献库上是数小时的本地推理。
 
@@ -3515,6 +3552,15 @@ $ rag_py graphrag.py extract     # 逐篇论文做 LLM 实体/关系抽取 —�
 $ rag_py graphrag.py build       # 实体去重 → Leiden 社区
 $ rag_py graphrag.py summarize   # LLM 社区摘要（global 检索的语料）
 $ rag_py graphrag.py run --limit 50                                     # 整条链，带上限
+```
+
+> **`run` 是那条\*\*短\*\*链，而这是个坑。** 它执行的正好是 `seed → extract → build → summarize`，
+> **不包含** citations、keywords、semantic —— 而这三个阶段必须落在 `build` **之前**，因为
+> `build` 正是做实体去重和算 Leiden 社区的那一步。`build` 跑早了，社区就是在一张没有文献
+> 引用边、没有关键词节点、没有实体合并的图上算出来的；事后补救意味着 `build` **和**
+> `summarize` 都要重跑，而后者正是最贵的 LLM 阶段。请用 §8F.6 里的顺序。
+
+```bash
 $ rag_py graphrag.py local  "mechanisms linking neighborhood to health" # 实体锚定的段落
 $ rag_py graphrag.py global "what are the major theoretical camps here?" # 在社区上 map-reduce
 $ rag_py graphrag.py neighbors <doc_id>
@@ -3522,7 +3568,47 @@ $ rag_py graphrag.py neighbors <doc_id>
 
 > **会咬你的是选模型。** 抽取默认用 `deepseek-r1:32b`：它能跑，也遵守 `format=json`，但那是个*推理*模型 —— 做批量抽取很慢。`gpt-oss:20b` 是更快的理想选择，但在较老的 ollama 构建上会以 `tensor "blk.0.ffn_down_exps.weight" size overflow` 失败；`brew upgrade ollama`、重启服务，然后 `export RAG_GRAPH_MODEL=gpt-oss:20b`。要是拿不到它，务实的答案是一个快的 instruct 模型：`ollama pull qwen2.5:7b-instruct`。抽取按章节截断（默认 12k 字符），并且逐文档可续跑 —— 脱离终端跑，让它跨会话继续。
 
-### 8F.6 它存在哪里
+### 8F.6 真正让这张图值钱的三个阶段
+
+实体共现回答的是"哪些论文用了同样的词"。下面这三个回答的是"哪些论文真的在互相接力"、
+"这个领域本来管它叫什么"、以及"哪些论文明摆着在讲同一件事"。三个都是本手册第一版之后
+才加的，而且 `graph run` 一个都不跑。
+
+```bash
+$ rag_py citations.py fetch      # 每个 DOI 一次 OpenAlex 调用 —— 可续跑、带缓存
+$ rag_py citations.py build      # 直接引用 + 耦合 + 共被引 → 论文社区
+$ rag_py keywords.py load        # Zotero 标签 + OpenAlex 主题 + 正文 Keywords 行
+$ rag_py semantic.py entities    # 连接归一化\*\*做不到\*\*的实体同义词
+$ rag_py semantic.py docs        # 论文↔论文 kNN —— 能覆盖到压根没有 DOI 的论文
+$ rag_py semantic.py duplicates  # 同一篇被导入了两次
+```
+
+每一个为什么值得它的运行时间：
+
+- **citations** —— 光靠 `seed`，在一个 5.5k 篇的语料上只覆盖了约 **12%**。文献耦合（A 和 B
+  引了同一篇）能触达的配对远多于直接引用，而且对"还没人引"的新论文依然有效。
+- **keywords** —— 它天然是**跨文档**的：一个标签盖住几十篇论文，而这恰恰是逐篇构建的实体图
+  最缺的东西。而且没有幻觉风险。
+- **semantic** —— 一篇**没有 DOI 的论文根本不会进 OpenAlex 缓存**，所以它对整个文献计量层
+  是隐形的。在同一个语料上，加了语义边之后论文图覆盖率从 **72% 升到 95%**（3,923 → 5,189 篇）。
+  它还能把 `residential segregation` / `neighborhood segregation` / `spatial segregation`
+  合成一个概念 —— 这三个归一化之后是三个不同的 key，实际上是同一件事。
+
+**顺序不是随便排的** —— 后面的阶段要吃前面的产物，keywords 需要 OpenAlex 缓存，而所有
+图谱阶段都必须排在 `build` 前面：
+
+```
+setup → ingest → mcp → citations fetch → citations build
+      → graph seed → graph extract → keywords load → semantic entities
+      → graph build → graph summarize
+```
+
+> **`docs` 和 `entities` 的阈值不能互换。** 文档相似度整体比短语相似度高得多：论文的
+> top-10 近邻中位数是 0.886，所以 0.55 这个下限基本等于全留（每篇 10 条边，包括一本
+> 历史社会学专著紧挨着一篇 LLM benchmark 论文）。默认的 0.90 给出每篇 3.5 条边。
+> 在相信任何一个阈值之前，先看看分布。
+
+### 8F.7 它存在哪里
 
 ```
 ~/.claude/scholar-rag/                      （用 $SCHOLAR_RAG_DIR 覆盖）
@@ -3542,7 +3628,7 @@ $ rag_py graphrag.py neighbors <doc_id>
 
 配置全部通过 `.env` 或环境变量：`SCHOLAR_RAG_DIR` · `SCHOLAR_ZOTERO_DIR`（自动探测）· `EMBED_MODEL`（默认 `BAAI/bge-m3`）· `RAG_CHUNK_CHARS` / `RAG_CHUNK_OVERLAP` · `RAG_GRAPH_MODEL` / `RAG_SUMMARY_MODEL` · `RAG_OCR_MODEL` · `OLLAMA_HOST`。
 
-### 8F.7 检查
+### 8F.8 检查
 
 ```bash
 $ rag_py ingest.py status      # 按阶段统计文档、块数、no_pdf 覆盖
