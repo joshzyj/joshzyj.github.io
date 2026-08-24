@@ -512,7 +512,8 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
 | GLM / Z.ai（国际） | `api.z.ai` | Opus 与 Sonnet → `glm-5.2`；Haiku → `glm-4.7`。同时 `API_TIMEOUT_MS=3000000`。 |
 | GLM 中国大陆 | `open.bigmodel.cn` | 同样思路；按账号可用的 GLM 系列选择。 |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`；Haiku 与 subagents → `deepseek-v4-flash`。 |
-| 本地 —— Ollama（经 CCR/代理） | CCR → `http://localhost:11434/v1/chat/completions` | 你拉下来的任意 tag（如 `qwen2.5-coder:32b`）；需要一层转换。详见 §2.6.5。 |
+| 本地 —— Ollama（**0.32+**，直连） | `http://localhost:11434` —— Ollama 自己就提供 `/v1/messages` | `ollama launch claude` / `ollama launch codex`；**不需要 shim**。模型既要能调工具、上下文又要 ≥64k —— 而我们实测：一个两项都满足的 20B 模型，仍然扛不住这个外壳。依赖它之前请先读 §2.6.5。 |
+| 本地 —— 老版 Ollama、vLLM、llama.cpp | CCR → `http://localhost:11434/v1/chat/completions` | 你拉下来的任意 tag（如 `qwen2.5-coder:32b`）；需要一层转换。详见 §2.6.5。 |
 | 本地 —— vLLM / llama.cpp（经代理） | 你启动的代理地址 | 由你的代理决定，详见 §2.6.5。 |
 
 完整 `ANTHROPIC_BASE_URL`：Z.ai 为 `https://api.z.ai/api/anthropic`，BigModel 为 `https://open.bigmodel.cn/api/anthropic`，DeepSeek 为 `https://api.deepseek.com/anthropic`。后缀 `/anthropic` 是让 endpoint 走 compatibility shim 的关键，漏掉它是最常见的配置错误。
@@ -639,9 +640,40 @@ CC Switch 不替代方案 A/B —— 它只是把它们收进一个界面。工�
 
 #### 2.6.5 在本机跑本地模型
 
-如果机构禁止把数据发到云端 API，或者你需要可离线复现的实验，可以在本机跑一个 checkpoint，再把 Claude Code 路由过去。注意：Claude Code 说的是 Anthropic Messages API，而本地服务（Ollama、vLLM、llama.cpp）说的是 OpenAI 风格的 chat completions，所以中间要垫一层薄薄的转换层。`claude-code-router`（CCR）最省事：它对 provider 说的是 OpenAI 风格的 chat completions，所以这三者都当作普通的 OpenAI-compatible 后端接入即可——不需要为每个本地服务单独配 transformer。
+> **两件完全不同的事，只有一件难。** Ollama 在本工作坊里出现两次，而结果并不一样。**作为实验 notebook 的模型 provider**，它工作得很好 —— notebook 发的是普通的对话请求，一个小的本地模型能正确回答；这就是 §2.1A 推荐的那条免费、不需要 key 的路。**而作为 Claude Code 或 Codex 背后的引擎**，它要扛的是一整个 agent 外壳 —— 极大的系统提示词、几十个工具定义、多轮工具循环 —— 这个门槛高得多。看到关于后者的警告，别把它当成前者的问题。
 
-**路径 A —— 用 CCR 在前面接住 Ollama（最简单的本地路线）。** Ollama 暴露的是 OpenAI 风格的接口（`/v1/chat/completions`）和它自己的原生 API——不是 Claude Code 期望的 Anthropic `/v1/messages` 格式——所以和 vLLM、llama.cpp 一样，前面要垫一层 shim：
+如果机构禁止把数据发到云端 API，或者你需要可离线复现的实验，可以在本机跑一个 checkpoint，用它来驱动 Claude Code 或 Codex。**从 Ollama 0.32 起，这件事完全不需要 shim** —— Ollama 自带集成启动器，并且直接提供 Anthropic Messages API。更老的 Ollama、以及 vLLM 和 llama.cpp 仍然需要一层转换；如果你想*混用*多个 provider，也仍然需要，那时 `claude-code-router`（CCR）最省事。
+
+**路径 A —— `ollama launch`（最简单，什么都不用配）。** Ollama 对我们用的这两个工具都有一等公民级的集成：
+
+```bash
+$ ollama launch claude                       # 用本地模型驱动 Claude Code
+$ ollama launch codex                        # Codex CLI 同理
+$ ollama launch claude --model qwen2.5:7b    # 指定模型
+$ ollama launch claude --config              # 只配置，不启动
+$ ollama launch claude --restore             # 把集成恢复成默认配置
+$ ollama launch                              # 所有集成的交互式菜单
+```
+
+`ollama launch --help` 里还有更多（Copilot CLI、OpenCode、Cline、Qwen Code、VS Code 等）。
+
+**它不会动你已有的配置。** 实测：跑完 `ollama launch claude --config` 之后，`~/.claude/settings.json`、`~/.codex/config.toml`、`~/.zshrc` 与之前逐字节一致 —— 启动器只为子进程导出环境变量。（`--restore` 是给 Codex 和 ChatGPT 集成用的；对 `claude` 会直接报 *"claude does not support --restore"*，因为根本没有需要撤销的持久配置。）
+
+> **这换的是外壳，不是模型 —— 而这个区分正是第一天的全部主题。** `ollama launch claude` 给你的是*Claude Code 这个外壳*在本机驱动一个**开放权重**模型。它**不**给你 Claude：Anthropic 的权重从未公开，也从不进入 Ollama。你在测的恰恰就是本工作坊的核心论点 —— 有多少行为来自外壳，有多少来自模型。能力会明显下降，而那个下降本身就是测量结果。
+
+> **选模型要看两个轴，不是一个。** 它既要能**调用工具**，又要有足够的上下文 —— Ollama 官方建议 64k 起。用 `ollama show <模型>` 可以同时看到这两项，别猜：在讲师这台机器上，`qwen2.5:7b` 有 `tools` 但上下文只有 32k；`qwen3.6` 有 256k 上下文，却**完全没有 `tools` 能力**。两种失败都不会大声报错 —— 一个是大仓库被截断，另一个是 agent 干脆从不调用工具。
+>
+> **按参数看，`gpt-oss:20b` 是本机最好的候选** —— 20.9B 参数、**131,072 上下文**、带 `tools`。直接打 Ollama 的 Anthropic 端点，它确实是对的：能回答，也能吐出结构正确的 Anthropic `tool_use` 块（`stop_reason: tool_use`、`name=read_file`、`input={"path": "/etc/hostname"}`）。
+>
+> **但它依然驱动不了 Claude Code。** 同一个模型、同一台机器、同一分钟，试了三次：走原始端点，*"What is 2+2? Answer with the number only"* 返回 **`4`**；走 `ollama launch claude`，返回的是 *"Hello! I'm here to help with any project-related tasks…"*。让它读一个文件，它开始讲怎么用 `curl` 下载 JPEG。**它回答的是系统提示词，不是用户的提示词** —— 这是小模型在一个极大、结构极强、带几十个工具定义的系统提示词下的典型失败。管道是通的；是模型扛不住这个外壳。
+>
+> 这就是第一天的论点，跑在你自己的笔记本上，而且你可以复现：**外壳干的活远比它看上去多，而且它不会优雅地降级**，它是以一种具体、可诊断的方式坏掉的。不过结论要说清楚边界：这是一个 20B 模型、三个提示词、一台机器。Ollama 官方示例用的是 `gpt-oss:120b`，那个体量的模型很可能扛得住。硬件够的话，这个实验值得做。
+>
+> **真要试的话，还有两点。** Claude Code 不认识 `gpt-oss:20b`，于是它按 **200k** 上下文来规划，而这个模型只有 **128k** —— 请把 `CLAUDE_CODE_MAX_CONTEXT_TOKENS` 设成真实值，或者在 `modelOverrides` 里映射一下，否则 auto-compact 会按一个并不存在的窗口来算。另外它是**带思考**的模型：`max_tokens` 给得太紧时，思考会把预算吃光，可见回答返回**空**（40 的上限什么都没返回，600 时用 45 个 token 就答完了）。本地跑下来一片空白，先把预算调大，再去怪模型。
+>
+> **如果 `ollama show` 直接报错**（比如 `tensor "blk.0.ffn_down_exps.weight" size overflow`），那是本地副本坏了，不是模型有问题。重新 `ollama pull <模型>` 即可修复。
+
+**路径 B —— 用 CCR 在前面接住 Ollama（老版本 Ollama，或者你想混用多个 provider 时）。** 在 **0.32 之前的 Ollama** 上——以及任何版本的 vLLM、llama.cpp 上——只提供 OpenAI 风格的 `/v1/chat/completions`，而不是 Claude Code 期望的 Anthropic `/v1/messages`，所以前面要垫一层 shim：
 
 ```bash
 # 1. 安装 Ollama（macOS / Linux / WSL）
@@ -660,9 +692,9 @@ $ ccr code
 #    会话里：/model ollama,qwen2.5-coder:32b
 ```
 
-直接把 `ANTHROPIC_BASE_URL` 指到 `http://localhost:11434` 是**不行**的：Claude Code 会去 POST `/v1/messages`，而 Ollama 并不提供这个端点。是这层转换把两种 schema 接起来的。
+> **2026-08-24 更正。** 这一节以前说：直接把 `ANTHROPIC_BASE_URL` 指到 `http://localhost:11434` 是*不行*的，因为 Ollama 不提供 `/v1/messages`。**现在它提供了。** 在 Ollama 0.32.15 上用真实请求验证过：`POST /v1/messages` 返回的是标准的 Anthropic 结构（`"type":"message"`、`content:[{"type":"text"}]`、`stop_reason`、`usage.input_tokens`）。路径 A 之所以不需要任何 shim，就是因为这个。更老的 Ollama 不提供该端点，所以下面这条路由方案仍然保留。
 
-**路径 B —— `claude-code-router`（CCR），安装与路由。** CCR 既是单个本地模型的 shim（路径 A），也是*混合* provider 的方式——给不同档位走不同路由（Opus 走 Z.ai、Sonnet 走 DeepSeek、Haiku 走本地 Ollama），并可在会话中途用 `/model provider,model` 手动切换（要做故障回退可自己写一段 `router.js` 自定义路由）：
+**路径 C —— `claude-code-router`（CCR），安装与路由。** CCR 既是单个本地模型的 shim（路径 B），也是*混合* provider 的方式——给不同档位走不同路由（Opus 走 Z.ai、Sonnet 走 DeepSeek、Haiku 走本地 Ollama），并可在会话中途用 `/model provider,model` 手动切换（要做故障回退可自己写一段 `router.js` 自定义路由）：
 
 ```bash
 $ npm install -g @musistudio/claude-code-router
@@ -1418,17 +1450,17 @@ jobs:
 <div class="hb-table-wrap">
 <table>
 <thead><tr>
-<th><strong>文件</strong></th><th><strong>位置</strong></th><th><strong>是否提交</strong></th><th><strong>用途</strong></th>
+<th>**文件**</th><th>**位置**</th><th>**是否提交**</th><th>**用途**</th>
 </tr>
 </thead><tbody>
 <tr>
 <td><code>~/.claude/</code><br><code>settings.json</code></td><td>家目录</td><td>否</td><td>个人偏好：env vars、默认模型、你的全局 hook</td>
 </tr>
 <tr>
-<td><code>&lt;project&gt;/.claude/</code><br><code>settings.json</code></td><td>仓库根</td><td><strong>是</strong>（提交）</td><td>团队共享规则：权限白名单、PreToolUse hook、团队共用的 MCP server</td>
+<td><code>&lt;project&gt;/.claude/</code><br><code>settings.json</code></td><td>仓库根</td><td>**是**（提交）</td><td>团队共享规则：权限白名单、PreToolUse hook、团队共用的 MCP server</td>
 </tr>
 <tr>
-<td><code>&lt;project&gt;/.claude/</code><br><code>settings.local.json</code></td><td>仓库根</td><td><strong>否</strong>（gitignore）</td><td>本机覆盖：你的个人 API key、“这个目录里始终允许 Read”等私有决定</td>
+<td><code>&lt;project&gt;/.claude/</code><br><code>settings.local.json</code></td><td>仓库根</td><td>**否**（gitignore）</td><td>本机覆盖：你的个人 API key、“这个目录里始终允许 Read”等私有决定</td>
 </tr>
 </tbody></table></div>
 
@@ -6859,20 +6891,20 @@ Anthropic 官方 AI Fluency 课程把所有人与 AI 的互动组织在四个动
 <div class="hb-table-wrap">
 <table>
 <thead><tr>
-<th><strong>4D</strong></th><th><strong>Anthropic 怎么教</strong></th><th><strong>在本工作坊的对应位置</strong></th>
+<th>**4D**</th><th>**Anthropic 怎么教**</th><th>**在本工作坊的对应位置**</th>
 </tr>
 </thead><tbody>
 <tr>
-<td><strong>Delegation<br> （委派）</strong></td><td>决定什么交给 agent、什么留给人；项目规划</td><td>§3.5 模型选择器（Haiku / Sonnet / Opus 分档）· V×A 委派类型学（输出可验证性 × 过程可表达性）· 收束块里的委派框架</td>
+<td>**Delegation<br> （委派）**</td><td>决定什么交给 agent、什么留给人；项目规划</td><td>§3.5 模型选择器（Haiku / Sonnet / Opus 分档）· V×A 委派类型学（输出可验证性 × 过程可表达性）· 收束块里的委派框架</td>
 </tr>
 <tr>
-<td><strong>Description<br> （描述）</strong></td><td>有效提示 —— 输入契约</td><td>§5 提示词解剖 · §3.3 CLAUDE.md 作为稳态简报 · §8D <code>identification-memo.md</code> 作为结构化输入契约</td>
+<td>**Description<br> （描述）**</td><td>有效提示 —— 输入契约</td><td>§5 提示词解剖 · §3.3 CLAUDE.md 作为稳态简报 · §8D <code>identification-memo.md</code> 作为结构化输入契约</td>
 </tr>
 <tr>
-<td><strong>Discernment<br> （辨识）</strong></td><td>批判性评估；<em>Description ↔ Discernment 循环</em></td><td>§13 <code>scholar-code-review</code> · §15 <code>scholar-verify</code>（工作坊的核心一课）· §23 Codex 作为外部审查者</td>
+<td>**Discernment<br> （辨识）**</td><td>批判性评估；*Description ↔ Discernment 循环*</td><td>§13 <code>scholar-code-review</code> · §15 <code>scholar-verify</code>（工作坊的核心一课）· §23 Codex 作为外部审查者</td>
 </tr>
 <tr>
-<td><strong>Diligence<br> （尽责）</strong></td><td>验证 + 负责任使用；最后一道闸</td><td>§27 上面的五条原则 · §26 以 <em>Verify</em> 收束的可复用工作流 · §19 <code>scholar-replication</code> / <code>scholar-open</code></td>
+<td>**Diligence<br> （尽责）**</td><td>验证 + 负责任使用；最后一道闸</td><td>§27 上面的五条原则 · §26 以 *Verify* 收束的可复用工作流 · §19 <code>scholar-replication</code> / <code>scholar-open</code></td>
 </tr>
 </tbody></table></div>
 

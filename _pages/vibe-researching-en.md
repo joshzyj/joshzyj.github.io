@@ -536,7 +536,8 @@ Options A–C below all keep Claude Code and swap the model underneath it. §2.6
 | GLM / Z.ai (international) | `api.z.ai` | Opus and Sonnet → `glm-5.2`; Haiku → `glm-4.7`. Also set `API_TIMEOUT_MS=3000000`. |
 | GLM mainland China | `open.bigmodel.cn` | Same idea; pick the GLM family your BigModel account has access to. |
 | DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`; Haiku and subagents → `deepseek-v4-flash`. |
-| Local — Ollama (via CCR/proxy) | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.6.5. |
+| Local — Ollama (**0.32+**, direct) | `http://localhost:11434` — Ollama serves `/v1/messages` itself | `ollama launch claude` / `ollama launch codex`; **no shim**. Needs tool-calling **and** ≥64k context — and in our testing a 20B model meeting both still could not drive the harness. Read §2.6.5 before relying on it. |
+| Local — Ollama (older), vLLM, llama.cpp | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.6.5. |
 | Local — vLLM / llama.cpp (via proxy) | proxy address you start | Whatever you exposed; see §2.6.5. |
 
 The full `ANTHROPIC_BASE_URL` for Z.ai is `https://api.z.ai/api/anthropic`; for BigModel it is `https://open.bigmodel.cn/api/anthropic`; for DeepSeek it is `https://api.deepseek.com/anthropic`. The trailing `/anthropic` segment is what makes these endpoints route to the compatibility shim — leaving it off is the most common configuration error.
@@ -663,9 +664,46 @@ CC Switch does not replace Options A/B — it automates them behind a UI. Everyt
 
 #### 2.6.5 Running models locally
 
-If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and route Claude Code to it. The catch: Claude Code speaks the Anthropic Messages API, while local servers (Ollama, vLLM, llama.cpp) speak OpenAI-style chat completions, so you put a thin translation layer in between. `claude-code-router` (CCR) is the lightest option: it speaks OpenAI-style chat completions to providers, so all three plug in as ordinary OpenAI-compatible backends — no per-server transformer required.
+> **Two different jobs, and only one of them is hard.** Ollama shows up twice in this
+> workshop and the results are not the same. **As a model provider for the lab notebooks**
+> it works well — the notebooks make ordinary chat calls, and a small local model answers
+> them correctly; that is the free, no-key path §2.1A recommends. **As the engine behind
+> Claude Code or Codex** it has to carry an agent harness — a very large system prompt,
+> dozens of tool definitions, multi-step tool loops — and that is a much higher bar. Do not
+> read a warning about the second as a problem with the first.
 
-**Path A — Ollama, fronted by CCR (simplest local route).** Ollama exposes an OpenAI-style API (`/v1/chat/completions`) and its own native API — not the Anthropic `/v1/messages` format Claude Code expects — so it needs a shim in front, exactly like vLLM and llama.cpp:
+If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and drive Claude Code or Codex with it. **Since Ollama 0.32 this needs no shim at all** — Ollama ships an integration launcher and serves the Anthropic Messages API directly. Older Ollama builds, vLLM and llama.cpp still need a translation layer, and you still want one if you intend to *mix* providers; `claude-code-router` (CCR) is the lightest option there.
+
+**Path A — `ollama launch` (simplest; nothing to configure).** Ollama has first-class integrations for both of our tools:
+
+```bash
+$ ollama launch claude                       # Claude Code, driven by a local model
+$ ollama launch codex                        # Codex CLI, likewise
+$ ollama launch claude --model qwen2.5:7b    # pick the model
+$ ollama launch claude --config              # configure without launching
+$ ollama launch claude --restore             # put the integration back to default
+$ ollama launch                              # interactive menu of all integrations
+```
+
+`ollama launch --help` lists the rest (Copilot CLI, OpenCode, Cline, Qwen Code, VS Code, and more).
+
+**It does not touch your existing setup.** Tested here: after `ollama launch claude --config`, `~/.claude/settings.json`, `~/.codex/config.toml` and `~/.zshrc` were byte-identical to before — the launcher exports environment variables for the child process only. (`--restore` exists for the Codex and ChatGPT integrations; on `claude` it returns *"claude does not support --restore"*, because there is nothing persistent to undo.)
+
+> **This is the harness, not the model — and the distinction is the whole of Day 1.** `ollama launch claude` gives you *Claude Code's harness* driving an **open-weight** model on your machine. It does not give you Claude: Anthropic's weights are not public and never enter Ollama. What you are testing is exactly the workshop's thesis — how much of the behaviour comes from the harness and how much from the model. Expect a real drop in capability, and treat that drop as the measurement.
+
+> **Pick the model on two axes, not one.** It needs **tool-calling** *and* enough context — Ollama's own guidance is 64k or more. `ollama show <model>` prints both, so check rather than guess: on the instructor's machine `qwen2.5:7b` reports `tools` but only 32k of context, while `qwen3.6` reports 256k of context but **no `tools` capability at all**. The failure modes differ and neither is loud — truncation on a large repository versus an agent that simply never calls a tool.
+>
+> **`gpt-oss:20b` is the best local candidate by specification** — 20.9B parameters, **131,072 tokens of context**, and `tools`. Against Ollama's Anthropic endpoint it is genuinely correct: it answers, and it emits a well-formed Anthropic `tool_use` block (`stop_reason: tool_use`, `name=read_file`, `input={"path": "/etc/hostname"}`).
+>
+> **And it still could not drive Claude Code.** Same model, same machine, same minute, three trials — through the raw endpoint *"What is 2+2? Answer with the number only"* returned **`4`**; through `ollama launch claude` it returned *"Hello! I'm here to help with any project-related tasks…"*. Asked to read a file it discussed downloading a JPEG with `curl`. **It answers the system prompt instead of the user's prompt** — the classic small-model failure under a very large, highly structured system prompt with dozens of tool definitions. The plumbing is fine; the model is not carrying the harness.
+>
+> That is Day 1's thesis, on your own laptop, in a form you can rerun: **the harness is doing far more work than it looks like, and it does not degrade gently.** It fails in a specific, diagnosable way. Scope the claim honestly, though — this is one 20B model, three prompts, one machine. Ollama's own examples use `gpt-oss:120b`, and a model that size may well hold the harness. If you have the hardware, that is the experiment worth running.
+>
+> **Two operational notes** if you try it. Claude Code does not recognise `gpt-oss:20b`, so it assumes a **200k** context window for a model that has **128k** — set `CLAUDE_CODE_MAX_CONTEXT_TOKENS` to the real number, or map it under `modelOverrides`, or auto-compact will plan against a window that does not exist. And it is a **thinking** model: with a tight `max_tokens` the reasoning eats the whole budget and the visible answer comes back **empty** (a 40-token cap returned nothing; 600 returned the answer in 45). If a local run goes silent, raise the budget before blaming the model.
+>
+> **If `ollama show` errors instead of printing** — e.g. `tensor "blk.0.ffn_down_exps.weight" size overflow` — the local copy is corrupt, not the model. `ollama pull <model>` again; the re-pull repairs it.
+
+**Path B — Ollama fronted by CCR (older Ollama, or when you want to mix providers).** On **Ollama before 0.32** — and on vLLM or llama.cpp at any version — only OpenAI-style `/v1/chat/completions` is served, not the Anthropic `/v1/messages` Claude Code expects, so a shim goes in front. This is also the path to use when you want to *mix* providers rather than pin everything to one local model:
 
 ```bash
 # 1. Install Ollama (macOS / Linux / WSL).
@@ -678,16 +716,16 @@ $ ollama pull qwen2.5-coder:32b   # strong local coding model
 $ ollama pull deepseek-r1:14b     # distilled reasoning model
 #    GLM checkpoints also appear in the library — search "glm" there.
 
-# 3. Front Ollama with CCR (install it in Path B). In `ccr ui`, add an
+# 3. Front Ollama with CCR (install it in Path C). In `ccr ui`, add an
 #    "ollama" provider with base URL http://localhost:11434/v1/chat/completions and your
 #    pulled tag, then launch and select it:
 $ ccr code
 #    Inside the session: /model ollama,qwen2.5-coder:32b
 ```
 
-Pointing `ANTHROPIC_BASE_URL` straight at `http://localhost:11434` does **not** work: Claude Code would POST `/v1/messages`, which Ollama does not serve. The translation layer is what bridges the two schemas.
+> **Corrected 2026-08-24.** This section used to say that pointing `ANTHROPIC_BASE_URL` straight at `http://localhost:11434` does *not* work, because Ollama does not serve `/v1/messages`. **It does now.** Verified against Ollama 0.32.15 with a live request: `POST /v1/messages` returns a genuine Anthropic-shaped body (`"type":"message"`, `content:[{"type":"text"}]`, `stop_reason`, `usage.input_tokens`). That is what makes Path A work without any shim. Older Ollama builds do not serve it, which is why the router path below still exists.
 
-**Path B — `claude-code-router` (CCR), install and routing.** CCR is both the shim for a single local model (Path A) and the way to *mix* providers — different routes per tier (Opus to Z.ai, Sonnet to DeepSeek, Haiku to a local Ollama model), with manual mid-session switching via `/model provider,model` (add your own fallback logic with a custom `router.js`):
+**Path C — `claude-code-router` (CCR), install and routing.** CCR is both the shim for a single local model (Path A) and the way to *mix* providers — different routes per tier (Opus to Z.ai, Sonnet to DeepSeek, Haiku to a local Ollama model), with manual mid-session switching via `/model provider,model` (add your own fallback logic with a custom `router.js`):
 
 ```bash
 $ npm install -g @musistudio/claude-code-router
