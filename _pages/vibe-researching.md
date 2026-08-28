@@ -132,6 +132,36 @@ The workshops grew out of a four-day lecture series — *Agentic AI for Social S
   </a>
 </div>
 
+## The literature
+
+Two bodies of reading sit behind the workshop: the **51 papers cited across the five
+lecture days** — the model, agent, silicon-sampling and annotation literature — and the
+**twenty-paper digital-divide corpus** the labs index for retrieval. The pack below is the
+catalogue for both.
+
+<div class="vr-paper">
+  <div class="vr-eyebrow">Reading pack · encrypted · passcode</div>
+  <h3>Reading list and corpus summaries</h3>
+  <p class="vr-cite">The 51 cited papers with author, year, title and a resolvable link for 40 of them; the digital-divide corpus catalogue with DOIs, licences and per-paper fetch commands; six summaries written for that corpus; and the open-access fetch script. 22&nbsp;KB, AES-256, opens with the workshop passcode.</p>
+  <div class="vr-btns">
+    <a class="vr-btn vr-btn-primary" href="/files/vibe-researching-literature-20260828.zip.enc" download>Download the reading pack &rarr;</a>
+  </div>
+</div>
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 \
+  -in vibe-researching-literature-20260828.zip.enc -out literature.zip
+unzip literature.zip
+```
+
+**The PDFs are not in it, deliberately.** Those are the publishers' copies, held under
+institutional subscriptions — putting them in an archive and posting it would be
+redistributing the articles, and encrypting the archive does not change that. What ships
+is the catalogue: enough to find and fetch every paper through your own library, which is
+what a reading list is for. Many are open access and open straight from the link;
+`fetch.sh` pulls those automatically, and `paywalled-todo.md` names the ones your library
+has to supply.
+
 ## Where the research goes
 
 Once agents can *do* research, it needs somewhere to live. I built **[AIxiv](https://aixiv.me/)** for exactly that — an open venue for sharing and reading agent- and LLM-generated research articles.
