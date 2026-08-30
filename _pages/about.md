@@ -69,7 +69,7 @@ If you need *Vibe Researching* with coding agents workshops or lectures, please 
 
 - **The Chinese University of Hong Kong (CUHK)** — *Applications of Agentic AI for Social Science Research*, a hands-on workshop (31 August – 3 September 2026).
 - **The Hong Kong University of Science and Technology (Guangzhou)** — *Responsible Vibe Researching with Coding Agents*, an invited talk (4 September 2026).
-- **Penn State University** — *Agentic AI for Social Sciences*, an invited talk hosted by the [Center for Social Data Analytics (C-SoDA)](https://soda.la.psu.edu/).
+- **Penn State University** — *Agentic AI for Social Sciences*, an invited talk hosted by the [Center for Social Data Analytics (C-SoDA)](https://soda.la.psu.edu/) (December 2026).
 
 ## Summer CSS Workshop
 
