@@ -335,8 +335,8 @@ $ cat ~/.ssh/id_ed25519.pub
 #### 2.4.2 Install — clone and run setup
 
 ```bash
-$ git clone https://github.com/joshzyj/open-scholar-skill.git
-$ cd open-scholar-skill
+$ git clone https://github.com/joshzyj/open-scholar-skill.git ~/.claude/plugins/open-scholar-skill
+$ cd ~/.claude/plugins/open-scholar-skill
 $ bash setup.sh
 ```
 
@@ -467,7 +467,7 @@ Then three smaller steps run without asking anything:
 
 - **`chmod +x` repair.** Helper scripts that lost their executable bit — which happens on cloud-sync mounts and ZIP downloads, though not on a fresh `git clone` — get it restored. Only files starting with a `#!` shebang are touched; sourced helpers are deliberately left non-executable.
 - **The PreToolUse hook.** `scripts/gates/pretooluse-data-guard.sh` is merged into `~/.claude/settings.json` with `jq` — additively and idempotently, preserving every other key you have configured, and replacing rather than duplicating an existing scholar entry. The command is written **quoted**, which is what makes it survive a path containing spaces (§6.4).
-- **Bootstrap files.** `~/.claude/scholar-skills.path` (a one-line absolute path, `chmod 600`) and a copy of `scholar-skill-bootstrap.sh`, so skills can find the repo from any working directory even with `SCHOLAR_SKILL_DIR` unset.
+- **Bootstrap files [Extended].** `~/.claude/scholar-skills.path` (a one-line absolute path, `chmod 600`) and a copy of `scholar-skill-bootstrap.sh`, so skills can find the repo from any working directory even with `SCHOLAR_SKILL_DIR` unset. **The public edition ships neither** — it records the repo path as `SCHOLAR_SKILL_DIR` in the repo's own `.env`, which is why the export in your shell profile matters more there.
 
 Finally it offers to append `export SCHOLAR_SKILL_DIR="..."` to your `~/.zshrc` (or `~/.bashrc` / `~/.bash_profile`), detecting your shell. Accept unless you manage your profile some other way.
 
@@ -504,10 +504,9 @@ $ bash setup.sh || echo "SAFETY HOOK MISSING — install jq and re-run"
 #### 2.5.3 Verify it took
 
 ```bash
-$ ls ~/.claude/skills/ | grep -c scholar        # 44
-$ ls ~/.claude/agents/ | wc -l                  # 22
-$ cat ~/.claude/scholar-skills.path             # the repo path
-$ jq '.hooks.PreToolUse' ~/.claude/settings.json | head    # the guard
+$ ls ~/.claude/skills/ | grep -c scholar        # 35 public · 44 extended
+$ ls ~/.claude/agents/ | wc -l                  # 20 public · 22 extended
+$ jq -r '.hooks.PreToolUse[0].hooks[0].command' ~/.claude/settings.json   # the guard — and the repo path inside it
 $ cat "$SCHOLAR_SKILL_DIR/.env"                 # your configuration
 ```
 
@@ -5032,7 +5031,7 @@ argument-hint: "[draft|revise|polish] [section] on [topic] for [journal],
 
 ```bash
 $ ls ~/.claude/skills/scholar-write/SKILL.md    # should exist
-$ ls ~/.claude/agents/ | wc -l                  # 22 agents
+$ ls ~/.claude/agents/ | wc -l                  # 20 public · 22 extended
 ```
 
 **2. Confirm your reference library was detected.** This is the step that matters most. `setup.sh` auto-detects Zotero and optionally configures BibTeX, EndNote, and a CrossRef email; the result is recorded in the repo's `.env`:

@@ -311,8 +311,8 @@ $ cat ~/.ssh/id_ed25519.pub
 #### 2.4.2 安装：clone + 跑 setup
 
 ```bash
-$ git clone https://github.com/joshzyj/open-scholar-skill.git
-$ cd open-scholar-skill
+$ git clone https://github.com/joshzyj/open-scholar-skill.git ~/.claude/plugins/open-scholar-skill
+$ cd ~/.claude/plugins/open-scholar-skill
 $ bash setup.sh
 ```
 
@@ -443,7 +443,7 @@ SCHOLAR_KNOWLEDGE_DIR="/Users/you/.claude/scholar-knowledge"
 
 - **修复 `chmod +x`。** 丢了可执行位的辅助脚本会被补回来 —— 这在云盘挂载和 ZIP 下载的情况下会发生，全新 `git clone` 则不会。只有以 `#!` shebang 开头的文件会被处理；供 source 用的辅助脚本是刻意保持不可执行的。
 - **PreToolUse 钩子。** `scripts/gates/pretooluse-data-guard.sh` 会用 `jq` 合并进 `~/.claude/settings.json` —— 增量且幂等，保留你配过的所有其他键，遇到已有的 scholar 条目是替换而不是重复添加。命令是**带引号**写进去的，这正是它能在含空格的路径下仍然生效的原因（§6.4）。
-- **引导文件。** `~/.claude/scholar-skills.path`（一行绝对路径，`chmod 600`）以及一份 `scholar-skill-bootstrap.sh` 拷贝 —— 这样即使 `SCHOLAR_SKILL_DIR` 没设，技能也能从任意工作目录找到仓库。
+- **引导文件〔扩展版〕。** `~/.claude/scholar-skills.path`（一行绝对路径，`chmod 600`）以及一份 `scholar-skill-bootstrap.sh` 拷贝 —— 这样即使 `SCHOLAR_SKILL_DIR` 没设，技能也能从任意工作目录找到仓库。**公开版这两个都没有** —— 它把仓库路径写进仓库自己的 `.env` 里的 `SCHOLAR_SKILL_DIR`，所以在公开版上，写进 shell profile 的那个 export 更要紧。
 
 最后它会询问是否把 `export SCHOLAR_SKILL_DIR="..."` 追加到你的 `~/.zshrc`（或 `~/.bashrc` / `~/.bash_profile`），shell 类型是自动识别的。除非你用别的方式管理 profile，否则同意即可。
 
@@ -480,10 +480,9 @@ $ bash setup.sh || echo "SAFETY HOOK MISSING —— 装上 jq 再重跑"
 #### 2.5.3 验证它真的生效了
 
 ```bash
-$ ls ~/.claude/skills/ | grep -c scholar        # 44
-$ ls ~/.claude/agents/ | wc -l                  # 22
-$ cat ~/.claude/scholar-skills.path             # 仓库路径
-$ jq '.hooks.PreToolUse' ~/.claude/settings.json | head    # 守卫
+$ ls ~/.claude/skills/ | grep -c scholar        # 公开版 35 · 扩展版 44
+$ ls ~/.claude/agents/ | wc -l                  # 公开版 20 · 扩展版 22
+$ jq -r '.hooks.PreToolUse[0].hooks[0].command' ~/.claude/settings.json   # 守卫 —— 里面就带着仓库路径
 $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
 ```
 
@@ -4932,7 +4931,7 @@ argument-hint: "[draft|revise|polish] [section] on [topic] for [journal],
 
 ```bash
 $ ls ~/.claude/skills/scholar-write/SKILL.md    # 应该存在
-$ ls ~/.claude/agents/ | wc -l                  # 22 个 agent
+$ ls ~/.claude/agents/ | wc -l                  # 公开版 20 · 扩展版 22
 ```
 
 **2. 确认你的文献库被探测到了。** 这是最关键的一步。`setup.sh` 会自动探测 Zotero，并可选地配置 BibTeX、EndNote 和 CrossRef 邮箱；结果写在仓库的 `.env` 里：
