@@ -50,6 +50,10 @@ This is the home of my **participant handbook**, written for a two-hour hands-on
   </a>
 </div>
 
+<div class="vr-note">
+<strong>Updated October 2026.</strong> Both editions now match Claude Code v2.1.296 (Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1), Codex CLI 0.154, ZCode 3.15 on GLM-5.3, and current DeepSeek, Ollama and CCR setups. The biggest change to know: new Claude Code sessions now start in <em>auto</em> permission mode, so the handbook shows how to set <em>Manual</em> for restricted data.
+</div>
+
 ## See a full run
 
 Here is the whole idea in one take. Watch Open Scholar Skills run end to end on a real study — [`scholar-full-paper`](https://github.com/joshzyj/open-scholar-skill) orchestrating the pipeline from project setup and a safety scan, through literature review and analysis, into a **multi-agent code review that catches real, results-changing defects**, and on to drafting and verification. The agent does the execution; the verification gates decide what survives.

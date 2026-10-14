@@ -81,9 +81,9 @@ lang: zh
 ### 2.1 前置依赖
 
 - **macOS、Linux 或 Windows（WSL2）**
-- **Node.js ≥ 18**（推荐 20 LTS），用于 Claude Code
+- **Node.js**：Claude Code 本身**已不再需要**（原生安装器自带运行时）；只有走已弃用的 npm 安装路径，或安装 `claude-code-router`（§2.6.5），才需要 **Node.js 22+**
 - 一个**终端**（Terminal.app、iTerm2 或 Windows Terminal）
-- 一个 **Anthropic API key**（或 Claude Pro/Max 订阅）+ 一个 **OpenAI API key**（用于 Codex）
+- 一个 **Anthropic API key**（或 Claude Pro/Max 订阅）用于 Claude，以及一个 **ChatGPT 账号登录**（任何套餐均可，包括免费版）或一个 **OpenAI API key** 用于 Codex
 - 可选：**R 4.3+** 与 **Python 3.11+**，因为多数 scholar-skills 在它们上面跑分析
 
 > **实验用的 notebook 找 key 的方式和 Claude Code 不一样，这一点常把人绊住。**
@@ -112,16 +112,16 @@ lang: zh
 
 > **Windows 用户请注意：** 本节命令默认你已经在 macOS、Linux 或类 Unix 的 shell 里。如果你用的是 Windows，**不要**直接在 PowerShell 或 `cmd.exe` 里跑这些命令。先翻到 **附录 K —— Windows 安装指引**，按它一步步把 WSL2（Windows Subsystem for Linux）与 Ubuntu 装好。等你在 WSL2 里有了一个能用的 Ubuntu shell，§2 与 §3 的所有命令都能直接照搬，无需修改。每台机器只需要读一次附录 K。
 
-检查 Node 版本：
+只有在你打算走 npm 路径或安装 CCR 时，才需要检查 Node 版本：
 
 ```bash
 $ node --version
-v20.11.0
+v22.x.x
 ```
 
-如果没有或版本太低，装 [nvm](https://github.com/nvm-sh/nvm) 然后 `nvm install 20`。
+如果没有或版本低于 22，装 [nvm](https://github.com/nvm-sh/nvm) 然后 `nvm install 22`。
 
-> **懒得手动装一堆东西？** 只要 Claude Code 或 Codex 跑起来了（哪怕你机器上只有 Node），就可以让智能体替你安装 Python、R、Git 以及社会科学常用包栈。具体提示词见 §2.7 ——「让智能体替你安装研究工具链」。
+> **懒得手动装一堆东西？** 只要 Claude Code 或 Codex 跑起来了（哪怕你机器上别的什么都还没装），就可以让智能体替你安装 Python、R、Git 以及社会科学常用包栈。具体提示词见 §2.7 ——「让智能体替你安装研究工具链」。
 
 ### 2.1A 账号、订阅、API key —— 最容易混淆的三件事
 
@@ -131,7 +131,7 @@ v20.11.0
 |---|---|---|
 | 它是什么 | 绑定在你**登录账号**上的月付计划 | 一串密钥，按 **token 用量**计费 |
 | Claude | [claude.ai](https://claude.ai) 的 **Claude Pro** / **Claude Max** | [console.anthropic.com](https://console.anthropic.com) → **API Keys** |
-| OpenAI | [chatgpt.com](https://chatgpt.com) 的 **ChatGPT Plus / Pro / Business** | [platform.openai.com](https://platform.openai.com/api-keys) → **API keys** |
+| OpenAI | [chatgpt.com](https://chatgpt.com) 的 **ChatGPT Free / Go / Plus / Pro / Business / Edu / Enterprise**（都含 Codex） | [platform.openai.com](https://platform.openai.com/api-keys) → **API keys** |
 | 能跑 Claude Code 吗？ | ✅ 用账号登录即可 | ✅ 粘贴 key |
 | 能跑 Codex CLI 吗？ | ✅ 用账号登录即可 | ✅ 粘贴 key |
 | 能跑**实验 notebook** 吗？ | ❌ **不能** | ✅ 能 |
@@ -142,16 +142,20 @@ v20.11.0
 
 **开通 Claude 订阅（给 Claude Code 用）。** 打开 [claude.ai](https://claude.ai) 注册，然后进
 **Settings → Plans**。Pro 是入门档；Max 把用量上限抬高——第三天全班同时跑 agent 的时候，这个差别
-很明显。之后运行 `claude`，选 **Login with Anthropic Console**，不需要 key。
+很明显。之后运行 `claude`，选 **Claude 账号（Pro/Max 订阅）登录**，不需要 key。（另一项 **Anthropic Console** 登录对应的是按 token 计费的 API 账户。）
 
 **申请 Anthropic API key（另一条路）。** 打开 [console.anthropic.com](https://console.anthropic.com)
 → **API Keys** → **Create Key**，**立刻复制**（只显示一次），然后到 **Billing** 里充值——新开的
 console 余额为零，不充值调用会直接报计费错误。当前每 token 价格见
-[定价页](https://www.anthropic.com/pricing)；截至 2026 年 8 月，Claude Opus 5 是每百万 input /
-output token \$5 / \$25，Claude Haiku 4.5 是 \$1 / \$5。
+[定价页](https://www.anthropic.com/pricing)；截至 2026 年 10 月，Claude Opus 5.5 是每百万 input /
+output token \$4 / \$20，Claude Sonnet 5.5 是 \$2 / \$10，Claude Haiku 5.5 是 \$0.10 / \$0.50（提示在
+100K token 以内时）。
 
-**让 Codex 跑起来。** 要么用 ChatGPT Plus/Pro 账号登录（`codex login`，选浏览器登录），要么在
-[platform.openai.com/api-keys](https://platform.openai.com/api-keys) 建一个 OpenAI key 粘贴进去。
+**让 Codex 跑起来。** 要么用 ChatGPT 账号登录（任何套餐，Free 也包括在内）：`codex login` 会打开浏览器
+让你登录；没有浏览器的机器用 `codex login --device-auth`。要么在
+[platform.openai.com/api-keys](https://platform.openai.com/api-keys) 建一个 OpenAI key，再用
+`printenv OPENAI_API_KEY | codex login --with-api-key` 从标准输入读进去（API key 按 API 费率计费，
+不含云端功能）。`codex login status` 可以查看当前的登录状态。
 OpenAI 的 API 计费和 ChatGPT 订阅是**分开的**——余额为零的坑同样适用。
 
 **这个工作坊到底需要什么。** Claude Code，两条路都行。Codex，两条路都行，而且只有第四天做外部
@@ -165,10 +169,16 @@ review 时才用。实验 notebook 需要的是**放在 `labs/openai.txt` 里的
 ### 2.2 安装 Claude Code
 
 ```bash
-$ npm install -g @anthropic-ai/claude-code
+$ curl -fsSL https://claude.ai/install.sh | bash   # 原生安装器（推荐），macOS / Linux / WSL
+# 或：brew install --cask claude-code
+# Windows PowerShell：irm https://claude.ai/install.ps1 | iex
+# 或：winget install Anthropic.ClaudeCode
 $ claude --version
-2.0.x
+2.1.296 (Claude Code)   # 截至 2026-10-13；你的可能更新
 ```
+
+原生安装器装到 `~/.local/bin`，不需要 Node.js；系统要求 macOS 13+、Windows 10 1809+（原生或 WSL2）。
+`npm install -g @anthropic-ai/claude-code` 这条老路已经弃用（而且需要 Node 22+）。
 
 第一次启动会引导你认证：
 
@@ -177,14 +187,17 @@ $ cd ~/Documents/projects/digital-divide-china-cfps   # 先 cd 进项目目录
 $ claude
 ```
 
+欢迎界面会让你选登录方式（各版本措辞略有不同）。有 Pro/Max 订阅就选 **Claude 账号**登录；
+选 **Anthropic Console** 则走按 token 计费的 API 账户。两条路都在浏览器里完成，不必粘贴 key。
+
 ```
- ┌──────────────────────────────────────────────────────┐
- │  Welcome to Claude Code                              │
- │  Choose authentication method:                       │
- │   1) Login with Anthropic Console                    │
- │   2) Use ANTHROPIC_API_KEY                           │
- └──────────────────────────────────────────────────────┘
+ Select login method:
+   1. Claude account with subscription · Pro, Max, Team, or Enterprise
+   2. Anthropic Console account · API usage billing
 ```
+
+会话里随时可以用 `/login` 重新登录；在 shell 里则用 `claude auth login`（`claude auth status`
+查看状态）。
 
 **永远从项目目录里启动 `claude`。** 那个目录就是它的工作根目录，权限边界从此处划定。
 
@@ -192,10 +205,16 @@ $ claude
 
 ```bash
 $ npm install -g @openai/codex
+# 或：brew install --cask codex
+# 或：curl -fsSL https://chatgpt.com/codex/install.sh | sh
 $ codex --version
-codex-cli 0.130.0   # 截至 2026-05 的版本，你的可能更新
-$ codex login    # 输入 OpenAI API key
+codex-cli 0.162.1   # 截至 2026-10 的当前版本；≥ 0.154 即与本手册一致
+$ codex login   # 打开浏览器：用 ChatGPT 账号登录
+$ printenv OPENAI_API_KEY | codex login --with-api-key   # 或者：用 API key，从标准输入读入
+$ codex login status
 ```
+
+**审批与沙箱取值（Codex 0.154+）。** `-a/--ask-for-approval` 现在只接受 `on-request` 和 `never`。`untrusted`（0.149 退役）和 `on-failure`（0.143 移除）都会被拒绝，所以照着旧教程用这两个值会直接报错。`codex exec` 根本不接受 `-a`：它从不提示，它能伸多远由 `-s` 决定 —— `-s read-only`（评审用）、`-s workspace-write`（取代已移除的 `--full-auto`），或者只在外部沙箱里才用的 `danger-full-access`。旧的 `-c 'sandbox_permissions=[…]'` 覆盖写法会被当前 Codex **静默忽略**。加上 `--strict-config`，Codex 就会拒绝它已不认识的配置键。
 
 ### 2.3A 桌面 App —— 比 CLI 更友好的另一条路
 
@@ -207,19 +226,19 @@ $ codex login    # 输入 OpenAI API key
 
 - <https://claude.com/download>
 
-桌面版**自带 Claude Code** —— 你**不需要**单独装 Node.js 或 CLI。像装普通应用一样安装（macOS 拖进 Applications；Windows 跑 `.exe`），打开后用你的 Anthropic 账号登录（Pro/Max 订阅，或 Console 登录）。需要 macOS 11（Big Sur）或更高版本。首次上手指引见 <https://code.claude.com/docs/en/desktop-quickstart>。
+桌面版**自带 Claude Code** —— 你**不需要**单独装 Node.js 或 CLI。像装普通应用一样安装（macOS 拖进 Applications；Windows 跑 `.exe`），打开后用你的 Claude 账号登录（Pro/Max 订阅），或用 Anthropic Console 账户（按 API 用量计费）。需要 macOS 13 或更高版本。首次上手指引见 <https://code.claude.com/docs/en/desktop-quickstart>。
 
 **Codex App（macOS / Windows）。** 从 OpenAI 官方页面下载：
 
-- <https://developers.openai.com/codex/app>
+- <https://learn.chatgpt.com/docs/app>
 
-选 macOS 版本（Apple 芯片或 Intel）或 Windows 版本；Windows 用户也可以在 Microsoft Store 里装。打开后用你的 **ChatGPT 账号**登录（Plus / Pro / Business / Edu / Enterprise 都含 Codex），或填 **OpenAI API key**。这个 App 能并行跑多个 Codex 线程，内置工作树（worktree）、自动化与 Git 支持。
+选 macOS 版本（Apple 芯片或 Intel）或 Windows 版本；Windows 用户也可以在 Microsoft Store 里装。打开后用你的 **ChatGPT 账号**登录（Free / Go / Plus / Pro / Business / Edu / Enterprise 都含 Codex），或填 **OpenAI API key**。这个 App 能并行跑多个 Codex 线程，内置工作树（worktree）、自动化与 Git 支持。
 
 > **你应当看到：** 一个窗口式的智能体，能打开文件夹、读写文件、跑命令、操作 git —— 跟 CLI 一样的能力，只是用按钮代替了敲键。
 
-**第三个桌面智能体 —— ZCode（Z.ai）。** 如果这两家的付费方式对你都不合适，Z.ai 出了 **ZCode**：一个基于 GLM-5.2 的桌面智能体，它能读取 Claude Code 的 skills，因此可以直接跑 `open-scholar-skill` 套件。这是另一家公司的产品，有自己的配置体系，也有自己的数据管辖含义，所以单独讲：见 §2.6.7。
+**第三个桌面智能体 —— ZCode（Z.ai）。** 如果这两家的付费方式对你都不合适，Z.ai 出了 **ZCode**：一个基于 GLM-5.3 的桌面智能体，它能导入 Claude Code 的 skills、安装 Claude Code 格式的插件，因此可以直接跑 `open-scholar-skill` 套件。这是另一家公司的产品，有自己的配置体系，也有自己的数据管辖含义，所以单独讲：见 §2.6.7。
 
-**让桌面 App 替你把 CLI 装上。** §2.2 里那几条 `npm` 命令，你不必自己敲。桌面 App 打开后，用大白话吩咐它 —— *「在我这台机器上装好 Claude Code CLI，再一步步带我登录」* —— 智能体会检查你的 Node 版本、跑安装程序、修好 `PATH`，最后把一个能用的 `claude` 命令交到你手里。这跟它后面替你搭整套研究工具链（§2.7）是同一个智能体；只不过这次，它先给自己搭好了终端的家。
+**让桌面 App 替你把 CLI 装上。** §2.2 里那几条安装命令，你不必自己敲。桌面 App 打开后，用大白话吩咐它 —— *「在我这台机器上装好 Claude Code CLI，再一步步带我登录」* —— 智能体会跑安装程序、修好 `PATH`，最后把一个能用的 `claude` 命令交到你手里。这跟它后面替你搭整套研究工具链（§2.7）是同一个智能体；只不过这次，它先给自己搭好了终端的家。
 
 **…… 但这次工作坊，还是请你把 CLI 也装上、用起来。** 桌面 App 用来「第一次接触」和日常工作都很棒，工作坊之后你尽可以继续用。要你也花十分钟去终端练手，*不是*因为桌面版弱 —— 到现在它也能读你的文件、跑代码、在一次会话里记住上下文、连上 MCP server，跟 CLI 一模一样。真正的理由，是有那么几件事，**图形界面从结构上就做不到**。桌面 App 需要一块屏幕、需要一个人点鼠标；而 CLI 只是文字进、文字出，凡是有 shell 的地方它都能跑：
 
@@ -279,7 +298,7 @@ Claude 会读 repo 的 README，跑 `git clone`、执行 `setup.sh`、装缺的�
 
 > **新手路径的安全规则**
 >
-> 1. Claude Code 起在 **`default`** 权限模式（不是 `bypassPermissions`），这样每一步装的时候它仍会问你。Status line 看一眼是不是 `default`，不是的话按 `Shift+Tab` 切换。
+> 1. 让 Claude Code 起在 **Manual** 权限模式（2.1.200 之前叫 `default`；不要用 auto 或 `bypassPermissions`），这样每一步装的时候它仍会问你。自 2.1.284 起，没有配置权限模式的交互会话**默认从 auto mode 开始**，所以请用 `claude --permission-mode manual` 启动，或按 `Shift+Tab` 切换，直到页脚显示 Manual。
 > 2. agent 要用 `sudo` 的时候，读清楚它想装什么再点 `y`。插件本身不需要 `sudo`——只在 Linux 上装 `jq` / `python3` 才可能用到。
 > 3. agent 报告连不上 `github.com`、或者某个依赖连试三次都装不上，就改走手动路径——这些失败通常需要人去看你本机的 shell、proxy、`PATH`。
 
@@ -500,24 +519,24 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
 
 **目标：** 继续使用同一个 Claude Code CLI、同一套 `open-scholar-skill` 插件、同一种项目结构，只是把模型调用切到 Z.ai/GLM、DeepSeek，或者你自己机器上跑的本地模型。
 
-你**不需要**装新的 CLI，也不需要替换脚本，更不应该每次会话前手动改 JSON。Claude Code 只看两个环境变量——`ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`——只要对方暴露 Anthropic-compatible endpoint，Claude Code 就能直接对话。GLM（Z.ai 国际站和国内 BigModel）以及 DeepSeek 都已经提供这类入口。对**真正本地**的模型（DeepSeek-R1 蒸馏版、Qwen2.5-Coder、Llama、GLM），Claude Code 仍然需要一个 Anthropic-compatible 的前端：Ollama、vLLM、llama.cpp 暴露的都是 OpenAI 风格的接口，所以要在前面加一层小转换层——`claude-code-router` 或 `litellm`——把响应重写成 Anthropic schema。其余流程完全一致。
+你**不需要**装新的 CLI，也不需要替换脚本，更不应该每次会话前手动改 JSON。Claude Code 只看两个环境变量——`ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`——只要对方暴露 Anthropic-compatible endpoint，Claude Code 就能直接对话。GLM（Z.ai 国际站和国内 BigModel）以及 DeepSeek 都已经提供这类入口。对**真正本地**的模型（DeepSeek-R1 蒸馏版、Qwen2.5-Coder、Llama、GLM），如今的本地服务端大多已经直接说 Anthropic Messages API：Ollama（0.14+）、vLLM、llama.cpp 的 `llama-server` 都能直接提供 `/v1/messages`。只有更老的版本，或者你想*混用*多个 provider 时，才需要在前面加一层转换层——`claude-code-router`（CCR）或 `litellm`。其余流程完全一致。
 
-下面的方案 A–C 都是保留 Claude Code、只换底下的模型。§2.6.7 讲的是另一个方向：**ZCode** —— Z.ai 自己出的、以 GLM-5.2 为核心的智能体应用，它换掉的是模型*加*外壳；而由于它能读取 Claude Code 的 skills，`open-scholar-skill` 套件同样可以在里面跑起来。
+下面的方案 A–C 都是保留 Claude Code、只换底下的模型。§2.6.7 讲的是另一个方向：**ZCode** —— Z.ai 自己出的、以 GLM-5.3 为核心的智能体应用，它换掉的是模型*加*外壳；而由于它能导入 Claude Code 的 skills、安装 Claude Code 格式的插件，`open-scholar-skill` 套件同样可以在里面跑起来。
 
 #### 2.6.1 提供商速查表
 
 | 提供商 | Endpoint host | 需要设置的模型 |
 | ----- | ------------- | ------------- |
-| GLM / Z.ai（国际） | `api.z.ai` | Opus 与 Sonnet → `glm-5.2`；Haiku → `glm-4.7`。同时 `API_TIMEOUT_MS=3000000`。 |
+| GLM / Z.ai（国际） | `api.z.ai` | Opus 与 Sonnet → `glm-5.3[1m]`；Haiku → `glm-5.3-flash[1m]`。同时 `API_TIMEOUT_MS=3000000`。在 GLM Coding Plan 上，旧 id（`glm-5.2`、`glm-5.1`、`glm-4.7`）会被自动路由到 GLM-5.3 / GLM-5.3-Flash。 |
 | GLM 中国大陆 | `open.bigmodel.cn` | 同样思路；按账号可用的 GLM 系列选择。 |
-| DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`；Haiku 与 subagents → `deepseek-v4-flash`。 |
-| 本地 —— Ollama（**0.32+**，直连） | `http://localhost:11434` —— Ollama 自己就提供 `/v1/messages` | `ollama launch claude` / `ollama launch codex`；**不需要 shim**。模型既要能调工具、上下文又要 ≥64k —— 而我们实测：一个两项都满足的 20B 模型，仍然扛不住这个外壳。依赖它之前请先读 §2.6.5。 |
-| 本地 —— 老版 Ollama、vLLM、llama.cpp | CCR → `http://localhost:11434/v1/chat/completions` | 你拉下来的任意 tag（如 `qwen2.5-coder:32b`）；需要一层转换。详见 §2.6.5。 |
-| 本地 —— vLLM / llama.cpp（经代理） | 你启动的代理地址 | 由你的代理决定，详见 §2.6.5。 |
+| DeepSeek | `api.deepseek.com` | Opus → `deepseek-v4-pro`；Sonnet → `deepseek-flash[1m]`；Haiku 与 subagents → `deepseek-flash`（`deepseek-v4-flash` 已是旧别名，指向 V4.1-Flash）。 |
+| 本地 —— Ollama（**0.14+**，直连） | `http://localhost:11434` —— Ollama 自己就提供 `/v1/messages` | `ollama launch claude` / `ollama launch codex`；**不需要 shim**。模型既要能调工具、上下文又要 ≥64k —— 而我们实测：一个两项都满足的 20B 模型，仍然扛不住这个外壳。依赖它之前请先读 §2.6.5。 |
+| 本地 —— vLLM / llama.cpp（直连） | `http://localhost:8000`（vLLM）或 `http://127.0.0.1:8080`（`llama-server`），两者都提供 `/v1/messages` | 你启动时加载的模型；需要支持工具调用。详见 §2.6.5。 |
+| 本地 —— 混用多个 provider，或 0.14 之前的 Ollama | 前面垫一层 CCR | 由你在 CCR 里配置的路由决定，详见 §2.6.5。 |
 
 完整 `ANTHROPIC_BASE_URL`：Z.ai 为 `https://api.z.ai/api/anthropic`，BigModel 为 `https://open.bigmodel.cn/api/anthropic`，DeepSeek 为 `https://api.deepseek.com/anthropic`。后缀 `/anthropic` 是让 endpoint 走 compatibility shim 的关键，漏掉它是最常见的配置错误。
 
-**模型名变得很快。** 本节里的模型 ID（`glm-5.2`、`glm-4.7`、`deepseek-v4-pro` 等）只是示例。开工前先查 provider 当前的模型列表——Z.ai/BigModel 和 DeepSeek 各自都有——用你账号能调用的确切名字；粘一个已下线的 tag，是仅次于漏掉 `/anthropic` 后缀的第二常见错误。GLM 尤其快：本手册第一版写作时旗舰还是 `glm-5.1`，2026 年 6 月已被 `glm-5.2` 取代，上下文窗口升到 100 万 token。如果你之前照抄过旧的那三行进 `settings.json`，记得更新。
+**模型名变得很快。** 本节里的模型 ID（`glm-5.3`、`glm-5.3-flash`、`deepseek-v4-pro` 等）只是示例。开工前先查 provider 当前的模型列表——Z.ai/BigModel 和 DeepSeek 各自都有——用你账号能调用的确切名字；粘一个已下线的 tag，是仅次于漏掉 `/anthropic` 后缀的第二常见错误。GLM 尤其快：本手册第一版写作时旗舰还是 `glm-5.1`，2026 年 6 月被 `glm-5.2` 取代，上下文窗口升到 100 万 token；此后 `glm-5.3` 又在 Coding Plan 上取代了它，而 Coding Plan 会把旧 id 静默路由到新模型。如果你之前照抄过旧的配置块进 `settings.json`，记得更新。
 
 #### 2.6.2 方案 A —— 在 `~/.claude/settings.json` 里写死后端
 
@@ -530,16 +549,17 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
   "env": {
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_zai_key",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.3[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.3[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5.3-flash[1m]",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "API_TIMEOUT_MS": "3000000"
   }
 }
 ```
 
-这是 Z.ai 官方推荐的映射：Opus 与 Sonnet 两档都走 GLM-5.2，Claude Code 用来跑后台小调用的 Haiku 档走更便宜的 `glm-4.7`。`CLAUDE_CODE_AUTO_COMPACT_WINDOW` 是告诉 Claude Code：可以把 GLM-5.2 的 100 万 token 窗口填满再自动压缩上下文 —— 不设这一项，你会比实际需要早得多地触发 compact；当智能体同时抱着一本代码本和三个脚本时，这个差别很明显。
+这是 Z.ai 官方推荐的映射：Opus 与 Sonnet 两档都走 GLM-5.3，Claude Code 用来跑后台小调用的 Haiku 档走更便宜的 GLM-5.3-Flash。模型名后的 `[1m]` 后缀与 `CLAUDE_CODE_AUTO_COMPACT_WINDOW` 一起告诉 Claude Code：可以把 GLM-5.3 的 100 万 token 窗口填满再自动压缩上下文 —— 不设这一项，你会比实际需要早得多地触发 compact；当智能体同时抱着一本代码本和三个脚本时，这个差别很明显。
 
 **DeepSeek 示例：**
 
@@ -549,13 +569,14 @@ $ cat "$SCHOLAR_SKILL_DIR/.env"                 # 你的配置
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_deepseek_key",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-flash[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-flash",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "deepseek-flash"
   }
 }
 ```
 
-重启 Claude Code；触发任意一次工具调用或 `/usage`，确认后端已切换。
+重启 Claude Code，跑一下 `/status`（它会显示当前使用的 base URL），确认后端已切换。
 
 #### 2.6.3 方案 B —— 把 key 放到项目外，用 shell 函数切换
 
@@ -573,10 +594,11 @@ export DEEPSEEK_API_KEY="..."
 glm() {
   export ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic"
   export ANTHROPIC_AUTH_TOKEN="$ZAI_API_KEY"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2"
-  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.7"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.3[1m]"
+  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.3[1m]"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5.3-flash[1m]"
   export CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000
+  export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
   export API_TIMEOUT_MS=3000000
   claude "$@"
 }
@@ -584,9 +606,10 @@ glm() {
 deepseek() {
   export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
   export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-flash[1m]"
   export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-flash"
+  export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-flash"
   claude "$@"
 }
 
@@ -596,15 +619,18 @@ claude-anthropic() {
   unset ANTHROPIC_DEFAULT_OPUS_MODEL
   unset ANTHROPIC_DEFAULT_HAIKU_MODEL
   unset CLAUDE_CODE_AUTO_COMPACT_WINDOW API_TIMEOUT_MS
+  unset CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC CLAUDE_CODE_SUBAGENT_MODEL
   claude "$@"
 }
 ```
 
 之后 `glm` 在 Z.ai 上启动 Claude Code，`deepseek` 在 DeepSeek 上启动，`claude-anthropic` 回到原版 Anthropic。PATH 里的二进制 `claude` 始终是同一个你信任的 CLI。
 
+> **不要把方案 A 和方案 B 混着用。** `~/.claude/settings.json` 里 `env` 块的值会**覆盖**你在 shell 里 export 的变量。只要 `settings.json` 里还写着某个后端，上面这些 shell 函数就会静默地什么都不做 —— 你以为切到了 DeepSeek，实际仍在 Z.ai 上。二选一；改用方案 B 之前，先把 `settings.json` 里的那些 `ANTHROPIC_*` 项删掉，再用 `/status` 确认。
+
 #### 2.6.4 方案 C —— CC Switch：一键切换 provider 的图形界面
 
-方案 A、B 都要手动改配置。如果你要在多个 provider 或多个账号之间来回切 —— 一个项目用 Anthropic 登录，另一些用 GLM 和 DeepSeek，还有个合作者的仓库用 Kimi key —— 那么用一个替你改这些配置的图形界面会更不容易出错。**CC Switch** 是一个跨平台桌面应用，在一个窗口里管理 Claude Code（以及 Codex、Gemini CLI、Claude Desktop 等）的 provider 配置，内置 50+ provider 预设，还带一个系统托盘菜单可即时切换。它是开源的第三方工具，**不是** Anthropic 官方产品。
+方案 A、B 都要手动改配置。如果你要在多个 provider 或多个账号之间来回切 —— 一个项目用 Anthropic 登录，另一些用 GLM 和 DeepSeek，还有个合作者的仓库用 Kimi key —— 那么用一个替你改这些配置的图形界面会更不容易出错。**CC Switch** 是一个跨平台桌面应用，在一个窗口里管理 Claude Code（以及 Codex、Gemini CLI、OpenCode、Claude Desktop 等）的 provider 配置，内置大量 provider 预设，还带一个系统托盘菜单可即时切换。它是开源的第三方工具，**不是** Anthropic 官方产品。
 
 **安装。**
 
@@ -627,12 +653,12 @@ paru -S cc-switch-bin
 
 1. **Add Provider（添加）** → 选一个预设（Anthropic 官方、GLM/Z.ai、DeepSeek、Kimi/Moonshot ……）或填自定义 base URL + key。
 2. 选中该 provider 点 **Enable（启用）** —— 或直接从**托盘**菜单里选，即时切换。
-3. 重启终端（Claude Code 不需要），触发任意工具调用或 `/usage` 确认后端已切换。
+3. 重启终端（Claude Code 不需要），跑一下 `/status`（会显示当前的 base URL）确认后端已切换。
 4. 想切回 Anthropic 登录：启用 **"Official Login"** 预设，重启，再正常登录。
 
 **两条提醒 —— 工作坊的数据边界规则依然适用。**
 
-- **它把你的 API key 明文存**在 `~/.cc-switch/cc-switch.db` 里。把这个文件当凭据库对待：不要放在共用的实验室机器上，不要放进你无法掌控的同步 / 备份目录，永远不要提交进 git。在借来的电脑上，宁可用方案 B（key 放 `~/.api-keys`，`chmod 600`），或用完清理干净。
+- **它把你的 API key 明文存**在 `~/.cc-switch/cc-switch.db` 里。把这个文件当凭据库对待：不要放在共用的实验室机器上，不要放进你无法掌控的同步 / 备份目录，永远不要提交进 git。在借来的电脑上，宁可用方案 B（key 放 `~/.api-keys`，`chmod 600`），或用完清理干净。自 v4.0.4 起，这些文件的权限被设为仅属主可读写 —— 这能挡住同机其他用户，但**不是加密**。
 - **很多预设是社区中转（relay），不是厂商自己的 endpoint。** 中转方能看到你发给它的每一条 prompt —— 包括受访者文本。在把含敏感数据的项目路由到任何非官方后端之前，先做 §2.6.6 的信任检查；受限数据请优先用官方通道或你已核验过的 provider。
 
 CC Switch 不替代方案 A/B —— 它只是把它们收进一个界面。工作流的其它部分（插件、`CLAUDE.md`、权限门）都不变。
@@ -641,26 +667,25 @@ CC Switch 不替代方案 A/B —— 它只是把它们收进一个界面。工�
 
 > **两件完全不同的事，只有一件难。** Ollama 在本工作坊里出现两次，而结果并不一样。**作为实验 notebook 的模型 provider**，它工作得很好 —— notebook 发的是普通的对话请求，一个小的本地模型能正确回答；这就是 §2.1A 推荐的那条免费、不需要 key 的路。**而作为 Claude Code 或 Codex 背后的引擎**，它要扛的是一整个 agent 外壳 —— 极大的系统提示词、几十个工具定义、多轮工具循环 —— 这个门槛高得多。看到关于后者的警告，别把它当成前者的问题。
 
-如果机构禁止把数据发到云端 API，或者你需要可离线复现的实验，可以在本机跑一个 checkpoint，用它来驱动 Claude Code 或 Codex。**从 Ollama 0.32 起，这件事完全不需要 shim** —— Ollama 自带集成启动器，并且直接提供 Anthropic Messages API。更老的 Ollama、以及 vLLM 和 llama.cpp 仍然需要一层转换；如果你想*混用*多个 provider，也仍然需要，那时 `claude-code-router`（CCR）最省事。
+如果机构禁止把数据发到云端 API，或者你需要可离线复现的实验，可以在本机跑一个 checkpoint，用它来驱动 Claude Code 或 Codex。**从 Ollama 0.14（2026 年 1 月）起，这件事完全不需要 shim** —— Ollama 直接提供 Anthropic Messages API，0.15 起还自带 `ollama launch` 集成启动器。vLLM 和 llama.cpp 的 `llama-server` 现在也都直接提供 `/v1/messages`。只有当你想*混用*多个 provider 时才需要路由器，那时 `claude-code-router`（CCR）最省事。
 
 **路径 A —— `ollama launch`（最简单，什么都不用配）。** Ollama 对我们用的这两个工具都有一等公民级的集成：
 
 ```bash
 $ ollama launch claude                       # 用本地模型驱动 Claude Code
 $ ollama launch codex                        # Codex CLI 同理
-$ ollama launch claude --model qwen2.5:7b    # 指定模型
-$ ollama launch claude --config              # 只配置，不启动
-$ ollama launch claude --restore             # 把集成恢复成默认配置
+$ ollama launch claude --model qwen3.5 --yes # 指定模型，跳过确认
+$ ollama launch claude -- -p "…"             # -- 之后的参数原样传给 claude
 $ ollama launch                              # 所有集成的交互式菜单
 ```
 
-`ollama launch --help` 里还有更多（Copilot CLI、OpenCode、Cline、Qwen Code、VS Code 等）。
+`ollama launch --help` 里还有更多（Copilot CLI、OpenCode、Cline、Qwen Code、VS Code 等）；具体的参数以你这一版的 `--help` 为准 —— 较早版本里的 `--config`、`--restore` 在当前文档里已不再列出。
 
-**它不会动你已有的配置。** 实测：跑完 `ollama launch claude --config` 之后，`~/.claude/settings.json`、`~/.codex/config.toml`、`~/.zshrc` 与之前逐字节一致 —— 启动器只为子进程导出环境变量。（`--restore` 是给 Codex 和 ChatGPT 集成用的；对 `claude` 会直接报 *"claude does not support --restore"*，因为根本没有需要撤销的持久配置。）
+**它不会动你已有的配置。** 实测（Ollama 0.32.x）：跑完 `ollama launch claude --config` 之后，`~/.claude/settings.json`、`~/.codex/config.toml`、`~/.zshrc` 与之前逐字节一致 —— 启动器只为子进程导出环境变量。（`--restore` 是给 Codex 和 ChatGPT 集成用的；对 `claude` 会直接报 *"claude does not support --restore"*，因为根本没有需要撤销的持久配置。）
 
 > **这换的是外壳，不是模型 —— 而这个区分正是第一天的全部主题。** `ollama launch claude` 给你的是*Claude Code 这个外壳*在本机驱动一个**开放权重**模型。它**不**给你 Claude：Anthropic 的权重从未公开，也从不进入 Ollama。你在测的恰恰就是本工作坊的核心论点 —— 有多少行为来自外壳，有多少来自模型。能力会明显下降，而那个下降本身就是测量结果。
 
-> **选模型要看两个轴，不是一个。** 它既要能**调用工具**，又要有足够的上下文 —— Ollama 官方建议 64k 起。用 `ollama show <模型>` 可以同时看到这两项，别猜：在讲师这台机器上，`qwen2.5:7b` 有 `tools` 但上下文只有 32k；`qwen3.6` 有 256k 上下文，却**完全没有 `tools` 能力**。两种失败都不会大声报错 —— 一个是大仓库被截断，另一个是 agent 干脆从不调用工具。
+> **选模型要看两个轴，不是一个。** 它既要能**调用工具**，又要有足够的上下文 —— Ollama 官方建议 64k 起。用 `ollama show <模型>` 可以同时看到这两项，别猜：在讲师这台机器上（Ollama 0.32，2026 年 8 月），`qwen2.5:7b` 有 `tools` 但上下文只有 32k；`qwen3.6` 有 256k 上下文，却**完全没有 `tools` 能力**。两种失败都不会大声报错 —— 一个是大仓库被截断，另一个是 agent 干脆从不调用工具。
 >
 > **按参数看，`gpt-oss:20b` 是本机最好的候选** —— 20.9B 参数、**131,072 上下文**、带 `tools`。直接打 Ollama 的 Anthropic 端点，它确实是对的：能回答，也能吐出结构正确的 Anthropic `tool_use` 块（`stop_reason: tool_use`、`name=read_file`、`input={"path": "/etc/hostname"}`）。
 >
@@ -668,11 +693,11 @@ $ ollama launch                              # 所有集成的交互式菜单
 >
 > 这就是第一天的论点，跑在你自己的笔记本上，而且你可以复现：**外壳干的活远比它看上去多，而且它不会优雅地降级**，它是以一种具体、可诊断的方式坏掉的。不过结论要说清楚边界：这是一个 20B 模型、三个提示词、一台机器。Ollama 官方示例用的是 `gpt-oss:120b`，那个体量的模型很可能扛得住。硬件够的话，这个实验值得做。
 >
-> **真要试的话，还有两点。** Claude Code 不认识 `gpt-oss:20b`，于是它按 **200k** 上下文来规划，而这个模型只有 **128k** —— 请把 `CLAUDE_CODE_MAX_CONTEXT_TOKENS` 设成真实值，或者在 `modelOverrides` 里映射一下，否则 auto-compact 会按一个并不存在的窗口来算。另外它是**带思考**的模型：`max_tokens` 给得太紧时，思考会把预算吃光，可见回答返回**空**（40 的上限什么都没返回，600 时用 45 个 token 就答完了）。本地跑下来一片空白，先把预算调大，再去怪模型。
+> **真要试的话，还有两点。** Claude Code 不认识 `gpt-oss:20b`，于是它按 **200k** 上下文来规划，而这个模型只有 **128k** —— 请把 `CLAUDE_CODE_MAX_CONTEXT_TOKENS` 设成真实值，或者在 `modelOverrides` 里映射一下，否则 auto-compact 会按一个并不存在的窗口来算。另外它是**带思考**的模型：`max_tokens` 给得太紧时，思考会把预算吃光，可见回答返回**空**（40 的上限什么都没返回，600 时用 45 个 token 就答完了）。本地跑下来一片空白，先把预算调大，再去怪模型。（Ollama 0.40.2 起，`ollama launch claude` 会按模型的完整上下文长度来配置；会话里用 `/context` 核对一下 Claude Code 实际按多大的窗口在算。）
 >
 > **如果 `ollama show` 直接报错**（比如 `tensor "blk.0.ffn_down_exps.weight" size overflow`），那是本地副本坏了，不是模型有问题。重新 `ollama pull <模型>` 即可修复。
 
-**路径 B —— 用 CCR 在前面接住 Ollama（老版本 Ollama，或者你想混用多个 provider 时）。** 在 **0.32 之前的 Ollama** 上——以及任何版本的 vLLM、llama.cpp 上——只提供 OpenAI 风格的 `/v1/chat/completions`，而不是 Claude Code 期望的 Anthropic `/v1/messages`，所以前面要垫一层 shim：
+**路径 B —— 用 CCR 在前面接住 Ollama（0.14 之前的 Ollama，或者你想跨后端混用各档位时）。** **0.14 之前的 Ollama** 只提供 OpenAI 风格的 `/v1/chat/completions`，而不是 Claude Code 期望的 Anthropic `/v1/messages`，所以前面要垫一层 shim；想让不同档位走不同后端时，走的也是这条路：
 
 ```bash
 # 1. 安装 Ollama（macOS / Linux / WSL）
@@ -685,27 +710,27 @@ $ ollama pull qwen2.5-coder:32b   # 偏代码的强力本地模型
 $ ollama pull deepseek-r1:14b     # 蒸馏推理模型
 #    GLM 系列也在库里 —— 在该页搜 "glm"。
 
-# 3. 用 CCR 接住 Ollama（CCR 安装见路径 B）。在 ccr ui 里加一个
-#    "ollama" provider，base URL 填 http://localhost:11434/v1/chat/completions，模型填你拉的 tag，然后：
-$ ccr code
-#    会话里：/model ollama,qwen2.5-coder:32b
+# 3. 用 CCR 接住 Ollama（CCR 安装见路径 C）。在 ccr ui 里加一个 Ollama provider，
+#    地址填 http://localhost:11434，模型填你拉的 tag；再在 Agent Config 下
+#    建一个 Claude Code profile，然后：
+$ ccr "<你的 profile 名>" cli
 ```
 
-> **2026-08-24 更正。** 这一节以前说：直接把 `ANTHROPIC_BASE_URL` 指到 `http://localhost:11434` 是*不行*的，因为 Ollama 不提供 `/v1/messages`。**现在它提供了。** 在 Ollama 0.32.15 上用真实请求验证过：`POST /v1/messages` 返回的是标准的 Anthropic 结构（`"type":"message"`、`content:[{"type":"text"}]`、`stop_reason`、`usage.input_tokens`）。路径 A 之所以不需要任何 shim，就是因为这个。更老的 Ollama 不提供该端点，所以下面这条路由方案仍然保留。
+> **2026-08-24 更正。** 这一节以前说：直接把 `ANTHROPIC_BASE_URL` 指到 `http://localhost:11434` 是*不行*的，因为 Ollama 不提供 `/v1/messages`。**现在它提供了。** 在 Ollama 0.32.15 上用真实请求验证过：`POST /v1/messages` 返回的是标准的 Anthropic 结构（`"type":"message"`、`content:[{"type":"text"}]`、`stop_reason`、`usage.input_tokens`）。路径 A 之所以不需要任何 shim，就是因为这个。该端点是 Ollama v0.14.0 加入的；只有 0.14 之前的版本才需要路由器，所以下面这条路由方案仍然保留。
 
-**路径 C —— `claude-code-router`（CCR），安装与路由。** CCR 既是单个本地模型的 shim（路径 B），也是*混合* provider 的方式——给不同档位走不同路由（Opus 走 Z.ai、Sonnet 走 DeepSeek、Haiku 走本地 Ollama），并可在会话中途用 `/model provider,model` 手动切换（要做故障回退可自己写一段 `router.js` 自定义路由）：
+**路径 C —— `claude-code-router`（CCR），安装与路由。** CCR 是路径 B 里的那层 shim，也是*混合* provider 的方式——给不同档位走不同路由（Opus 走 Z.ai、Sonnet 走 DeepSeek、Haiku 走本地 Ollama 模型）。**CCR 3.x（2026 年 7 月起）是一次重写**，而网上多数教程讲的还是 1.x/2.x。它需要 Node.js 22+，设置存在数据库里而不是手改的 JSON 文件，并通过具名的 *profile* 启动智能体：
 
 ```bash
+$ node --version                                # 必须是 v22 或更新
 $ npm install -g @musistudio/claude-code-router
-$ ccr ui          # 打开浏览器配置界面，并创建
-                  # ~/.claude-code-router/config.json
-$ ccr start       # 启动路由服务
-$ ccr code        # 通过 CCR 启动 Claude Code
+$ ccr ui          # 启动后台服务并打开界面（http://127.0.0.1:3458）
+$ ccr start       # 同一个服务，不开浏览器；ccr stop 停止
+$ ccr "<profile name>" cli    # 通过 CCR 网关启动一个 Claude Code profile
 ```
 
-没有 `ccr config init` 这个命令；配置文件在你第一次跑 `ccr ui`（或 `ccr start`/`ccr code`）时自动创建，位于 `~/.claude-code-router/config.json`。在那里或用 `ccr ui` 编辑 `default` 与各档位路由，改完跑 `ccr restart` 生效。在 CCR 会话里，`/model deepseek,deepseek-v4-pro` 或 `/model ollama,qwen2.5-coder:32b` 可在对话中途切换路由 —— `provider,model` 这种写法是 CCR 的特性，不是原版 Claude Code 的。
+在 `ccr ui` 里添加你的 provider，然后在 **Agent Config** 下创建并启用一个 **Claude Code** profile，配好你想要的路由。设置存放在 `~/.claude-code-router/`（`config.sqlite`；Windows 上是 `%APPDATA%\claude-code-router`）。CCR 运行时不要去改这些文件 —— 用 **Settings → Export data** 导出。要改路由，在界面里改完，再 `ccr stop`、`ccr start`。旧教程里的 `ccr code`、`ccr restart`、`config.json` 以及 `/model provider,model` 写法都属于 CCR 1.x/2.x；在 3.x 里，`ccr` 后面除了 `start`、`ui`、`stop`、`serve` 之外的任何词，都会被当作 profile 名。
 
-> **vLLM / llama.cpp。** 如果你已经用 vLLM（`vllm serve <model>`）或 llama.cpp（`llama-server`）提供服务，它们暴露的是 OpenAI 风格的 chat completions，不是 Anthropic 风格。vLLM 自带一份 Claude Code 接入指引；否则在前面套一层 `litellm`、`anthropic-proxy` 或 CCR 转换 OpenAI ↔ Anthropic schema 即可。Claude Code 这一侧保持不变。
+> **vLLM / llama.cpp。** 两者现在都自己提供 Anthropic Messages API。vLLM：用 `vllm serve <model> --enable-auto-tool-choice --tool-call-parser <parser>` 启动，再设 `ANTHROPIC_BASE_URL=http://localhost:8000`；llama.cpp：`llama-server` 在 `http://127.0.0.1:8080` 上直接提供 `/v1/messages`。只有想混用多个 provider 时，才需要在前面套 `litellm` 或 CCR。Claude Code 这一侧保持不变。
 
 #### 2.6.6 信任新后端前必做的三项检查
 
@@ -721,9 +746,9 @@ Open Scholar 技能**不是 model-agnostic** 的。它们依赖长上下文阅�
 
 #### 2.6.7 方案 D —— ZCode：用 Z.ai 自家的智能体应用跑 scholar 技能
 
-方案 A–C 都是保留 Claude Code CLI、只把底下的模型换掉。**ZCode** 走的是另一条路：它是 Z.ai 自己出的智能体应用，以 GLM-5.2 为核心，换掉的是模型*连同*外壳。Z.ai 把它叫做 *Agentic Development Environment*（ADE）—— 一个桌面应用，带 Goal 模式来跑多步长任务，还有浏览器自动化、远程开发、手机远程操控等通道。它不是 Anthropic 的产品，也不是 Claude Code，而是另一个程序，配置目录在 `~/.zcode/`。
+方案 A–C 都是保留 Claude Code CLI、只把底下的模型换掉。**ZCode** 走的是另一条路：它是 Z.ai 自己出的智能体应用，以 GLM-5.3 为核心，换掉的是模型*连同*外壳。Z.ai 把它叫做 *Agentic Development Environment*（ADE）—— 一个桌面应用，带 Goal 模式来跑多步长任务，支持多子智能体工作流，还有浏览器自动化、远程开发、手机远程操控等通道。它不是 Anthropic 的产品，也不是 Claude Code，而是另一个程序，配置目录在 `~/.zcode/`。
 
-它值得写进本手册，是因为 Z.ai 做了一个设计决定：**ZCode 能读取 Claude Code 的 skills、plugins、commands 和 hooks。** 也就是说，你在 §2.4 装好的 `open-scholar-skill` 套件可以在它里面跑，干活的是 GLM-5.2。如果你所在的院系没法报销 Anthropic 订阅，或者你需要一条国内可付费的通道，这就是从「没有 Claude 预算」到「scholar 流水线能在我笔记本上跑起来」的最短路径。
+它值得写进本手册，是因为 Z.ai 做了一个设计决定：**ZCode 能导入 Claude Code 的 skills，并安装 Claude Code 格式的插件** —— 包括 skills、commands、subagents、MCP servers 和插件自带的 hooks。也就是说，你在 §2.4 装好的 `open-scholar-skill` 套件可以在它里面跑，干活的是 GLM-5.3。它*不做*的，是执行你 Claude Code 设置文件里的那些 hooks；见下文*差异 3*。如果你所在的院系没法报销 Anthropic 订阅，或者你需要一条国内可付费的通道，这就是从「没有 Claude 预算」到「scholar 流水线能在我笔记本上跑起来」的最短路径。
 
 **你到底该选哪个？**
 
@@ -735,7 +760,7 @@ Open Scholar 技能**不是 model-agnostic** 的。它们依赖长上下文阅�
 
 本手册第 II–IV 部分默认你面对的是 `$` 提示符和 `/scholar-*` 命令。在 ZCode 里，*技能文件是同一批*，但调用方式、项目记忆、hook 三处都不一样。开始在 ZCode 里跑 CFPS 之前，先读完下面三个「差异」段落 —— 第三个是安全问题。
 
-**安装。** ZCode 是桌面应用 —— macOS（Apple 芯片与 Intel）、Windows（x64 与 ARM64）、Linux（x64 AppImage）。没有 `npm install` 这一说。从官方安装页下载，那里始终是当前版本：
+**安装。** ZCode 是桌面应用 —— macOS（Apple 芯片与 Intel）、Windows（x64 与 ARM64）、Linux（x64 与 ARM64；AppImage、DEB 或 RPM）。截至 2026 年 10 月 13 日，当前版本是 3.15.3。没有 `npm install` 这一说。从官方安装页下载，那里始终是当前版本：
 
 - 中文文档：<https://zcode.z.ai/cn/docs/install>
 - English docs: <https://zcode.z.ai/en/docs/install>
@@ -747,6 +772,8 @@ $ xattr -dr com.apple.quarantine /Applications/ZCode.app
 
 # Linux —— 给 AppImage 加执行权限后运行
 $ chmod +x ZCode-*.AppImage && ./ZCode-*.AppImage
+# Debian/Ubuntu：sudo apt install ./ZCode-*.deb · Fedora/RHEL：sudo dnf install ./ZCode-*.rpm
+# （文件名按你实际下载的包来写）
 ```
 
 Windows 直接跑 `.exe` 安装程序，按向导走完。
@@ -755,23 +782,23 @@ Windows 直接跑 `.exe` 安装程序，按向导走完。
 
 - **Z.ai 账号**（国际站）—— 登录即可，用量走 GLM Coding Plan 权益。Coding endpoint 为 `https://api.z.ai/api/coding/paas/v4`（OpenAI 风格）与 `https://api.z.ai/api/anthropic`（Anthropic 风格）。
 - **BigModel**（中国大陆）—— 智谱开放平台，同样的 GLM 模型：`https://open.bigmodel.cn/api/coding/paas/v4` 与 `https://open.bigmodel.cn/api/anthropic`。
-- **API Key** —— 任何 Anthropic 或 OpenAI 兼容的 provider。ZCode 自带的清单里包括 Anthropic、OpenRouter、Moonshot、OpenAI、MiniMax 以及自定义 endpoint，所以你也可以让 ZCode 这个界面去跑 Claude 模型，从而在模型不变的前提下比较两个外壳。
+- **API Key** —— 任何 Anthropic 或 OpenAI 兼容的 provider。ZCode 自带的清单里包括 Anthropic、OpenRouter、Moonshot、OpenAI、MiniMax、小米 MiMo，以及自定义的 Anthropic 或 OpenAI 兼容 endpoint（比如 DeepSeek），所以你也可以让 ZCode 这个界面去跑 Claude 模型，从而在模型不变的前提下比较两个外壳。
 
-可选的 GLM 模型是 **GLM-5.2**（旗舰，100 万 token 上下文）和 **GLM-5-Turbo**；其余取决于你账号的权限。**不要把 coding endpoint 换成通用 endpoint** —— 它们按区域和计费区分，不可互换。这相当于 §2.6.1 里漏掉 `/anthropic` 后缀：同一类一行之差的错误，症状也一样 —— 什么都跑不通，而且没有有用的报错。
+可选的 GLM 模型是 **GLM-5.3**（旗舰，100 万 token 上下文）和 **GLM-5.3-Flash**；其余取决于你账号的权限。Coding Plan 一旦生效，走 Anthropic 风格 URL 的调用就不再扣预付余额。**不要把 coding endpoint 换成通用 endpoint** —— 它们按区域和计费区分，不可互换。这相当于 §2.6.1 里漏掉 `/anthropic` 后缀：同一类一行之差的错误，症状也一样 —— 什么都跑不通，而且没有有用的报错。
 
 确认连接的办法，照 Z.ai 自己的快速开始来：让智能体列一下当前目录的文件。如果它报出来的是你真实的文件名，说明模型和工具循环都活着。
 
 **把 `open-scholar-skill` 装进 ZCode。** 一共三条路线。用第一条；另外两条是留给两种情况的：你已经有一套 Claude Code 安装、想直接复用；或者哪里没注册上，你想亲眼把每个文件放到位。
 
-*路线 1 —— 插件商店（就用这条）。* 该仓库已经发布了 marketplace 清单，ZCode 一步就能装上；而且以 plugin 方式安装会**一次性**注册它的全部组件类型 —— `skills/`、`commands/`、`agents/`、`.mcp.json`、`hooks/hooks.json` —— 这也正是为什么只有这条路线能把同行评审、代码审查、结果核验那批 subagents 一并带进来，不用额外操作。
+*路线 1 —— 插件商店（就用这条）。* 该仓库已经发布了 marketplace 清单，ZCode 一步就能装上；而且以 plugin 方式安装会**一次性**注册它的全部组件类型 —— `skills/`、`commands/`、`agents/`、`.mcp.json`、`hooks/hooks.json` —— 这也正是为什么只有这条路线能把同行评审、代码审查、结果核验那批 subagents 一并带进来，不用额外操作。但要注意：`open-scholar-skill` 插件**并不带** `hooks/hooks.json`，所以插件本身不会带来数据守卫 —— 见*差异 3*。
 
-打开 **Settings → Plugins**，点右上角 **Create → Add marketplace**，填：
+先打开一个工作区（插件页需要有打开的工作区），然后进 **Settings → Plugins**，点右上角 **Create → Add marketplace**，填：
 
 ```
 joshzyj/open-scholar-skill
 ```
 
-ZCode 会先校验清单再添加。之后这个 marketplace 会以 `open-scholar` 的名字出现在 **Personal** 分段里；找到 **open-scholar-skill** 那张卡片，点 **Install**。新装的插件默认启用，启用会立即重载智能体运行时 —— 不用重启。以后上游发新版，用搜索框上方的齿轮图标打开 **Marketplace sources** 刷新一下，就能拿到新技能。
+ZCode 会先校验清单再添加。之后这个 marketplace 会以 `open-scholar` 的名字出现在 **Personal** 分段里；找到 **open-scholar-skill** 那张卡片，点 **Install**。新装的插件默认启用，启用会立即重载智能体运行时 —— 不用重启。插件注册到的是**当前工作区**（3.12.3 起按工作区安装），所以每个工作区都要各装一次；插件的 hooks 只在新开的会话里生效。以后上游发新版，用搜索框上方的齿轮图标打开 **Marketplace sources** 刷新一下，就能拿到新技能。
 
 同一份清单在 Claude Code 里也能用 —— 如果你更愿意用插件方式而不是 `setup.sh`：
 
@@ -782,7 +809,7 @@ $ claude plugin install open-scholar-skill@open-scholar
 
 **即便用插件装好了，`bash setup.sh`（§2.4.2）仍然要跑一次。** 插件给你的是技能和 agents，但不包括 `setup.sh` 写在仓库之外的那三样：带有 Zotero、BibTeX、CrossRef 配置的 `.env`（§2.5.1）；技能里那些 shell 脚本的可执行位；以及 PreToolUse 数据安全守卫。而最后这一样，无论如何你都得在 ZCode 里手动声明一遍 —— 见下面的*差异 3*。
 
-*路线 2 —— 从已有的 Claude Code 安装导入。* 如果你已经跑过 `setup.sh`，ZCode 会自动检测已经装给 Claude Code 的 skills —— 以及 Codex CLI、OpenClaw、Augment、Windsurf 的 —— 并提示导入。进 **Settings → Skills → import**，选 **symlink（符号链接）**模式，这样以后在技能仓库里 `git pull`，ZCode 这边也跟着更新；选 **copy（复制）**则是冻结一份快照。导入进来的技能，和你自己在 `~/.zcode/skills/<name>/SKILL.md` 手写的完全等价。注意这条路线**只管 skills** —— subagents 要靠路线 1 或路线 3。
+*路线 2 —— 从已有的 Claude Code 安装导入。* 如果你已经跑过 `setup.sh`，ZCode 会自动检测已经装给 Claude Code 的 skills —— 以及 Codex CLI、OpenClaw、Augment、Windsurf 的 —— 并提示导入。进 **Settings → Skills → import**，选 **symlink（符号链接）**模式，目标选 **Global（全局）**，这样以后在技能仓库里 `git pull`，ZCode 这边也跟着更新；选 **copy（复制）**则是冻结一份快照。导入进来的技能，和你自己在 `~/.zcode/skills/<name>/SKILL.md` 手写的完全等价。注意这条路线**只管 skills** —— subagents 要靠路线 1 或路线 3。
 
 *路线 3 —— 手动建符号链接。* 当注册出问题、你想自己把每个文件放到位时的兜底方案：
 
@@ -794,7 +821,7 @@ $ for f in "$SRC"/.claude/agents/*.md; do ln -sfn "$f" ~/.zcode/agents/"$(basena
 $ ls ~/.zcode/skills | wc -l      # 应当等于：ls ~/.claude/skills | wc -l
 ```
 
-然后 **Settings → Skills → Refresh**。无论走哪条路线都请注意：ZCode 的 subagents **只有用户级**，没有按工作区分的 agents 目录 —— 这台机器上所有项目共用同一套审稿人面板。
+然后 **Settings → Skills → Refresh**。无论走哪条路线都请注意：你自己放的 ZCode subagents **只有用户级**（`~/.zcode/agents/`），没有按工作区分的 agents 目录 —— 这台机器上所有项目共用同一套审稿人面板；插件带来的 subagents 则跟着插件的按工作区安装走。
 
 **差异 1 —— 怎么调用技能。** 在 Claude Code 里你敲 `/scholar-init`。在 ZCode 里，`/` 是给命令用的（`/goal`、`/compact`，以及 `~/.zcode/commands/` 下你自己写的），技能用 `$` 引用：
 
@@ -812,11 +839,11 @@ $ cp CLAUDE.md AGENTS.md     # 在项目根目录 —— 之后两份要保持�
 
 ZCode 不会跨目录层级合并多个 `AGENTS.md`，不扫描子目录，也不展开 `@import`。把数据边界规则 —— §3.3 里那段 **Forbidden（禁止）** —— 放在工作区 `AGENTS.md` 的最上面，放在不可能被漏看的位置。
 
-**差异 3 —— 安全 hook 必须重新声明。这一条会真的伤到你。** `setup.sh` 把 PreToolUse 数据守卫注册在 `~/.claude/settings.json` 里。**ZCode 根本不读那个文件。** 在你自己声明之前，ZCode 是完全没有数据守卫在跑的，而且失败是静默的：智能体读了一个受限文件，没有任何东西拦它，你可能很久之后才发现，也可能永远不会发现。
+**差异 3 —— 安全 hook 必须重新声明。这一条会真的伤到你。** `setup.sh` 把 PreToolUse 数据守卫注册在 `~/.claude/settings.json` 里。**ZCode 从不执行那个文件里的 hooks**，项目里 `.claude/settings.json` 的 hooks 也只是*显示*出来、并不执行；而 `open-scholar-skill` 插件本身又不带守卫。在你自己声明之前，ZCode 是完全没有数据守卫在跑的，而且失败是静默的：智能体读了一个受限文件，没有任何东西拦它，你可能很久之后才发现，也可能永远不会发现。
 
 好消息是，ZCode 的 hook 约定足够接近，同一个脚本可以原样复用。ZCode 会往 hook 的 stdin 写一行 JSON，而按 Z.ai 自己的说法，这个 payload「同时带有 ZCode 的 camelCase 字段和 Claude Code 的 snake_case 别名，好让既有插件继续读 snake_case」—— 这正是 `pretooluse-data-guard.sh` 解析的那几个字段（`.tool_name`、`.tool_input.file_path`、`.cwd`）。退出码 2 表示拦截，与 Claude Code 的约定一致。
 
-在 `~/.zcode/cli/config.json`（对所有项目生效）或 `<workspace>/.zcode/config.json`（只对一个项目生效）里声明：
+**只能**在用户级的 `~/.zcode/cli/config.json` 里声明。**不要**写在 `<workspace>/.zcode/config.json` 或 `<workspace>/zcode.json` 里 —— ZCode 文档明说「当前版本不执行项目级 hooks」，所以按项目写的守卫看上去配好了，其实什么都不做：
 
 ```json
 {
@@ -840,7 +867,7 @@ ZCode 不会跨目录层级合并多个 `AGENTS.md`，不扫描子目录，也�
 }
 ```
 
-`"hooks.enabled": true` 是必需的 —— 没有它什么都不会触发。脚本路径里若有空格一定要加引号；§2.5.3 里关于 `My Drive` 的那条警告，在这里一字不差地适用。
+`"hooks.enabled": true` 是必需的 —— 没有它什么都不会触发。`timeoutMs` 不写时默认是 60000；这里设成 10000 就够了。脚本路径里若有空格一定要加引号；§2.5.3 里关于 `My Drive` 的那条警告，在这里一字不差地适用。
 
 然后**验证它真的会触发**，因为一个写错了工具名的 matcher 会「失败即放行」（fail open），外观上和正常工作的守卫完全一样：
 
@@ -852,7 +879,7 @@ ZCode 不会跨目录层级合并多个 `AGENTS.md`，不扫描子目录，也�
 
 **在交给它跑整条流水线之前。** ZCode 同时换掉了外壳*和*模型，所以 §2.6.6 的两半都适用：跑那三步冒烟测试（tool-use round-trip、长 prompt 稳定性、技能调用 —— 这里用 `$scholar-init` 而不是 `/scholar-init`），外加上面那条 hook 测试。记下日期，以及具体哪几个技能通过了。**不要凭一次冒烟测试就对外说这套件「兼容 ZCode」** —— 只说你跑了什么、什么时候跑的。
 
-**两条数据边界提醒，都不是可选项。** 第一，无论你选 Z.ai 还是 BigModel，GLM 的调用都在中国法律下处理。对于受限数据、受 IRB 管辖的数据、或有数据使用协议（DUA）约束的受访者数据，这是要问你的 IRB 和 DUA 的问题，不是个人偏好 —— 与 §2.6.4 对社区中转（relay）适用的是同一条标准。第二，ZCode 的那些增值能力 —— 浏览器自动化、远程开发、手机与机器人通道 —— 都在扩大能伸进你项目目录的面。只开你真正需要的那些，并保持 §4 的目录布局，让原始数据待在任何自动化默认够不到的地方。
+**两条数据边界提醒，都不是可选项。** 第一，无论你选 Z.ai 还是 BigModel，GLM 的调用都在中国法律下处理。对于受限数据、受 IRB 管辖的数据、或有数据使用协议（DUA）约束的受访者数据，这是要问你的 IRB 和 DUA 的问题，不是个人偏好 —— 与 §2.6.4 对社区中转（relay）适用的是同一条标准。第二，ZCode 的那些增值能力 —— 浏览器自动化、远程开发、手机与机器人通道 —— 都在扩大能伸进你项目目录的面。只开你真正需要的那些，并保持 §4 的目录布局，让原始数据待在任何自动化默认够不到的地方。Autonomous Mode 如果打开，执行危险命令前仍会先问你 —— 但它替代不了数据守卫。
 
 ### 2.7 让智能体替你安装研究工具链
 
@@ -879,7 +906,7 @@ ZCode 不会跨目录层级合并多个 `AGENTS.md`，不扫描子目录，也�
 > quarto, jq} 中哪些已经在 PATH 里。把结果给我，然后等我下一步指示。
 ```
 
-这一段全程用 **`default`** 权限模式。**不要**切到 `acceptEdits` 或 `bypassPermissions` —— 每一次 `sudo`、`brew install`、`apt install`、`npm install -g` 都应该是一次单独的批准。
+这一段全程用 **Manual**（`manual`，2.1.200 之前叫 `default`）权限模式 —— 现在会话默认从 auto 开始，所以要用 `claude --permission-mode manual` 主动选它。**不要**切到 `acceptEdits` 或 `bypassPermissions` —— 每一次 `sudo`、`brew install`、`apt install`、`npm install -g` 都应该是一次单独的批准。
 
 #### 2.7.2 覆盖 90% 场景的四条提示词
 
@@ -1041,30 +1068,32 @@ Claude 会**先**提出工具调用。**先读再批准。** 一个典型界面�
 
 ### 3.1 权限模式——快速入门
 
-Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、`auto`、`dontAsk`、`bypassPermissions`。并非每个会话都能用到全部六种：`auto` 需要符合条件的账户和较新的模型，`dontAsk` 只能用 `--permission-mode dontAsk` 设定——用 `/help` 看你装的版本暴露了哪些。新手最常用的两种是：
+Claude Code 共有**六种**权限模式：`manual`（2.1.200 之前叫 `default`，旧名仍然有效）、`acceptEdits`、`plan`、`auto`、`dontAsk`、`bypassPermissions`。**自 2.1.284 起，只要你没有配置权限模式，每个交互会话都从 `auto` 开始**（所有套餐、所有 provider 都一样）；`permissions.defaultMode` 仍然可以覆盖这一默认。`dontAsk` 只能用 `--permission-mode dontAsk` 设定——用 `/help` 看你装的版本暴露了哪些。新手最常用的两种是：
 
-- **`default`** —— 每个工具 / 路径首次使用都弹出确认。敏感数据、首跑某项目，留在这里。
+- **Manual（`manual`）** —— 每个工具 / 路径首次使用都弹出确认。敏感数据、首跑某项目，留在这里 —— 而既然默认已是 auto，你得**主动**选它（`claude --permission-mode manual`，或在设置里写 `"defaultMode": "manual"`，见 §5A）。
 - **`plan`** —— 只读“探查”模式，智能体必须先写计划，未获批准前不能编辑、不能跑命令。任何破坏性或昂贵的多步操作之前先进。
 
-按 `Shift+Tab` 循环切换 `default → acceptEdits → plan`（账户符合条件时还会进入 `auto`），再按继续循环。完整的六种模式及各自的安全含义见 §3.2：`acceptEdits` 自动通过编辑，`auto` 在后台安全分类器的审查下自动执行一切，`dontAsk` 只允许预先批准的工具，`bypassPermissions` 跳过所有检查。
+按 `Shift+Tab` 在 Manual、`acceptEdits`、`plan`、`auto` 之间循环切换，当前模式显示在页脚。完整的六种模式及各自的安全含义见 §3.2：`acceptEdits` 自动通过编辑，`auto` 在后台安全分类器的审查下自动执行一切，`dontAsk` 只允许预先批准的工具，`bypassPermissions` 跳过所有检查。
 
 > **`/sandbox` 不是第七种权限模式。** 很容易把它归到这一类，但两者回答的是不同问题：权限模式决定*一次工具调用是否执行*，而沙箱决定*一条 `Bash` 命令跑起来之后能够到什么*。它们是叠加的，对受限数据你两个都要。沙箱自己的 **auto-allow** 模式同样不是权限系统的 `auto` 模式 —— auto-allow 跳过提示，是因为 OS 边界已经把命令圈住了；`auto` 跳过提示，是因为一个分类器判断它安全。面板和两种模式见 §5A。
 
 ### 3.2 高频命令
 
-> **关于命令准确性。** 下面的命令对照 Claude Code v2.1.154（与 Opus 4.8 同日发布，2026-05-28）核对。Claude Code 的发布节奏很快——你装的版本可能比本手册更新，或更旧。装好后随时 `/help` 看实时命令列表。"自治与多会话"小节包含 2.x 周期新加的命令，包括 Dynamic Workflows 研究预览（`/workflows`）和后台会话工作链（`claude --bg`、`/resume <bg-id>`）；如果某个命令在你装的版本里识别不出来，就当它还没进你的版本。括号里的第二个名字是别名，效果一致。
+> **关于命令准确性。** 下面的命令最初对照 Claude Code v2.1.154（2026-05-28）整理，2026-10-13 又对照 v2.1.296 复核过一遍。会话里用 `/release-notes` 可以看你这一版新增了什么。Claude Code 的发布节奏很快——你装的版本可能比本手册更新，或更旧。装好后随时 `/help` 看实时命令列表。"自治与多会话"小节包含 2.x 周期新加的命令，包括 Dynamic Workflows 研究预览（`/workflows`）和后台会话工作链（`claude --bg`、`/resume <bg-id>`）；如果某个命令在你装的版本里识别不出来，就当它还没进你的版本。括号里的第二个名字是别名，效果一致。
 
 #### 项目设置 / 记忆
 
 ```
 /init                  生成 CLAUDE.md 项目记忆文件
 /permissions           查看或调整工具权限
-/doctor                环境与配置诊断
+/doctor  (或 /checkup) 完整的环境与配置检查；`/doctor prompt-audit`
+                       （2.1.283+）审一遍你的 CLAUDE.md / 技能提示词
 /usage   (或 /cost)    显示本会话 token 与美元消耗。
                        v2.1.149+：/usage 现在按 skills、subagents、plugins、
                        MCP servers 分类拆账，便于你在给整条流水线
                        开 /effort xhigh 之前先看哪个 scholar-skill
-                       是最大成本项。
+                       是最大成本项。v2.1.243+ 还单列 Loops（循环与
+                       工作流）的用量；v2.1.251+ 显示消费上限进度条。
 /reload-skills         v2.1.152+：扫描 ~/.claude/skills/ 与本项目
                        .claude/skills/ 目录，不用重启会话就能加载新技能。
                        适用：刚改完一个 SKILL.md、或刚拉了一版新的
@@ -1098,7 +1127,7 @@ Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、
 
 #### 自治与多会话 —— Claude Code 2.x 新增
 
-下列功能是 Opus 4.6 / 4.7 / 4.8 周期里加进来的，它们改变了研究者"让 agent 自己跑、同时管多个会话"的方式。
+下列功能是 2.x 周期（从 Opus 4.6 一直到 Opus 5.5）里陆续加进来的，它们改变了研究者"让 agent 自己跑、同时管多个会话"的方式。
 
 ```
 /goal <条件>                  设定完成条件。智能体跨多个回合自动工作，
@@ -1108,8 +1137,10 @@ Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、
                                        返回 LOW-RISK"
                               适用：边界清晰、不需要人介入中间步的多步任务。
 
-/workflows                    v2.1.154+（Opus 4.8）：Dynamic Workflows
-                              研究预览。让 Claude 设计一套多步工作流，
+/workflows                    v2.1.154+：Dynamic Workflows。在提示词里
+                              写 `ultracode`（2.1.160 前叫 `workflow`），
+                              或用 `/effort ultracode on|off` 打开开关。
+                              让 Claude 设计一套多步工作流，
                               它会写出编排脚本，在后台同时调度数十到
                               上百个子智能体，共享一份可恢复状态。
                               `/workflows` 打开仪表盘，列出所有运行
@@ -1118,8 +1149,10 @@ Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、
                               一篇论文一个 workflow，每一步是一个
                               scholar-* 技能，scholar-respond 的审稿团
                               是 fan-out 节点，scholar-verify 是
-                              fan-in 节点。仅 Max / Team / Enterprise
-                              方案和 API 可用。
+                              fan-in 节点。规模随套餐而定：自 2.1.271
+                              起 Pro 也能跑小型 workflow（medium 档大约
+                              10 个 agent）；碰到用量上限时 workflow 会
+                              暂停，额度恢复后可以续跑。
 
 /bg   (别名: /background)     把当前会话切换到后台 agent 模式。终端
                               回到 shell 提示符；agent 在你机器上继续
@@ -1127,24 +1160,34 @@ Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、
                               或用 `/resume <session-name>` 直接接回。
                               从 shell 起的 `claude --bg` 后台会话现在
                               也会出现在 `/resume` 列表里，标记为 `bg`。
+                              在 shell 里还可以 `claude attach <id>`、
+                              `claude logs <id>`、`claude stop <id>`、
+                              `claude rm <id>` 管理它们。
 
-/effort                       速度 vs. 推理深度的滑块。Opus 4.8 你常用的几档：
-                                  low | high（默认）| xhigh | max
+/effort                       速度 vs. 推理深度的滑块。Opus 5.5 你常用的几档：
+                                  low | medium（默认）| high | xhigh | max
+                              （Fable 5.1 默认 high。）选择按模型保存；
+                              在选择器里按 `s` 则只对本会话生效。
                               （还有其他档位；跑 /effort 看完整列表）
                               `xhigh` 适合识别策略备忘、理论稿、对抗性
                               审稿；`max` 留给"最难的那一次 verify
                               复跑、不计 token 也要把它对上"的场合。
-                              日常编辑回到 `high`（或 `low`）——
+                              日常编辑回到 `medium`（或 `low`）——
                               `xhigh` / `max` 又慢又贵。
 
-/focus                        在普通紧凑视图与详细 transcript 视图之间
-                              切换。详细视图会展示每个工具的输入 / 输出，
-                              是 /scholar-verify 和 scholar-code-review
-                              跑的时候应该开的。
+/focus                        切到专注视图：只显示你的提示、一行进度
+                              摘要和最终回复。要看每个工具的输入 / 输出，
+                              按 Ctrl+O 打开详细 transcript —— 这才是
+                              /scholar-verify 和 scholar-code-review
+                              跑的时候应该开的（没有 /focus verbose）。
 
-/code-review [--fix]          v2.1.152+：审当前 diff。`--fix` 会在审完
-                              之后直接把建议的修改写到工作树里，把
-                              复用、化简、效率改进直接做成"待提交"。
+/code-review [low..max|ultra] [--fix] [--comment] [--max-findings n|all]
+  (别名: /review)             审当前 diff（或某个 PR / 分支 / 路径），
+                              深度由档位决定；high 及以上在后台跑
+                              （2.1.232+）。`--fix` 把发现直接改到工作树，
+                              `--comment` 把它们作为 PR 行内评论贴出。
+                              2.1.215 起 Claude 不会再自己主动跑它。
+                              shell 里的 `claude ultrareview` 是云端深审。
                               要 6-agent 大盘子用 `scholar-code-review`；
                               提交前的轻量 pass 用 `/code-review --fix`。
 
@@ -1157,10 +1200,11 @@ Claude Code 共有**六种**权限模式：`default`、`acceptEdits`、`plan`、
 要同时管多个后台会话，先从任何一个 Claude 会话退出（`/exit` 或关掉标签页），然后在 shell 里跑：
 
 ```bash
-$ claude agents       # 如果你装的 Claude Code 版本带这个命令
+$ claude agents          # 交互式仪表盘
+$ claude agents --json   # 机器可读的列表，方便脚本处理
 ```
 
-这就是 **Agent View** —— 一个单屏仪表盘，列出你机器上所有 Claude Code 后台会话，按状态分组：`Needs Input` / `Working` / `Completed`。在里面你可以新建会话、不接管就 peek 看输出、接管会话继续追问、重命名、关闭。每个后台会话都是一个完整的 Claude Code 对话，由 supervisor 进程托管，跨终端重启都不丢；关 iTerm 不会让 agent 停。macOS 上的后台 agent 现在还能跨 Claude Code 升级活下来（v2.1.153+）。若你装的版本识别不出 `claude agents`，就退回到每个会话各开一个终端标签页。
+这就是 **Agent View** —— 一个单屏仪表盘，列出你机器上所有 Claude Code 后台会话，按状态分组：`Needs Input` / `Working` / `Completed`。在里面你可以新建会话、不接管就 peek 看输出、接管会话继续追问、重命名、关闭。每个后台会话都是一个完整的 Claude Code 对话，由 supervisor 进程托管，跨终端重启都不丢；关 iTerm 不会让 agent 停。macOS 上的后台 agent 现在还能跨 Claude Code 升级活下来（v2.1.153+）。后台会话做完的改动可能以 draft PR 的形式交给你 —— 把它当作待审的稿子，而不是已经完成的工作。
 
 从 shell 起一个新的后台会话时，可以直接预配置好它需要的一切，不用接管进去再改：
 
@@ -1171,42 +1215,42 @@ $ claude agents \
     --mcp-config ./.claude/mcp.json \
     --plugin-dir ~/.claude/plugins/open-scholar-skill \
     --permission-mode acceptEdits \
-    --model claude-opus-4-8 \
+    --model opus \
     --effort xhigh \
     --dangerously-skip-permissions   # 只在 worktree 里用
 ```
 
-多数工作坊参与者不会用到完整的 flag 集——但 `--model` + `--effort` 让你能在前台用 `claude-sonnet-4-6` 做日常编辑的同时，在后台开一个"高 effort 的 Opus 4.8 + xhigh"会话专门跑理论那一段。
+多数工作坊参与者不会用到完整的 flag 集——但 `--model` + `--effort` 让你能在前台用 Sonnet 5.5（`--model sonnet`）做日常编辑的同时，在后台开一个"Opus 5.5 + xhigh"会话专门跑理论那一段。
 
 工作坊用例：
 
 - 用 `/goal` 跑无人值守的技能链（`scholar-eda → scholar-analyze → scholar-code-review`）。
 - 用 `/workflows` 做端到端论文编排：一个分派出去的 workflow 把 `scholar-init → scholar-lit-review-hypothesis → scholar-design → scholar-eda → scholar-analyze → scholar-verify` 全部跑完，你正好回邮件。
 - 用 `/bg` + `agent view` 同时跑两篇论文（一篇 CFPS、一篇 CGSS），不必同时盯两个终端。
-- 仅在写理论 / 识别 memo 时用 `/effort xhigh`；当 scholar-verify 反复纠同一处数字对不上、需要最深一档复查时才上 `max`；写 Results 之前调回 `high`。
+- 仅在写理论 / 识别 memo 时用 `/effort xhigh`；当 scholar-verify 反复纠同一处数字对不上、需要最深一档复查时才上 `max`；写 Results 之前调回 `medium`。
 - 任何分析脚本改动之后跑 `/code-review --fix`；打包 replication 之前跑 `/simplify`。
-- 任何 `scholar-verify` 跑之前开 `/focus`（详细视图），方便看每个验证 agent 实际读了什么。
+- 任何 `scholar-verify` 跑之前按 `Ctrl+O` 打开详细 transcript，方便看每个验证 agent 实际读了什么。
 
 #### 权限模式
 
-Claude Code 有**六种**权限模式，都通过同一个 `Shift+Tab` 循环或 `--permission-mode <name>` CLI flag 切换。下方模式名是 Claude Code 内部使用的精确标识符。
+Claude Code 有**六种**权限模式，通过 `Shift+Tab` 循环或 `--permission-mode <name>` CLI flag 切换（`dontAsk` 只能用 flag）。下方模式名是 Claude Code 使用的精确标识符；`manual` 在 2.1.200 之前叫 `default`，旧名仍被接受。
 
 | 模式 | 行为 | 适用 |
 |---|---|---|
-| **`default`** | 每个工具 / 路径首次使用时弹出确认 | 学习阶段、敏感数据、首次跑某项目 |
+| **`manual`**（原 `default`） | 每个工具 / 路径首次使用时弹出确认 | 学习阶段、敏感数据、首次跑某项目 |
 | **`acceptEdits`** | 自动通过文件编辑和常见文件系统命令；其他工具仍提示 | 在本目录里你已经信任智能体做常规编辑 |
 | **`plan`** | 只读“探查”模式——智能体必须先写计划，未获批准前不能编辑、不能跑命令 | 任何破坏性或昂贵的多步操作之前 |
-| **`auto`** | 自动执行一切而不提示，但有独立的安全分类器审查每个动作，拦截越权、外泄数据、生产部署、force-push 等 | 你信任大方向的长程自治任务（需符合条件的账户 + 较新的模型） |
+| **`auto`** | 自动执行一切而不提示，但有独立的安全分类器审查每个动作，拦截越权、外泄数据、生产部署、force-push 等 | 你信任大方向的长程自治任务。自 2.1.284 起，未配置权限模式时交互会话**默认**就是它 |
 | **`dontAsk`** | 自动拒绝任何本会弹确认的操作——只有匹配 `allow` 规则的工具和只读命令能跑 | 锁定的 CI / 脚本化、非交互运行 |
 | **`bypassPermissions`** | 跳过所有权限提示与安全检查（仍有 circuit-breaker 拦住像 `rm -rf /` 这类灾难） | 仅限 sandbox / worktree 实验，见下方安全规则 |
 
-> **关于可用性。** 六种模式都有文档记载，但某个会话里你能用到哪些取决于你的账户和启动方式。`auto` 只有当账户符合条件（所有套餐、较新的模型如 Opus 4.6+/Sonnet 4.6，且在 Team/Enterprise 上管理员已开启）时才出现在 `Shift+Tab` 循环里；`dontAsk` 从不出现在循环里，只能用 `--permission-mode dontAsk` 设定。做工作坊演示前先用 `/help` 确认你装的版本暴露了哪些。
+> **关于默认值与可用性。** 自 2.1.284 起，交互会话在没有配置权限模式时**从 `auto` 开始**，所有套餐和 provider 都如此；`permissions.defaultMode` 仍可覆盖。注意 2.1.257 起，写在*项目*或 local 设置里的 `"defaultMode": "auto"` 或 `"bypassPermissions"` 会被忽略 —— 这两种只能来自 `~/.claude/settings.json` 或命令行 flag；反过来，项目设置里写 `"manual"` 是有效的。auto mode 第一次要读工作目录之外的文件时，会先问你一次。`dontAsk` 从不出现在循环里，只能用 `--permission-mode dontAsk` 设定。做工作坊演示前先用 `/help` 确认你装的版本暴露了哪些。
 
 ```
-Shift+Tab            循环切换 default → acceptEdits → plan，再循环回来。
-                     auto 仅在账户符合条件时进入循环；bypassPermissions
-                     需以启用 flag 启动后才加入；dontAsk 从不出现在循环里。
-                     当前模式名显示在状态栏。
+Shift+Tab            在 manual、acceptEdits、plan、auto 之间循环。
+                     bypassPermissions 需以启用 flag 启动后才加入；
+                     dontAsk 从不出现在循环里。当前模式名显示在页脚
+                     （例如带暂停图标的 Manual）。
 
 /permissions         打开交互权限 UI，查看 / 编辑各模式所读取的
                      allow / ask / deny 规则。
@@ -1215,6 +1259,7 @@ Shift+Tab            循环切换 default → acceptEdits → plan，再循环�
 也可以启动时直接进入某模式：
 
 ```bash
+$ claude --permission-mode manual      # 进入 Manual 启动（受限数据用这个）
 $ claude --permission-mode plan        # 进入 plan mode 启动
 $ claude --permission-mode auto        # 进入 auto mode 启动
 $ claude --dangerously-skip-permissions
@@ -1238,7 +1283,7 @@ $ claude --dangerously-skip-permissions
    $ claude --dangerously-skip-permissions
    ```
    智能体把 sandbox 弄坏了，删 worktree 重来；主分支毫发无损。
-3. **绝不要在 `scholar-safety` 标了 LOCAL_MODE 的文件上用 `bypassPermissions`。** LOCAL_MODE 的意义就是逐次确认；bypass 把这个机制吃掉了。敏感数据会话只用 `default` 或 `acceptEdits`。
+3. **绝不要在 `scholar-safety` 标了 LOCAL_MODE 的文件上用 `bypassPermissions`。** LOCAL_MODE 的意义就是逐次确认；bypass 把这个机制吃掉了。敏感数据会话只用 Manual（`manual`）或 `acceptEdits`。
 4. **`auto` 是更安全的折中。** 它允许智能体把任务链起来不打断你，但破坏性 / 对外效果操作仍会停下。日常实现工作用 `auto`；首次接触敏感项目不要用。
 5. **长跑后必看 `/usage`。** `auto` 与 `bypassPermissions` 是“突然账单”出现的主要场景。
 
@@ -1303,7 +1348,7 @@ $ claude --dangerously-skip-permissions
 > !Rscript scripts/01-build-sample.R
 ```
 
-想顺手扔个 `ls`、`git diff`、`head -n 5 file.csv` 进对话，这是最快的路 —— 不必让 agent 提议一次 Bash 调用。
+想顺手扔个 `ls`、`git diff`、`head -n 5 file.csv` 进对话，这是最快的路 —— 不必让 agent 提议一次 Bash 调用。自 2.1.186 起，`!` 命令的输出会让 Claude 接着回应；如果你只想把输出放进上下文、不要它回话，在设置里写 `"respondToBashCommands": false`。
 
 **拖放（与粘贴）。** 把文件从访达 / 文件管理器拖到 Claude Code 终端窗口，绝对路径会落到光标处。一次性附件（审稿意见的截图、刚下的 PDF）特别合适。macOS 上 `Cmd+V` 直接粘图，Claude Code 会把图写到临时路径再引用。
 
@@ -1311,32 +1356,31 @@ $ claude --dangerously-skip-permissions
 
 ### 3.5 选对模型 —— 也选对工具
 
-`/model` 在会话内打开模型切换器，**不必重启会话**。默认 `/model` 只对当前会话生效——按 `d` 把它设成未来会话的默认（v2.1.144+）。取舍很直接：一轴是速度与成本，另一轴是推理深度。
+`/model` 在会话内打开模型切换器，**不必重启会话**。现在 `/model` 的选择会**保存为默认**，以后的会话也沿用；只想对当前会话生效，在选择器里按 `s`。取舍很直接：一轴是速度与成本，另一轴是推理深度。
 
 | 模型 | Model ID | 用途 | 大致定位 |
 | ---- | -------- | ---- | -------- |
-| **Claude Haiku 4.5** | `claude-haiku-4-5` | EDA 摘要、小重构、轮询任务、常规文件编辑、安装日志 | 最快、最省 |
-| **Claude Sonnet 4.6** | `claude-sonnet-4-6` | 多数 scholar-skill 运行：分析、写作、citation、验证 | 平衡 |
-| **Claude Opus 4.7** | `claude-opus-4-7` | 稳定的高质量旗舰；现在是 Fast 模式的默认模型 | 慢、贵 |
-| **Claude Opus 4.8** | `claude-opus-4-8` | 主力旗舰（2026-05-28 发布）。理论、识别 memo、对抗性审稿、最难的验证；配 `/effort xhigh` 或 `/effort max` | 慢、很贵 |
-| **Claude Fable 5** | `claude-fable-5` | 新的顶配模型（2026-06-09 发布）。能力天花板——前沿推理、重视觉任务（从密集的科学图表里读出精确数字）、以及 Opus 4.8 配 `/effort max` 仍不够时的验证 | 最慢、约 2× Opus 4.8 |
+| **Claude Haiku 5.5** | `claude-haiku-5-5` | EDA 摘要、轮询任务、常规编辑、安装日志、批量分拣的子智能体 | 最快、最省（\$0.10 / \$0.50，提示在 100K token 以内时） |
+| **Claude Sonnet 5.5** | `claude-sonnet-5-5` | 多数 scholar-skill 运行：分析、写作、citation、验证 | 平衡（\$2 / \$10） |
+| **Claude Opus 5.5** | `claude-opus-5-5` | **默认模型**（2026-09-22 发布）。研究设计、理论、识别 memo、对抗性审稿；默认 effort 为 `medium`，最难的几遍调到 `xhigh` | 中等（\$4 / \$20） |
+| **Claude Fable 5.1** | `claude-fable-5-1` | 天花板（Claude Code v2.1.257，约 2026-09-01）。最难的推理、重视觉的读图、以及 Opus 5.5 配 `xhigh`/`max` 仍不够时的验证 | 最慢；\$10 / \$50；消耗套餐用量比 Opus 快得多 |
 
-**4.8 改了什么。** Opus 4.8 把 SWE-bench Verified 拉到 88.6%（4.7 是 87.6%）、SWE-bench Pro 拉到 69.2%（4.7 是 64.3%）；USAMO 2026 数学从 69.3% 跳到 96.7%；1M-token 长上下文检索几乎翻倍（GraphWalks 1M：68.1% vs. 40.3%）。对"氛围式研究"最关键的变化是*代码诚实度*：Anthropic 报告 Opus 4.8"大约比 Opus 4.7 少四倍地让自己写的代码瑕疵静默通过"——意味着 scholar-analyze 与 scholar-compute 的输出里更少出现你看不见的回归。注意点：提示词注入的稳健性略有回退（Opus 4.8 攻击成功率 9.6%，4.7 是 6.0%），所以数据敏感项目不要因此放松 safety-status 关卡。
+四个模型都有 100 万 token 上下文窗口和 128K 输出。旧 ID 仍被接受：`claude-opus-5`、`claude-sonnet-5`、`claude-fable-5`、`claude-opus-4-8`。
 
-**Fable 5 —— 新的天花板。** 2026-06-09，Anthropic 发布了 **Claude Fable 5**（`claude-fable-5`），这是其最强（Mythos 级）模型家族里第一个公开可用的成员，也是你现在能调用的最强模型。它在几乎所有测过的基准上都是 state-of-the-art——软件工程（在 Cognition 的 FrontierCode 上即便用 medium effort 也居首）、知识工作（Hebbia Finance Benchmark 最高分）、科研，尤其是*视觉*：它能从密集的科学图表里读出精确数字，还能从截图重建一个 Web app 的源码。定价为**每百万 input / output token $10 / $50**——大约是 Opus 4.8 的两倍，也是 Anthropic 通用可用模型里最贵的。内置防护会把高风险提示（网络安全、生物/化学、模型蒸馏）改由 Opus 4.8 回答，触发率不到 5% 的会话。可用性：**2026 年 6 月 9–22 日**在 Pro、Max、Team、按席位计费的 Enterprise 套餐上免费包含；6 月 23 日后改走 credits，直到容量允许时才完全恢复到套餐内。（其无防护的同胞 **Mythos 5** 是同一底座、放开了部分防护，仅限受信任访问——工作坊项目用不上。）做"氛围式研究"时，只在 Opus 4.8 配 `/effort max` 仍不够、或任务确实重视觉时才动用 Fable 5；Opus 4.8 仍是日常旗舰，而 Fable 在 6 月 23 日后按 credits 计费，一直挂着很容易超支。
+**5.5 改了什么。** Claude Opus 5.5 于 2026-09-22 发布，是 Anthropic 目前推荐的起步模型，也是包括 Pro 在内所有套餐上的默认模型；价格为每百万 input / output token \$4 / \$20，默认 effort 为 `medium`。Max 套餐在 Opus 5.5 上标称有「3.5 倍或更多」的用量。2.x 周期里的模型更替依次是：Sonnet 5（Claude Code 2.1.197，约 2026-06-30）、Opus 5（2.1.219，约 2026-07-24）、Fable 5.1（2.1.257，约 2026-09-01）、Opus 5.5（2.1.280）、Sonnet 5.5（2.1.284，约 2026-09-28）和 Haiku 5.5（2.1.293，约 2026-10-07）；除 Opus 5.5 外，这些日期是由 Claude Code 版本推算的。本手册不引用基准分数 —— 选模型时，以你自己在 §2.6.6 那类冒烟测试里看到的表现为准。
 
-**Fast 模式**（Claude Code 的 `--fast` flag 与 `/fast` 开关）现在默认用 Opus 4.7（v2.1.138 之前默认是 Opus 4.6）。配 Opus 4.8 的 Fast 模式以 2× 标准价拿 2.5× 速度——每 token-秒大约比之前 Opus 4.7 的 Fast 模式便宜三倍。Fast 模式适合大批量的 scholar-monitor 抓取、scholar-eda 重跑、以及任何"agent 要跟得上你打字"的场合。
+**Fable 5.1 —— 天花板。** Fable 家族在 2026-06-09 以 Fable 5 首次公开；Claude Code v2.1.257 起换成 **Claude Fable 5.1**（`claude-fable-5-1`），定价为每百万 input / output token \$10 / \$50，默认 effort 为 `high`。它消耗套餐用量的速度比 Opus 快得多，2.1.282 起可能还需要额外的用量额度（usage credits）。做"氛围式研究"时，只在 Opus 5.5 配 `xhigh` 或 `max` 仍不够、或任务确实重视觉（比如从密集的科学图表里读出精确数字）时才动用 Fable 5.1；Opus 5.5 才是日常主力，一直挂着 Fable 很容易把额度烧光。
 
-常见的成本失误：整条 CFPS 流水线一直挂着 Opus。`scholar-monitor`、安装步骤、大规模机械编辑切到 Haiku；多数分析与写作切到 Sonnet 4.6；理论部分、识别 memo、pre-mortem、最终对抗性审稿才切到 Opus 4.8 配 `/effort xhigh`。第一次端到端跑完后用 `/usage`（v2.1.149+ 的"按 skills / subagents / plugins / MCP 拆账"视图）确认最大的成本项在哪，再决定要不要给那一步上 `/effort max`。
+**Fast 模式**（只有会话内的 `/fast` 开关；**没有** `--fast` 这个 CLI flag）支持 Opus 5.5、Opus 5 与 Opus 4.8；Opus 4.7 在 2.1.219 被移出 Fast 模式。Opus 5.5 的 Fast 模式价格为每百万 token \$8 / \$40。Fast 模式适合大批量的 scholar-monitor 抓取、scholar-eda 重跑、以及任何"agent 要跟得上你打字"的场合。
 
-最常见的成本错误是整条 CFPS 流水线都开 Opus。`scholar-monitor`、安装步骤、大块机械改写换成 Haiku；只有理论段、识别 memo、pre-mortem、最终对抗性审稿才上 Opus。
+常见的成本失误：整条 CFPS 流水线一直挂着 Opus。`scholar-monitor`、安装步骤、大规模机械编辑切到 Haiku 5.5；多数分析与写作切到 Sonnet 5.5；理论部分、识别 memo、pre-mortem、最终对抗性审稿才切到 Opus 5.5 配 `/effort xhigh`。第一次端到端跑完后用 `/usage`（按 skills / subagents / plugins / MCP 拆账，并单列 Loops）确认最大的成本项在哪，再决定要不要给那一步上 `/effort max` 或换 Fable 5.1。
 
-**`/agents` —— 管理与启动子智能体。** 子智能体（subagent）**不**等于 skill。
+**子智能体 —— 怎么列出与新建。** 子智能体（subagent）**不**等于 skill。
 
 - **Skill**（所有 `scholar-*`）是命名工作流：一份 SKILL.md 加上 assets/references；通过 `/skill-name args` 调用。
 - **Subagent** 是带**独立上下文窗口**的轻量工作者，有自己的工具和提示词，返回单个答案。Skill **内部**会调 subagent（例如 `scholar-code-review` 并发起六个 reviewer subagent）。
 
-工作坊里你大概率不会自己写 subagent。但如果想跨项目复用比如一个"citation-fact-checker" subagent，`/agents` 就是列出、编辑、新建它的命令。
+工作坊里你大概率不会自己写 subagent。原来的 `/agents` 向导已在 2.1.198 移除（菜单里残留的入口也在 2.1.281 去掉）。如果想跨项目复用比如一个"citation-fact-checker" subagent，直接让 Claude 替你建，或者手动编辑 `.claude/agents/`（个人级是 `~/.claude/agents/`）下的 Markdown 文件。
 
 **WebFetch 与 WebSearch —— 你最先碰到的两个 web 工具。** Claude Code 既能抓取已知 URL，也能跑搜索 —— 这正是 `scholar-lit-review`、`scholar-monitor`、`scholar-citation` 背后用的工具。
 
@@ -1423,7 +1467,7 @@ IDE 接入的会话里会变的：
 $ claude -p "用一段话总结今天 scripts/ 下的提交；保存到 logs/daily-$(date +%F).md"
 ```
 
-加 `--output-format json` 拿机器可读输出再管道给下游工具。`-p` 模式里**没有**交互批准循环，所以提示词需要的每一个工具都必须事先在项目的 `.claude/settings.json` 里允许。**敏感数据上不要在没白名单的情况下开 headless。**
+加 `--output-format json` 拿机器可读输出再管道给下游工具。`-p` 模式里**没有**交互批准循环，所以提示词需要的每一个工具都必须事先在项目的 `.claude/settings.json` 里允许。几个让无人值守运行更稳妥的 flag：`--permission-prompts none`（2.1.259+，不弹任何提示，未获允许的一律拒绝）、`--restricted`（2.1.248+）、`--max-budget-usd <金额>`（花到上限就停），以及排查问题时用的 `--safe-mode`（2.1.169+）。**敏感数据上不要在没白名单的情况下开 headless。**
 
 **GitHub Actions。** Anthropic 官方发布了 `claude-code-action`，可以在每个 PR 上跑 `claude -p`。最简工作流：
 
@@ -1467,8 +1511,8 @@ jobs:
 
 **OAuth 与 API key 两种登录路径。**
 
-- **OAuth via Anthropic Console** —— 跑 `claude login` 打开浏览器，以你的 Anthropic 账号认证，Claude Code 保存刷新 token。结算走你的 Claude Pro / Max / Team 订阅。**个人研究者首选。**
-- **`console.anthropic.com` 的 API key** —— 粘贴 key，结算走 API console。**适合**机构持有 Anthropic 账号、给你发项目级 key、想能按项目撤销访问的场景。
+- **Claude 账号（OAuth）登录** —— 在 shell 里跑 `claude auth login`（会话里用 `/login`）打开浏览器，以你的 Claude 账号认证，Claude Code 保存刷新 token。结算走你的 Claude Pro / Max / Team 订阅。**个人研究者首选。**（没有 `claude login` 这个命令 —— 它会被当成一条提示词。）
+- **Anthropic Console 账户或 `console.anthropic.com` 的 API key** —— 用 Console 登录或提供 key，结算走 API console，按 token 计费。**适合**机构持有 Anthropic 账号、给你发项目级 key、想能按项目撤销访问的场景。
 
 如果机构要求每项目独立审计轨迹，**优先 API key** —— 可以按项目轮换 / 撤销，Anthropic Console 也能按 key 看用量。
 
@@ -1564,7 +1608,7 @@ STOP RULE（停止规则）
 
 第一部分一直把 Claude Code 当成“一个会话里的一个助手”。这个心智模型现在依然成立，但它把 2026 年的大半套能力都晾在了一边。过去一年的版本更新，给智能体加上了**把任务铺开、放到后台跑、按时间表重复、并自动执行你设定规则**的能力。用得好，它能把“写一篇论文的流程”升级成“一个小型研究流水线”；用得糙，它只会让“未经验证的结论”多出更多藏身之处。本手册反复强调的纪律——*任务有边界、产物可检查、标准由人把关*——在自主性升高时只会**更**重要，而不是更不重要。
 
-> 下面这些特性变化很快。请把具体的命令名和默认值当成 2026 年年中的一张快照；当某个东西行为不一样时，在会话里敲 `/help`、并查阅更新日志（`claude changelog` 或官方文档）。*概念*是稳定的，*写法*会漂移。
+> 下面这些特性变化很快。请把具体的命令名和默认值当成 2026 年 10 月的一张快照（对照 v2.1.296 复核）；当某个东西行为不一样时，在会话里敲 `/help`、用 `/release-notes` 查看更新日志，或查阅官方文档。*概念*是稳定的，*写法*会漂移。
 
 先给一张速查表，告诉你什么时候该用什么：
 
@@ -1611,16 +1655,16 @@ tools: Read, WebSearch, WebFetch
 绝不编造发现；如果拿不到论文，就直说。
 ```
 
-然后用大白话提需求（“把这 20 条摘要按数字鸿沟这个问题做初筛”），Claude 就会把每一条路由给 `lit-triage` 这个工作体。把快、重复的活儿派给 `haiku` 还能省钱。第 1 节的规矩依然成立：子智能体的总结描述的是它*打算*做什么——抽查产物，别盲信总结。
+然后用大白话提需求（“把这 20 条摘要按数字鸿沟这个问题做初筛”），Claude 就会把每一条路由给 `lit-triage` 这个工作体。把快、重复的活儿派给 `haiku`（现在是 Haiku 5.5）还能省钱；想统一指定所有子智能体的模型，可以设环境变量 `CLAUDE_CODE_SUBAGENT_MODEL`。注意内置的 Explore 智能体沿用主会话的模型。第 1 节的规矩依然成立：子智能体的总结描述的是它*打算*做什么——抽查产物，别盲信总结。
 
 ### 动态工作流 —— 铺开、协调、并放到后台
 
-这是最受关注的新增能力，也是工作坊被问得最多的一个。**动态工作流**是智能体替你规划并运行一**支**子智能体队伍：Claude 根据你的任务描述写出一段简短的编排脚本，再由运行时执行它——派出许多工作体（任务的独立单元）、同时只跑限定数量的几个、并把中间结果存在脚本变量里，而不是一股脑全塞进你的对话。它跑的时候，你的会话仍然能用。
+这是最受关注的新增能力，也是工作坊被问得最多的一个。**动态工作流**是智能体替你规划并运行一**支**子智能体队伍：Claude 根据你的任务描述写出一段简短的编排脚本，再由运行时执行它——派出许多工作体（任务的独立单元）、同时只跑限定数量的几个、并把中间结果存在脚本变量里，而不是一股脑全塞进你的对话。它跑的时候，你的会话仍然能用。触发它的关键词是 **`ultracode`**（2.1.160 之前叫 `workflow`），也可以用 `/effort ultracode on|off` 开关。
 
 如果说单个子智能体是“做这一件有边界的活儿”，那动态工作流就是“把这件事*跨数百个单元*做完，再把汇总结果端给我”：
 
 ```
-> 用一个工作流：对 analysis/ 下的每个 .R 脚本，检查在拟合任何模型之前，是否
+> ultracode：对 analysis/ 下的每个 .R 脚本，检查在拟合任何模型之前，是否
   已把缺失值代码（-1,-2,-8,-9,-10）转成 NA。返回一张表：脚本、行号、状态。
   并行跑、再汇总。
 ```
@@ -1678,7 +1722,7 @@ tools: Read, WebSearch, WebFetch
 
 ### Bash 沙箱 —— `/sandbox` 及其两种模式
 
-Claude Code 为 `Bash` 工具自带一个 OS 级沙箱。钩子是*请求*，沙箱是*强制*：操作系统直接拒绝那次 `open()`，对该命令及它派生的每一个子进程都生效，无论路径是怎么拼出来的。macOS 用 Seatbelt，Linux 与 WSL2 用 `bubblewrap`。**原生 Windows 不支持** —— Windows 学员请在 WSL2 里跑 Claude Code（附录 K）；WSL1 同样不行。
+Claude Code 为 `Bash` 工具自带一个 OS 级沙箱。钩子是*请求*，沙箱是*强制*：操作系统直接拒绝那次 `open()`，对该命令及它派生的每一个子进程都生效，无论路径是怎么拼出来的。macOS 用 Seatbelt，Linux 与 WSL2 用 `bubblewrap`。Claude Code 本身现在也能原生跑在 Windows 上，但**沙箱不支持原生 Windows**，WSL1 同样不行 —— 需要沙箱的 Windows 学员，请在 WSL2 里跑 Claude Code（附录 K）。
 
 你不必手写 JSON 才能打开它。**`/sandbox`** 会打开一个带三个标签页的面板：
 
@@ -1732,7 +1776,53 @@ $ claude mcp add --transport stdio zotero -- uvx zotero-mcp
 
 ### 模型、思考强度与快速模式
 
-三个值得知道的旋钮：`/model` 在 Opus（推理最深）、Sonnet（均衡）、Haiku（又快又省——适合子智能体和初筛）之间切换；**思考强度（effort）**设置用思考深度换速度和成本；**`/fast`**（在较新的 Opus 4.x 上）让日常活儿的回答明显更快。一个合理的默认：设计、分析、验证用 Opus，批量机械的子智能体活儿用 Haiku。此外还有 **`/ultrareview`**——一个由你手动触发、计费的多智能体评审，针对你当前分支或某个 PR，比 `scholar-code-review` 更重、更独立的第二意见。
+三个值得知道的旋钮：`/model` 在 Opus（推理最深）、Sonnet（均衡）、Haiku（又快又省——适合子智能体和初筛）之间切换；**思考强度（effort）**设置用思考深度换速度和成本；**`/fast`**（支持 Opus 5.5、Opus 5 与 Opus 4.8）让日常活儿的回答明显更快。一个合理的默认：设计、分析、验证用 Opus 5.5，批量机械的子智能体活儿用 Haiku 5.5。此外还有 **`/code-review ultra`**（shell 里是 `claude ultrareview`）——一个由你手动触发、计费的云端多智能体评审，针对你当前分支或某个 PR，比 `scholar-code-review` 更重、更独立的第二意见。
+
+### v2.1.154 至 v2.1.296 之间的变化（2026 年 6–10 月）
+
+本手册初版对照的是 Claude Code v2.1.154。到 2026 年 10 月 13 日复核时，版本已是 v2.1.296，中间有九处变化会直接影响你做研究的方式。
+
+#### 会话现在默认从 auto mode 开始 —— 受限数据请选 Manual
+
+自 2.1.284 起，只要没有配置权限模式，交互会话在所有套餐、所有 provider 上都从 **auto mode** 起步：由一个后台分类器替你批准大多数动作。对一个装着受限微观数据的项目，这不是你想要的起点。在项目的 `.claude/settings.json` 里写：
+
+```json
+{ "permissions": { "defaultMode": "manual" } }
+```
+
+之后每次启动，页脚都会显示带暂停图标的 **Manual** 标记 —— 开工前先看一眼。这条规则是不对称的：项目文件可以把会话*收紧*到 Manual，却**不能**打开 auto 或 `bypassPermissions`（2.1.257 起，项目或 local 设置里的这两个值会被忽略，它们只能来自 `~/.claude/settings.json` 或命令行 flag）。所以一个克隆来的仓库没法悄悄替你打开 auto。auto mode 第一次要读工作目录之外的文件时，也会先问你一次。
+
+#### 新的模型阵容，与按模型保存的 effort
+
+Opus 5.5 现在是所有套餐（包括 Pro）的默认模型，默认 effort 为 `medium`；Sonnet 5.5、Haiku 5.5 与 Fable 5.1 构成其余几档（价格与用途见 §3.5 的表）。`/model` 的选择现在会保存为默认，按 `s` 则只对本会话生效；`/effort` 的档位按模型分别保存，同样按 `s` 只管本会话（2.1.251 / 2.1.257）。实际含义是：你给 Opus 5.5 调到 `xhigh` 之后，下次打开它仍然是 `xhigh` —— 写完理论段，记得调回 `medium`。
+
+#### 从 shell 管理后台会话
+
+`claude --bg "提示词"` 直接起一个后台会话；`claude --resume <id> --bg` 把已有会话送到后台。`claude agents`（加 `--json` 输出机器可读列表）列出全部会话；`claude attach <id>` 接回，`claude logs <id>` 看输出，`claude stop <id>` 停止，`claude rm <id>` 删除，另有 `claude respawn`。会话内的 `/fork` 现在会把对话复制到一个**新的后台会话**，并放进它自己的 worktree（2.1.212 / 2.1.221）；原来那种会话内分叉改叫 `/subtask`。后台会话可能把成果以 draft PR 的形式交上来 —— 合并之前，照样按第 15 节的标准逐项核对。
+
+#### 按选定深度跑 `/code-review`
+
+`/code-review [low|medium|high|xhigh|max|ultra] [--fix] [--comment] [--max-findings n|all]`，2.1.223 起别名为 `/review`。`low` 只报少数高置信度的问题，档位越高报得越多，其中也会有不那么确定的；`high` 及以上在后台跑（2.1.232+）；`ultra` 是云端的深度审查，从 shell 用 `claude ultrareview` 同样可以触发。2.1.215 起，Claude 不会再自行调用它 —— 什么时候审、审多深，由你决定。
+
+#### 更稳妥的无人值守运行
+
+三个 flag 值得写进你的 cron 与 CI 脚本：`--restricted`（2.1.248+，以受限方式运行，具体范围以你这一版的 `claude --help` 为准）；`--permission-prompts none`（2.1.259+），不弹任何提示，没有预先允许的动作一律拒绝；`--max-budget-usd <金额>`，花到上限就停。另有 `--safe-mode`（2.1.169+），用于排查配置问题。对受限数据，headless 运行仍然要配合项目里的 allow 白名单（§3.8）。
+
+#### 也读 `AGENTS.md`；`/doctor prompt-audit`
+
+2.1.277 起，项目里没有 `CLAUDE.md` 时，Claude Code 会读 `AGENTS.md` —— 对同时用 Codex 或 ZCode（§2.6.7）的项目很方便。但两份都在时它读的是 `CLAUDE.md`，所以数据边界规则请两份都写、保持同步。`/doctor`（别名 `/checkup`）现在是一次完整体检；`/doctor prompt-audit`（2.1.283+）是其中专门针对提示词与指令文件的那一项。
+
+#### 子智能体：默认在后台、可嵌套、可单独设 effort；`/agents` 向导已移除
+
+2.1.198 起子智能体默认在后台运行；2.1.219 起可以嵌套，最深 3 层；内置的 Explore 智能体沿用主会话的模型；Agent 工具多了一个 `effort` 参数（2.1.292），可以给单个子智能体设推理深度；环境变量 `CLAUDE_CODE_SUBAGENT_MODEL` 统一指定子智能体用的模型。`/agents` 向导已在 2.1.198 移除 —— 要新建子智能体，让 Claude 替你写，或者直接编辑 `.claude/agents/` 下的文件。
+
+#### 工作流：`ultracode` 开关，规模随套餐
+
+动态工作流的触发词在 2.1.160 从 `workflow` 改成了 `ultracode`；2.1.284 起还可以用 `/effort ultracode on|off` 把它当成一个开关。2.1.271 起 Pro 也能跑小型工作流（medium 档大约 10 个 agent）；碰到用量上限时，工作流会暂停，额度恢复后可以续跑。`/usage` 里单列的 Loops 一项（2.1.243+）告诉你循环和工作流花了多少。
+
+#### 插件：一行安装、`claude plugin details`、`/skill-doctor`
+
+`claude plugin install <插件> --marketplace <来源>` 一条命令就能装好插件，不必先单独添加 marketplace；`claude plugin details <插件>` 查看插件详情；`/skill-doctor`（2.1.261+）给出一份技能体检报告。2.1.268 起，`/plugin` 里的改动在关闭菜单时即生效，不再需要 `/reload-plugins`。对 `open-scholar-skill` 来说，插件路线能装上技能和 agents，但 `setup.sh` 仍然要跑（§2.4）。
 
 ### 关于自主性与验证的一点提醒
 
@@ -2080,7 +2170,9 @@ Choice [c/l/a/o/h]:
 
 CFPS 的话，我们对任何波次的个人层文件通常选 **LOCAL_MODE**：脚本可以加载数据、产出汇总计数、回归表和图，但**原始行的取值永远到不了 Claude 的上下文窗口**。这是一条真实的隐私边界，不是口号 —— §6.5 会一字一句写清 LOCAL_MODE 到底允许什么。
 
-> **改完要重启。** Claude Code 在会话启动时就把钩子配置拍了快照。做完一轮改动状态的 `review` 之后，先重启 Claude Code，再指望守卫认新值。在 Codex 下，项目必须先被 *trusted*，钩子才会激活；在那之前，`AGENTS.md` 会指示智能体自行对照 sidecar 自我约束。
+> **改完要重启。** Claude Code 在会话启动时就把钩子配置拍了快照。做完一轮改动状态的 `review` 之后，先重启 Claude Code，再指望守卫认新值。在 Codex 下，项目必须先被 *trusted*，钩子才会激活；而且自 Codex 0.150 起，未被信任的项目连它的 `AGENTS.md` 也会被忽略 —— 原先那条「由 `AGENTS.md` 指示智能体自行对照 sidecar 自我约束」的兜底已经不存在了。让 Codex 碰数据之前，先把项目设为信任。
+
+**让 Codex 碰数据之前，先信任这个项目。** 自 Codex 0.150 起，一个你还没标记为信任的项目，**既**拿不到它项目级 `AGENTS.md` 的指令，**也**跑不了它的钩子。open-scholar-skill 的数据边界规则和 PreToolUse 守卫，在你接受首次启动时的信任提示之前，都是静默失效的。你可以在首次启动的提示里选择信任，或在 `~/.codex/config.toml` 里写 `[projects."<绝对路径>"] trust_level = "trusted"`。第一次 `Read` `data/` 下的任何东西之前，先用 `/status` 和 `/debug-config` 确认一遍。
 
 ### 6.3 检查 `safety-status.json`
 
@@ -4682,7 +4774,7 @@ $ python3 assets/annotate_engine.py validate \
 不是每个项目都能人工双编码 500 份文档，技能对替代方案很坦诚：
 
 - **两个不同的模型**通过 Batch API 标注开发集（比如 Claude + GPT）；一致的成为金标准，不一致的进入裁决文件。报告模型间 Cohen κ。
-- **只有一家提供方？** 用它的**两个模型**（`gpt-5.6` + `gpt-4.1`）。模型多样性照样能筛出边界个案 —— 而筛边界个案正是造金标准的意义所在。
+- **只有一家提供方？** 用它的**两个模型**（例如 `gpt-5.6-sol` + `gpt-5.6-luna`）。模型多样性照样能筛出边界个案 —— 而筛边界个案正是造金标准的意义所在。
 - **模型强制 temperature ≠ 0**（GPT-5 与 o 系列就是）？跑 *K* 次做多数投票 —— `gold_reconcile.py --mode majority` —— 压掉非确定性。部署用的模型无论如何保持 temperature = 0。
 - 有人工双编码时，报告 **Krippendorff α ≥ 0.70**。
 
@@ -4968,7 +5060,7 @@ SCHOLAR_CROSSREF_EMAIL=you@university.edu
 
 **4. 记住 `scholar-write` 受数据安全关卡管辖。** 它是 **Tier B** 技能：会检查 `.claude/safety-status.json`，遇到 `NEEDS_REVIEW:*`、`HALTED` 或 `LOCAL_MODE` 直接 fail-fast 拒绝。它自己**不**实现 LOCAL_MODE 的调度契约 —— 它只是拒绝。先用 `/scholar-init review`（§6.2）把 sidecar 解决掉。
 
-**5. 在 Codex 下**没有斜杠命令。把 `SCHOLAR_SKILL_DIR` 导出到仓库根目录，再把技能目录 symlink 进 `~/.codex/skills/`，然后用自然语言调用 —— 「用 scholar-write 起草投 ASR 的 Introduction」。让变量长期生效：
+**5. 在 Codex 下**，把 `SCHOLAR_SKILL_DIR` 导出到仓库根目录，再把技能目录 symlink 进 `~/.agents/skills/`（文档规定的用户级位置；旧的 `~/.codex/skills/` 仍会被读取），然后用 `$scholar-write` 调用、从 `/skills` 选择器里挑，或者直接用自然语言 —— 「用 scholar-write 起草投 ASR 的 Introduction」。让变量长期生效：
 
 ```bash
 $ echo 'export SCHOLAR_SKILL_DIR="$HOME/open-scholar-skills"' >> ~/.zshrc
@@ -6783,6 +6875,8 @@ $ codex
 
 Codex 会读脚本、蓝图、表，回一份四行的 PASS/FAIL/UNCERTAIN 审计。这正是代码评审子智能体的格式——区别在于评审人是*另一家厂商的模型*，而这正是关键。
 
+**哪个模型在审你的活。** 如果 `~/.codex/config.toml` 里没有设 `model`，Codex 就用它推荐的默认模型：从 Codex 0.159 起是 **GPT-6.1 Sol**；在 0.154 上，模型选择器提供 GPT-6-Astra 以及 GPT-5.6 Sol、Terra、Luna。GPT-5.5 将于 2026 年 10 月 14 日退出 Codex，GPT-5.4、5.3-Codex 和 5.2 已经下线，所以请删掉旧配置里任何 `model = "gpt-5.x…"` 这样的行。跑 `codex debug models` 可以看到你这一版实际提供的模型目录；把所用的模型和推理强度记进你的 AI 使用声明。
+
 **不要**让 Codex 做：
 
 - 「把论文修了」（无约束 → 大改）。
@@ -6810,20 +6904,20 @@ argument-hint: "[code|stats|logic|full|prose|custom] [manuscript-path]
 > /scholar-openai prose drafts/manuscript-submission-2026-05-06.md 11.5
 ```
 
-各智能体作为后台进程并行启动，每个 300 秒超时：
+各个评审维度默认**串行**派发（瓶颈是共享的账户额度，而不是挂钟时间），最便宜的先跑，每个 300 秒超时：
 
 ```bash
 codex exec -C "$CODEX_WORKDIR" --skip-git-repo-check \
-  -c 'sandbox_permissions=["disk-full-read-access"]' \
+  -s read-only \
   -o "${REVIEW_DIR}/A1-code-correctness-${RUN_TS}.md" \
-  "You are a code review agent for a social science research project. …" &
+  "You are a code review agent for a social science research project. …"
 ```
 
 报告落在 `reviews/codex/`，然后由 **Claude**——不是 Codex——把它们综合成一份记分卡、一份去重后的修复清单，和一节跨智能体一致性分析。
 
 要诚实地使用它，有三个细节很重要：
 
-- **只读保证是架构层面的，不是沙箱层面的。** 技能文档写明 `disk-full-read-access` 实际上并*不*限制读取——Codex 可以 `cat` 任意绝对路径。真正防止修改的保证在于：Codex 只被给到 `-o <file>`（它只写自己那份报告），并且提示词只让它评审，从不让它编辑。
+- **只读保证是架构层面的，不是沙箱层面的。** 两种设置都不限制读取：`-s read-only` 挡住的是写入，Codex 仍然可以 `cat` 任意绝对路径；而旧的 `sandbox_permissions` 覆盖写法在 Codex 0.154 及以后会被静默忽略。真正防止修改的保证在于：Codex 只被给到 `-o <file>`（它只写自己那份报告），并且提示词只让它评审，从不让它编辑。
 - **在 LOCAL_MODE 下会先构建一个无数据镜像**，而该镜像构建的每一种失效模式——空路径、写死的绝对数据路径、缺失的 `rsync`——都会 **fail-closed 停机**，而不是回退到活的目录树。
 - **P3，也就是审稿人视角那一维，是刻意未被预先影响的。** 它不得读取先前的同行评审或验证输出。它回答三个问题：你的第一印象是什么，你会不会认为这是一篇审稿人愿意认真对待的论文，以及你会不会看出它是 AI 起草的。
 
@@ -8415,7 +8509,7 @@ The figure-side chain is fully clean (6/6 figures covered, all markers within 30
 
 走完第 3 步，你就和 macOS / Linux 用户没区别了，本手册其余章节无需为 Windows 额外调整。
 
-> **不要把 PowerShell、`cmd.exe` 或 Git-Bash 当成主用 shell。** Claude Code 与 Codex 在 Windows 原生上确实能跑，但 open-scholar-skill 的 PreToolUse hook 是一个 Bash 脚本，依赖 `jq` 和 `python3` 的 POSIX 语义。在 Windows 原生 shell 下 hook 会 fail-closed。WSL2/Ubuntu 给你一个真正的 Linux 内核 —— `bash`、`jq`、`python3`、`git`、`R`、技能插件的 symlink 都能原样工作。
+> **不要把 PowerShell、`cmd.exe` 或 Git-Bash 当成主用 shell。** Claude Code 与 Codex 在 Windows 原生上确实能跑，但 open-scholar-skill 的 PreToolUse hook 是一个 Bash 脚本，依赖 `jq` 和 `python3` 的 POSIX 语义。在 Windows 原生 shell 下 hook 会 fail-closed。WSL2/Ubuntu 给你一个真正的 Linux 内核 —— `bash`、`jq`、`python3`、`git`、`R`、技能插件的 symlink 都能原样工作。（另外，原生 Windows 版 Claude Code 在没有装 Git for Windows 时用的是 PowerShell 工具而不是 Bash，而且沙箱在原生 Windows 上不可用。）
 
 ### K.1 准备条件
 
@@ -8480,7 +8574,7 @@ $ sudo apt -y install build-essential curl wget unzip ca-certificates \
 $ git --version && jq --version && python3 --version
 ```
 
-这给了你 §2 所需的最低限度依赖。剩下 —— Node.js、Claude Code、Codex、open-scholar-skill 插件、R、社会科学包栈 —— 完全照搬 §2 与 §2.7 的命令，不用改。
+这给了你 §2 所需的最低限度依赖。剩下 —— Claude Code（原生安装器，不需要 Node.js）、Codex、open-scholar-skill 插件、R、社会科学包栈 —— 完全照搬 §2 与 §2.7 的命令，不用改。
 
 ### K.5 文件该放在哪儿
 
@@ -8521,21 +8615,21 @@ $ cat ~/.ssh/id_ed25519.pub | clip.exe
 
 如果 IT 政策禁止开 WSL2，Claude Code 与 Codex 也能跑在 Windows 原生上。代价是：
 
-- 从 <https://nodejs.org> 装 Node.js LTS（`.msi` 安装器会自动把 `npm` 加到 PATH）；
-- `npm install -g @anthropic-ai/claude-code` 与 `npm install -g @openai/codex` 都能装；
+- Claude Code 用原生安装器：PowerShell 里跑 `irm https://claude.ai/install.ps1 | iex`，或 `winget install Anthropic.ClaudeCode`（需要 Windows 10 1809+，不需要 Node.js；npm 安装路线已弃用）；
+- Codex 用 OpenAI 官方的 Windows 安装程序（<https://learn.chatgpt.com/docs/codex/cli>），或者先从 <https://nodejs.org> 装 Node.js LTS 再 `npm install -g @openai/codex`；
 - 用 **Windows Terminal + PowerShell 7+**（**不要**用旧版 `cmd.exe`）；
-- 从 <https://git-scm.com/download/win> 装 **Git for Windows**。安装时选 "Use Git from the Windows Command Prompt"、"Checkout as-is, commit Unix-style line endings"；
+- 从 <https://git-scm.com/download/win> 装 **Git for Windows**。安装时选 "Use Git from the Windows Command Prompt"、"Checkout as-is, commit Unix-style line endings"。装了它，Claude Code 才会用 Git Bash 而不是 PowerShell 工具（路径不标准时用 `CLAUDE_CODE_GIT_BASH_PATH` 指过去）；
 - Python 从 <https://www.python.org/downloads/windows/> 装（勾选 "Add Python to PATH"）。R 从 <https://cran.r-project.org/bin/windows/base/> 加 RTools 装；
 - `jq` 用 `winget install jqlang.jq` 装（PreToolUse hook 要用）；
 - **PreToolUse hook 在 Windows 原生下不可用。** open-scholar-skill 的 hook 脚本是 Bash 写的，要么装 Git-Bash 并把 Claude Code 的 hook 配置改成走 `bash.exe`，要么承认 hook 不工作 —— **不要用这种配置处理涉敏感数据的项目**。
 
-原生路线省了磁盘，但代价是数据安全闸门和统一的 shell。如果你要做涉真实参与者数据的研究，**用 WSL2**。
+原生路线省了磁盘，但代价是数据安全闸门、统一的 shell，以及 Bash 沙箱（它不支持原生 Windows）。如果你要做涉真实参与者数据的研究，**用 WSL2**。
 
 ### K.9 Windows 常见坑
 
 | 现象 | 原因 | 解决 |
 | ---- | ---- | ---- |
-| `npm install -g ...` 后 WSL2 里找不到 `claude` | 全局 npm 安装到了 `~/.npm-global/bin`，但没加 PATH | `echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc && exec bash` |
+| 装完后 WSL2 里找不到 `claude` | 原生安装器装到 `~/.local/bin`（老的 npm 路线则是 `~/.npm-global/bin`），但它不在 PATH 上 | `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc && exec bash` |
 | 跑 setup.sh 报 `bash: jq: command not found` | Ubuntu 里没装 `jq` | `sudo apt install jq` |
 | 在 `/mnt/c/...` 工作时 I/O 很慢 | 跨文件系统访问 | 把项目挪到 `/home/yourname/projects/` |
 | PreToolUse hook 总是拦截文件 | 项目在 `/mnt/c/...`；路径规范化和 `.claude/safety-status.json` 对不上 | 把项目挪到 `/home/yourname/...`，重跑 `/scholar-init` |
@@ -8549,9 +8643,9 @@ $ cat ~/.ssh/id_ed25519.pub | clip.exe
 ```bash
 $ wsl -l -v          # （这条在 PowerShell 里跑）VERSION 必须是 2
 $ uname -a            # Linux DESKTOP-...  5.x.x ... GNU/Linux
-$ node --version      # v20.x.x
-$ claude --version    # 2.0.x
-$ codex --version     # 0.x.x
+$ node --version      # v22.x.x（只有用 npm 装 Codex 时才需要）
+$ claude --version    # 2.1.x（截至 2026-10 为 2.1.296）
+$ codex --version     # codex-cli 0.154.0 或更新
 $ jq --version        # jq-1.6 或以上
 $ pwd                 # /home/yourname/projects/...
 ```
@@ -8562,7 +8656,7 @@ $ pwd                 # /home/yourname/projects/...
 
 两个工具都带着一大堆内置命令，工作坊没有时间逐条讲。本附录按 **A–Z** 列出它们，并说明每条做什么，方便你回头查那个「记得有但想不起来叫什么」的命令。
 
-> **2026-08-04 核验过**：Claude Code 部分对照官方命令参考（`code.claude.com/docs/en/commands`）；Codex 部分直接从本机安装的 `codex-cli 0.145.0` 二进制里提取。**这是两个工具里变动最快的一层** —— 命令会新增、改名、消失。在任一 TUI 里敲 `/` 就能看到*你这个版本*真正有什么；本附录是地图，不是契约。可用性还取决于平台、套餐和账户。
+> **2026-08-04 初次核验，2026-10-13 复核**：Claude Code 部分对照官方命令参考（`code.claude.com/docs/en/commands`），并按 v2.1.296 复核；Codex 部分按本机安装的 `codex-cli 0.154.0` 复核（当前发布版本为 0.162.1）。**这是两个工具里变动最快的一层** —— 命令会新增、改名、消失。在任一 TUI 里敲 `/` 就能看到*你这个版本*真正有什么；本附录是地图，不是契约。可用性还取决于平台、套餐和账户。
 
 ### L.1 Claude Code —— 内置斜杠命令，A–Z
 
@@ -8570,7 +8664,7 @@ $ pwd                 # /home/yourname/projects/...
 |---|---|
 | `/add-dir <path>` | 本次会话再加一个可访问的工作目录 |
 | `/advisor [model\|off]` | 让第二个模型提供参谋意见；开关 advisor 工具 |
-| `/agents` | 管理子智能体配置 |
+| `/agents` | **已在 2.1.198 移除** —— 让 Claude 替你建子智能体，或直接编辑 `.claude/agents/` |
 | `/background [prompt]` | 把会话转为后台智能体运行，腾出终端 |
 | `/branch [name]` | 从当前对话分叉，换个方向试 |
 | `/btw [question]` | 问一个不进入对话记录的临时小问题 |
@@ -8585,11 +8679,12 @@ $ pwd                 # /home/yourname/projects/...
 | `/cost` | `/usage` 的别名 |
 | `/desktop` | 在桌面版里接着这个会话（别名 `/app`） |
 | `/diff` | 打开未提交改动的交互式差异查看器 |
+| `/effort [level\|ultracode on\|off]` | 设置推理强度；按模型保存，按 `s` 只管本会话（§3.2） |
 | `/exit` | 退出 CLI（别名 `/quit`） |
 | `/export [filename]` | 把对话导出为纯文本 |
-| `/fast [on\|off]` | 开关 fast 模式 |
+| `/fast [on\|off]` | 开关 fast 模式（Opus 5.5、Opus 5、Opus 4.8；没有 `--fast` flag） |
 | `/feedback [report]` | 提交产品反馈 |
-| `/focus` | 切换专注视图 |
+| `/focus` | 切换专注视图（只显示提示、一行摘要与回复；详细 transcript 用 `Ctrl+O`） |
 | `/fork [prompt]` | 把当前对话复制成一个新的后台会话 |
 | `/goal [condition\|clear]` | 设一个目标，让它一直干到条件满足 |
 | `/heapdump` | 导出 JS 堆快照，用于诊断内存占用 |
@@ -8605,8 +8700,8 @@ $ pwd                 # /home/yourname/projects/...
 | `/mcp [reconnect <server>\|enable\|disable]` | 管理 MCP 服务器与 OAuth（§3.6） |
 | `/memory` | 编辑 `CLAUDE.md` 记忆文件，或管理自动记忆 |
 | `/mobile` | 显示下载手机 App 的二维码（别名 `/ios`、`/android`） |
-| `/model [model]` | 切换模型并存为默认（§3.5） |
-| `/passes` | 分享一周免费 Claude Code |
+| `/model [model]` | 切换模型并存为默认；按 `s` 只对本会话生效（§3.5） |
+| `/passes` | 分享一周免费 Claude Code（本次复核未能确认） |
 | `/permissions` | 管理 allow / ask / deny 规则（别名 `/allowed-tools`；§3.1） |
 | `/plan [description]` | 直接从提示行进入计划模式 |
 | `/remote-control` | 从另一台设备接管这个本地会话 |
@@ -8614,16 +8709,16 @@ $ pwd                 # /home/yourname/projects/...
 | `/rewind [target]` | 把代码**和**对话一起回滚到检查点 |
 | `/sandbox` | 打开沙箱面板 —— 标签页、模式与默认值见 §5A |
 | `/security-review [--fix] [target]` | 检查 diff 里的安全漏洞 |
-| `/simplify [--fix] [target]` | 在不改变行为的前提下简化 diff |
+| `/simplify [target]` | 在不改变行为的前提下简化 diff |
 | `/status` | 显示会话状态与设置 |
 | `/subtask <prompt>` | 把一个支线任务交给子智能体，结果回报到本对话 |
 | `/tasks` | 列出本会话的后台工作 |
 | `/teleport` | 把一个网页端会话拉进这个终端 |
-| `/test` | 跑测试并捕获输出 |
+| `/test` | 跑测试并捕获输出（本次复核未能确认） |
 | `/upgrade` | 升级到 Claude Code Pro |
 | `/usage` | 本次会话的 token 用量与成本 |
 | `/verify [--fix] [target]` | 验证代码改动是否正确 |
-| `/web [url]` | 把一个网页加入对话 |
+| `/web [url]` | 把一个网页加入对话（本次复核未能确认） |
 
 ### L.2 Claude Code —— 随附的技能与工作流
 
@@ -8634,21 +8729,21 @@ $ pwd                 # /home/yourname/projects/...
 | `/autofix-pr [prompt]` | 起一个会话盯着本分支的 PR 并推送修复 |
 | `/batch <instruction>` | 在代码库上并行编排大规模改动 |
 | `/claude-api [migrate\|managed-agents-onboard]` | 载入 Claude API / Managed Agents 参考资料 |
-| `/code-review [low…max\|ultra] [--fix] [--comment]` | 审当前 diff（`ultra` 就是 ultrareview） |
+| `/code-review [low…max\|ultra] [--fix] [--comment] [--max-findings n\|all]` | 审当前 diff；high 及以上在后台跑（`ultra` 就是 ultrareview） |
 | `/dataviz [request]` | 图表与仪表盘的设计指导 |
 | `/debug [description]` | 打开调试日志并排查问题 |
 | `/deep-research <question>` | 扇出网络搜索、交叉核对来源、合成一份带引用的报告 |
 | `/design-login` · `/design-sync [hint]` | 授权并同步 React 设计系统到 Claude Design |
-| `/doctor` | 安装体检，能诊断也能修（别名 `/checkup`） |
+| `/doctor [prompt-audit]` | 完整的安装体检，能诊断也能修（别名 `/checkup`）；`prompt-audit` 见 §5A |
 | `/fewer-permission-prompts` | 扫描历史记录，提出一份减少权限提示的白名单 |
 | `/loop [interval] [prompt]` | 会话开着时反复跑同一个提示（别名 `/proactive`） |
-| `/review [pr#]` | 对 GitHub PR 做一次只读的快速单遍审查 |
+| `/review` | `/code-review` 的别名（2.1.223+） |
 
-有两个 Claude Code 命令是在 shell 里跑、而不是在会话里：**`claude doctor`**（不启动会话的只读安装诊断）与 **`claude agents`**（监看后台会话）。
+还有一批 Claude Code 命令是在 shell 里跑、而不是在会话里：**`claude agents`**（`--json`）以及 `attach` / `logs` / `stop` / `rm` / `respawn`（管理后台会话；`claude --bg "提示词"` 起一个新的，`claude --resume <id> --bg` 把已有会话送到后台）；**`claude doctor`**（不启动会话的安装诊断）；`claude update`、`claude install`；`claude auth login|logout|status`；`claude mcp`（含 `login` / `logout`）；`claude plugin`（`install --marketplace`、`details`、`eval`）；`claude ultrareview`；`claude auto-mode`；`claude import codex|gemini|cursor`；以及 `claude purge`。
 
 ### L.3 Codex —— 斜杠命令，A–Z
 
-下表从本机安装的 `codex-cli 0.145.0` 二进制中提取，所以这就是工作坊这套安装真正提供的东西。注意：Codex 现行的公开文档描述的命令集与已发布的二进制**并不一致** —— 两者冲突时，以你自己 `/` 菜单里看到的为准。
+下表从本机安装的 `codex-cli 0.154.0` 二进制中提取，所以这就是工作坊这套安装真正提供的东西。注意：Codex 现行的公开文档描述的命令集与已发布的二进制**并不一致** —— 两者冲突时，以你自己 `/` 菜单里看到的为准。
 
 | 命令 | 作用 |
 |---|---|
@@ -8657,13 +8752,16 @@ $ pwd                 # /home/yourname/projects/...
 | `/apps` | 管理 apps（连接器） |
 | `/approve` | 对最近一次自动审查拒绝，批准重试一次 |
 | `/archive` | 归档本会话并退出 |
+| `/cd` · `/pwd` | 切换 / 显示工作目录（0.149+） |
 | `/clear` | 清屏并开一个新对话 |
 | `/compact` | 摘要对话，避免撞上下文上限 |
-| `/copy` | 以 markdown 复制最后一条回复 |
+| `/copy` | 复制最后一条回复或其中一部分（选择器：代码块、引用） |
 | `/debug-config` | 显示配置层级与要求来源，用于排错 |
 | `/delete` | 永久删除本会话并退出 |
 | `/diff` | 显示 git diff，**包含未跟踪文件** |
+| `/exit` | 退出 Codex（等同 `/quit`） |
 | `/experimental` | 开关实验特性 |
+| `/export` | 导出本会话（0.148+） |
 | `/feedback` | 把日志发给维护者 |
 | `/fork` | 分叉当前对话 |
 | `/goal` | 设置或查看长任务的目标 |
@@ -8679,40 +8777,50 @@ $ pwd                 # /home/yourname/projects/...
 | `/model` | 选模型**以及推理强度** |
 | `/new` | 对话中途开一个新对话 |
 | `/permissions` | 选择 Codex 被允许做什么（审批策略） |
+| `/personality` | 选择 Codex 的沟通风格 |
 | `/pets` | 选择或隐藏终端宠物 |
 | `/plan` | 切到 Plan 模式 |
 | `/plugins` | 浏览插件 |
 | `/ps` · `/stop` | 列出后台终端 · 全部停掉 |
 | `/quit` | 退出 Codex |
+| `/raw` | 开关便于复制选择的原始回滚模式 |
+| `/recap` | 回顾本会话（0.153+） |
 | `/rename` | 重命名当前线程 |
 | `/resume` | 恢复一个已保存的对话 |
 | `/review` | 审查我当前的改动并找问题 |
 | `/rollout` | 打印 rollout（会话记录）文件路径 |
-| `/sandbox-add-read-dir <绝对路径>` | 让沙箱多读一个目录（**仅 Windows**） |
+| `/sandbox-add-read-dir <绝对路径>` | 让沙箱多读一个目录（**仅 Windows**）—— 已在 0.155 移除 |
 | `/setup-default-sandbox` | 设置提权的 agent 沙箱（**仅 Windows**） |
 | `/side` · `/btw` | 在一个临时分叉里开支线对话 |
 | `/skills` | 用技能改进 Codex 在特定任务上的表现 |
 | `/statusline` | 配置状态栏显示哪些项 |
 | `/status` | 显示会话配置与 token 用量 |
+| `/theme` | 选择语法高亮主题 |
+| `/title` | 配置终端标题 |
 | `/usage` | 查看账户用量或用量上限重置 |
 | `/vim` | 开关 composer 的 Vim 模式 |
+| `/worktree` | *（实验性，0.154+）* 在 worktree 里工作 |
 
-二进制里还带着语法高亮**主题**选择器、终端**标题**配置项、沟通**风格**选择器，以及一个便于复制选择的原始回滚模式开关；它们确切的调用名无法从二进制里确定，请查你的 `/` 菜单。`test-approval`、`debug-m-drop`、`debug-m-update` 是标着「DO NOT USE」的内部测试钩子。
+更新的版本（0.155–0.161）还加了 `/voice`、`/tui`、`/daemon` 和 `/mcp login <name>`。`test-approval`、`debug-m-drop`、`debug-m-update` 是标着「DO NOT USE」的内部测试钩子。
 
 ### L.4 Codex —— shell 子命令
 
-与 Claude Code 不同，Codex 把相当一部分功能放在 shell 子命令里（`codex-cli 0.145.0`，`codex --help`）：
+与 Claude Code 不同，Codex 把相当一部分功能放在 shell 子命令里（`codex-cli 0.154.0`，`codex --help`）：
 
 | 子命令 | 作用 |
 |---|---|
-| `exec`（别名 `e`） | 非交互式运行 Codex —— §23 做外部审查用的就是这个形态 |
+| `agents` | 管理 agent（0.149+） |
+| `exec`（别名 `e`） | 非交互式运行 Codex —— §23 做外部审查用的就是这个形态。没有 `-a` flag（从不提示）；用 `-s read-only\|workspace-write` 定它能伸多远；`--full-auto` 已在 0.147 移除 |
+| `exec-server` | *（实验性）* |
 | `review` | 非交互式跑一次代码审查 |
 | `apply`（别名 `a`） | 用 `git apply` 把 Codex 最新的 diff 打到工作树上 |
 | `resume` / `fork` | 恢复或分叉此前的交互式会话（`--last` 取最近一次） |
 | `archive` / `unarchive` / `delete` | 按 id 或名字管理已保存的会话 |
 | `sandbox` | 在 Codex 提供的沙箱里跑命令 |
-| `mcp` / `mcp-server` | 管理外部 MCP 服务器 · 把 Codex 自己作为 MCP 服务器跑 |
+| `mcp` | 管理外部 MCP 服务器（`list`、`get`、`add`、`remove`、`login`、`logout`）；`mcp-server` 已在 0.154 移除 |
+| `migrate-rollouts` | 迁移已保存的会话记录 |
 | `plugin` | 管理 Codex 插件 |
+| `queue` | 管理任务队列（0.149+） |
 | `login` / `logout` | 管理认证 |
 | `doctor` | 诊断安装、配置、认证与运行时健康状况 |
 | `update` | 更新 Codex |
@@ -8721,5 +8829,5 @@ $ pwd                 # /home/yourname/projects/...
 | `app` / `app-server` / `remote-control` | 桌面 App 与 app-server 相关工具 |
 | `debug` / `features` | 调试工具 · 查看特性开关 |
 
-有两个 flag 对本手册的一切都要紧：**`-c key=value`** 覆盖 `~/.codex/config.toml` 里的任意值（`-c model="gpt-5.2-codex"`），以及 **`--enable` / `--disable`** 开关具名特性。
+有两个 flag 对本手册的一切都要紧：**`-c key=value`** 覆盖 `~/.codex/config.toml` 里的任意值（`-m gpt-5.6-sol`，或 `-c model="gpt-5.6-sol"`；在 Codex ≥ 0.159 上默认是 `gpt-6.1-sol`），以及 **`--enable` / `--disable`** 开关具名特性。
 {% endraw %}
