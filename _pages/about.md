@@ -62,14 +62,15 @@ I have presented *Vibe Researching* in invited workshops, seminars, and courses 
 - **Zhejiang University (ZJU)** — *When AI Starts Writing Papers, Where Is the Future of PhD Students?*, a lecture hosted by the School of Public Affairs (June 23).
 - **NYU Shanghai** — *Agentic AI for Social Science Research*, a course in the [2026 Summer School](https://caser.shanghai.nyu.edu/training/2026-summer-school-methods/course-and-instructor-introduction/agentic-ai-for-social-science-research/) at CASER (July 1–5).
 - **The Chinese University of Hong Kong (CUHK)** — the [CSSL@CUHK webinar](https://cssl.socsc.cuhk.edu.hk/2026/06/22/vibe-researching-with-agentic-ai-for-social-sciences/) *Vibe Researching with Agentic AI for Social Sciences*, hosted by the Computational Social Science Laboratory.
+- **The Chinese University of Hong Kong (CUHK)** — *Applications of Agentic AI for Social Science Research*, a four-day hands-on workshop (August 31 – September 3).
+- **The Hong Kong University of Science and Technology (Guangzhou)** — *Responsible Vibe Researching with Coding Agents*, an invited talk (September 4).
+- **Gerontological Society of America (GSA)** — *Vibe Researching with Agentic AI for Social Sciences*, an invited talk in the two-part workshop series on AI in aging research hosted by the Chinese Gerontology Studies Interest Group, on Zoom (September 23).
+- **University of Macau (UM)** — [*Vibe Researching with Agentic AI in the Social Sciences*](https://fss.um.edu.mo/fss-dsoc-seminar-vibe-researching-with-agentic-ai-in-the-social-sciences), an FSS-DSOC seminar hosted by the Department of Sociology, Faculty of Social Sciences (October 21).
 
 If you need *Vibe Researching* with coding agents workshops or lectures, please reach out to me directly: yongjun.zhang at stonybrook.edu.
 
 ## Upcoming Talks/Workshops
 
-- **The Chinese University of Hong Kong (CUHK)** — *Applications of Agentic AI for Social Science Research*, a hands-on workshop (31 August – 3 September 2026).
-- **The Hong Kong University of Science and Technology (Guangzhou)** — *Responsible Vibe Researching with Coding Agents*, an invited talk (4 September 2026).
-- **Gerontological Society of America (GSA)** — *Vibe Researching with Agentic AI for Social Sciences*, an invited talk in the two-part workshop series on AI in aging research hosted by the Chinese Gerontology Studies Interest Group, on Zoom (23 September 2026, 8:00–9:15 PM ET).
 - **Penn State University** — *Agentic AI for Social Sciences*, an invited talk hosted by the [Center for Social Data Analytics (C-SoDA)](https://soda.la.psu.edu/) (December 2026).
 - **Institut Polytechnique de Paris** — *Vibe Researching as Wolf Coming: Can AI Agents with Skills Replace or Augment Social Scientists?*, a talk in the [AI & Social Sciences Seminar](https://www.css.cnrs.fr/ai-social-sciences-seminar-2/) hosted by the Computational Social Science group at CREST (14 April 2027).
 
