@@ -82,10 +82,10 @@ You do not have to use both on day one. Start with Claude.
 
 You need:
 
-- **macOS, Linux, or Windows (WSL2)**.
-- **Node.js ≥ 18** (we recommend 20 LTS) for Claude Code.
+- **macOS 13+, Linux, or Windows 10 (1809+)** — natively or under WSL2.
+- **No Node.js for Claude Code** — the native installer is self-contained. You need **Node.js 22+** only if you install Codex or `claude-code-router` through `npm`.
 - A **terminal** (Terminal.app, iTerm2, or Windows Terminal).
-- An **Anthropic API key** for Claude (or a Claude Pro/Max subscription) and an **OpenAI API key** for Codex.
+- A **Claude Pro/Max subscription** (or an **Anthropic API key**) for Claude, and a **ChatGPT sign-in** (any plan, Free included) or an **OpenAI API key** for Codex.
 - Optional: **R 4.3+** and **Python 3.11+**, since most scholar-skills run analyses in those.
 
 > **The lab notebooks find a key differently from Claude Code, and this trips people up.**
@@ -114,16 +114,16 @@ You need:
 
 > **Windows users:** The commands in this section assume macOS, Linux, or a Linux-like shell. If you are on Windows, do **not** try to run them in PowerShell or `cmd.exe`. Go to **Appendix K — Windows setup walkthrough** first and follow it through WSL2 (Windows Subsystem for Linux). Once you have a working Ubuntu shell inside WSL2, every command in §2 and §3 works unchanged. You only need to read Appendix K once per laptop.
 
-Check your Node version:
+If you will install Codex through `npm` (§2.3), check your Node version:
 
 ```bash
 $ node --version
-v20.11.0
+v22.x
 ```
 
-If `node` is missing or older than 18, install [nvm](https://github.com/nvm-sh/nvm) and run `nvm install 20`.
+If `node` is missing or older than 22, install [nvm](https://github.com/nvm-sh/nvm) and run `nvm install 22`. Claude Code itself does not need it.
 
-> **Prefer not to install anything by hand?** Once Claude Code or Codex is running (even with only Node installed), you can ask the agent to install Python, R, Git, and the standard social-science packages for you. See §2.7 — "Let the agent install your research toolchain" — for the exact prompts.
+> **Prefer not to install anything by hand?** Once Claude Code or Codex is running, you can ask the agent to install Python, R, Git, and the standard social-science packages for you. See §2.7 — "Let the agent install your research toolchain" — for the exact prompts.
 
 ### 2.1A Accounts, plans, and keys — the three things people confuse
 
@@ -134,7 +134,7 @@ almost everyone, so read the last row twice.
 |---|---|---|
 | What it is | A monthly plan tied to your *login* | A secret string tied to *usage*, billed per token |
 | Claude | **Claude Pro** or **Claude Max** at [claude.ai](https://claude.ai) | [console.anthropic.com](https://console.anthropic.com) → **API Keys** |
-| OpenAI | **ChatGPT Plus / Pro / Business** at [chatgpt.com](https://chatgpt.com) | [platform.openai.com](https://platform.openai.com/api-keys) → **API keys** |
+| OpenAI | **ChatGPT Free / Go / Plus / Pro / Business / Edu / Enterprise** at [chatgpt.com](https://chatgpt.com) (all include Codex) | [platform.openai.com](https://platform.openai.com/api-keys) → **API keys** |
 | Runs Claude Code? | ✅ sign in with your account | ✅ paste the key |
 | Runs Codex CLI? | ✅ sign in with your account | ✅ paste the key |
 | Runs the **lab notebooks**? | ❌ **no** | ✅ yes |
@@ -146,19 +146,23 @@ almost everyone, so read the last row twice.
 
 **Getting a Claude plan (for Claude Code).** Go to [claude.ai](https://claude.ai), sign up,
 then **Settings → Plans**. Pro is the entry tier; Max raises the usage limits, which matters
-on Day 3 when everyone runs agents at once. Then run `claude` and choose **Login with
-Anthropic Console** — no key needed.
+on Day 3 when everyone runs agents at once. Then run `claude` and choose the **Claude
+account** (Pro/Max subscription) sign-in — no key needed. The **Anthropic Console** option is
+the other route: per-token API billing, with no subscription.
 
 **Getting an Anthropic API key (the alternative).** Go to
 [console.anthropic.com](https://console.anthropic.com) → **API Keys** → **Create Key**, copy
 it immediately (it is shown once), and add credit under **Billing** — a new console has a
 zero balance and calls will fail with a billing error until you do. Current per-token rates
-are on the [pricing page](https://www.anthropic.com/pricing); as of August 2026 Claude Opus 5
-is \$5 / \$25 per million input / output tokens and Claude Haiku 4.5 is \$1 / \$5.
+are on the [pricing page](https://www.anthropic.com/pricing); as of October 2026 Claude Opus 5.5
+is \$4 / \$20 per million input / output tokens, Claude Sonnet 5.5 is \$2 / \$10, and Claude
+Haiku 5.5 is \$0.10 / \$0.50 (for prompts up to 100K tokens).
 
-**Getting Codex working.** Either sign in with a ChatGPT Plus/Pro account (`codex login`,
-then pick the browser sign-in), or create an OpenAI key at
-[platform.openai.com/api-keys](https://platform.openai.com/api-keys) and paste it. OpenAI
+**Getting Codex working.** Either sign in with your ChatGPT account — `codex login` opens a
+browser (on a headless server, `codex login --device-auth`) — or create an OpenAI key at
+[platform.openai.com/api-keys](https://platform.openai.com/api-keys) and pipe it in with
+`printenv OPENAI_API_KEY | codex login --with-api-key`; an API key runs the CLI at API rates,
+without the cloud features. `codex login status` shows which you are using. OpenAI
 billing is separate from ChatGPT billing — the same warning about a zero balance applies.
 
 **What this workshop actually needs.** Claude Code, by either route. Codex, by either route,
@@ -173,15 +177,20 @@ and is what we recommend if you would rather not spend anything.
 
 ### 2.2 Installing Claude Code
 
+Use the native installer (recommended; no Node.js needed, installs to `~/.local/bin`):
+
 ```bash
-$ npm install -g @anthropic-ai/claude-code
+$ curl -fsSL https://claude.ai/install.sh | bash
+# or, on macOS: brew install --cask claude-code
+# Windows PowerShell: irm https://claude.ai/install.ps1 | iex
+# or: winget install Anthropic.ClaudeCode
 ```
 
-Confirm:
+The old `npm install -g @anthropic-ai/claude-code` route is deprecated (and needs Node 22+). Confirm:
 
 ```bash
 $ claude --version
-2.0.x
+2.1.296 (Claude Code)   # current as of 2026-10; anything recent matches this handbook
 ```
 
 The first time you launch it, it will walk you through authentication:
@@ -191,14 +200,14 @@ $ cd ~/Documents/projects/digital-divide-china-cfps   # cd into your project FIR
 $ claude
 ```
 
-You will see a welcome screen asking how you want to authenticate. Choose **API key** (paste from console.anthropic.com) or **Anthropic Console** (browser flow).
+You will see a welcome screen asking how you want to sign in (the exact wording varies by version). Choose the **Claude account** option if you have a Pro or Max subscription, or **Anthropic Console** for per-token API billing (browser flow; no key to paste). You can sign in again later with `/login` inside a session or `claude auth login` from the shell.
 
 ```
  ┌──────────────────────────────────────────────────────┐
  │  Welcome to Claude Code                              │
- │  Choose authentication method:                       │
- │   1) Login with Anthropic Console                    │
- │   2) Use ANTHROPIC_API_KEY                           │
+ │  Select login method:                                │
+ │   1) Claude account (Pro / Max subscription)         │
+ │   2) Anthropic Console (API usage billing)           │
  └──────────────────────────────────────────────────────┘
 ```
 
@@ -210,16 +219,21 @@ Codex is OpenAI's coding agent. We use it for *external code review*.
 
 ```bash
 $ npm install -g @openai/codex
+# or: brew install --cask codex
+# or: curl -fsSL https://chatgpt.com/codex/install.sh | sh
 $ codex --version
-codex-cli 0.130.0   # exact version as of 2026-05; yours may be newer
+codex-cli 0.162.1   # current as of 2026-10; anything ≥ 0.154 matches this handbook
 ```
 
 Authenticate once:
 
 ```bash
-$ codex login
-# Paste your OpenAI API key when prompted.
+$ codex login   # opens a browser: sign in with ChatGPT
+$ printenv OPENAI_API_KEY | codex login --with-api-key   # or: API key, read from stdin
+$ codex login status
 ```
+
+**Approval and sandbox values, as of Codex 0.154+.** `-a/--ask-for-approval` now accepts only `on-request` and `never`. `untrusted` (retired in 0.149) and `on-failure` (removed in 0.143) are rejected, so older tutorials that use them will error out. `codex exec` takes no `-a` at all: it never prompts, and you choose its reach with `-s read-only` (review), `-s workspace-write` (the replacement for the removed `--full-auto`) or, only inside an external sandbox, `danger-full-access`. The old `-c 'sandbox_permissions=[…]'` override is **silently ignored** by current Codex. Add `--strict-config` to make Codex reject config keys it no longer knows.
 
 ### 2.3A Desktop apps — a friendlier alternative to the CLI
 
@@ -231,19 +245,19 @@ Both vendors now ship a **desktop application** that bundles the same coding age
 
 - <https://claude.com/download>
 
-The desktop app **includes Claude Code** — you do **not** need to install Node.js or the CLI separately. Install it like any normal app (drag to Applications on macOS; run the `.exe` on Windows), launch it, and sign in with your Anthropic account (Pro/Max subscription or Console login). macOS 11 (Big Sur) or newer is required. The first-run walkthrough lives at <https://code.claude.com/docs/en/desktop-quickstart>.
+The desktop app **includes Claude Code** — you do **not** need to install Node.js or the CLI separately. Install it like any normal app (drag to Applications on macOS; run the `.exe` on Windows), launch it, and sign in with your Claude account (Pro/Max subscription) or the Anthropic Console (API billing). macOS 13 or newer is required. The first-run walkthrough lives at <https://code.claude.com/docs/en/desktop-quickstart>.
 
 **Codex app (macOS / Windows).** Download from OpenAI's official page:
 
-- <https://developers.openai.com/codex/app>
+- <https://learn.chatgpt.com/docs/app>
 
-Pick the macOS build (Apple Silicon or Intel) or the Windows build; Windows users can also install it from the Microsoft Store. Open it and sign in with your **ChatGPT account** (Plus / Pro / Business / Edu / Enterprise — Codex is included) or an **OpenAI API key**. The app runs Codex threads in parallel and has built-in worktree, automation, and Git support.
+Pick the macOS build (Apple Silicon or Intel) or the Windows build; Windows users can also install it from the Microsoft Store. Open it and sign in with your **ChatGPT account** (Free / Go / Plus / Pro / Business / Edu / Enterprise — Codex is included) or an **OpenAI API key**. The app runs Codex threads in parallel and has built-in worktree, automation, and Git support.
 
 > **What you should see:** a window-based agent that can open a folder, read and edit files, run commands, and talk to git — the same capabilities as the CLI, with buttons instead of keystrokes.
 
-**A third desktop agent — ZCode (Z.ai).** If neither vendor's billing works for you, Z.ai ships **ZCode**, a desktop agent built on GLM-5.2 that reads Claude Code's skills and can therefore run the `open-scholar-skill` suite. It is a different company's product with its own configuration and its own data-jurisdiction implications, so it gets its own treatment: see §2.6.7.
+**A third desktop agent — ZCode (Z.ai).** If neither vendor's billing works for you, Z.ai ships **ZCode**, a desktop agent built on GLM-5.3 that can import Claude Code's skills and install Claude Code–format plugins, and can therefore run the `open-scholar-skill` suite. It is a different company's product with its own configuration and its own data-jurisdiction implications, so it gets its own treatment: see §2.6.7.
 
-**Let the desktop install the CLI for you.** You do not have to run the `npm` commands from §2.2 by hand. Once the desktop app is open, ask it in plain English — *"Install the Claude Code CLI on my machine and walk me through signing in"* — and the agent will check your Node version, run the installer, fix your `PATH`, and hand you a working `claude` command. It is the same agent that later sets up your whole research toolchain (§2.7); here it simply sets up its own terminal home.
+**Let the desktop install the CLI for you.** You do not have to run the install commands from §2.2 by hand. Once the desktop app is open, ask it in plain English — *"Install the Claude Code CLI on my machine and walk me through signing in"* — and the agent will run the native installer, fix your `PATH`, and hand you a working `claude` command. It is the same agent that later sets up your whole research toolchain (§2.7); here it simply sets up its own terminal home.
 
 **…but for this workshop, please also install and use the CLI.** The desktop apps are excellent for first contact and for day-to-day work, and you are welcome to keep using them afterward. The reason to spend ten minutes at the terminal too is *not* that the desktop is weak — by now it reads your files, runs code, remembers across a session, and connects to MCP servers, exactly like the CLI. The reason is a handful of things a *graphical* app structurally cannot do. A desktop needs a screen and a human clicking; the CLI is just text in, text out, so it runs anywhere a shell does:
 
@@ -303,7 +317,7 @@ Claude will read the repo's README, run `git clone`, execute `setup.sh`, install
 
 > **Safety rules for the shortcut**
 >
-> 1. Start Claude Code in **`default`** permission mode (not `bypassPermissions`) so each install step still asks for your approval. Type `Shift+Tab` until the status line reads `default` if you are not sure.
+> 1. Start Claude Code in **Manual** permission mode (`claude --permission-mode manual`; not auto or `bypassPermissions`) so each install step still asks for your approval. New sessions start in **auto** mode unless you configure otherwise, so press `Shift+Tab` until the footer reads **Manual** if you are not sure.
 > 2. If the agent proposes `sudo`, read what it intends to install **before** typing `y`. The shortcut should never need `sudo` for the plugin itself — only, possibly, for `jq` / `python3` on Linux.
 > 3. If the agent reports it cannot reach `github.com` or that a dependency install failed three times, switch to the manual path below — those failures usually need a human to debug your shell, proxy, or `PATH`.
 
@@ -524,24 +538,24 @@ If the skill runs from an unrelated directory, the personal-skills install worke
 
 **Goal:** keep using the same Claude Code CLI, the same `open-scholar-skill` plugin, and the same project layout, but route the model calls to a different backend — Z.ai/GLM, DeepSeek, or a model you run on your own machine.
 
-You do **not** need to install another CLI, swap your scripts, or hand-edit JSON before every session. Claude Code reads two environment variables — `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` — and will talk to any provider that exposes an Anthropic-compatible endpoint. GLM (Z.ai and the mainland BigModel host) and DeepSeek both do. For genuinely local models (DeepSeek-R1 distilled, Qwen2.5-Coder, Llama, GLM), Claude Code still needs an Anthropic-compatible front: Ollama, vLLM, and llama.cpp all speak OpenAI-style APIs, so you put a small translation layer — `claude-code-router` or `litellm` — in front to re-shape their responses into the Anthropic schema; the rest of the workflow is identical.
+You do **not** need to install another CLI, swap your scripts, or hand-edit JSON before every session. Claude Code reads two environment variables — `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` — and will talk to any provider that exposes an Anthropic-compatible endpoint. GLM (Z.ai and the mainland BigModel host) and DeepSeek both do. For genuinely local models (DeepSeek-R1 distilled, Qwen-Coder, Llama, GLM), the current local servers now speak the Anthropic Messages API directly — Ollama 0.14 and later, vLLM, and llama.cpp's `llama-server` all serve `/v1/messages` — so you point Claude Code at them like any other provider. A translation layer (`claude-code-router` or `litellm`) is only needed for older builds or when you want to mix providers; the rest of the workflow is identical.
 
-Options A–C below all keep Claude Code and swap the model underneath it. §2.6.7 covers the other direction: **ZCode**, Z.ai's own agent app built around GLM-5.2, which replaces the harness *and* the model — and which reads Claude Code's skills, so the `open-scholar-skill` suite runs inside it too.
+Options A–C below all keep Claude Code and swap the model underneath it. §2.6.7 covers the other direction: **ZCode**, Z.ai's own agent app built around GLM-5.3, which replaces the harness *and* the model — and which can import Claude Code's skills, so the `open-scholar-skill` suite runs inside it too.
 
 #### 2.6.1 Provider snapshot
 
 | Provider | Endpoint host | Models to set |
 | -------- | ------------- | ------------- |
-| GLM / Z.ai (international) | `api.z.ai` | Opus and Sonnet → `glm-5.2`; Haiku → `glm-4.7`. Also set `API_TIMEOUT_MS=3000000`. |
+| GLM / Z.ai (international) | `api.z.ai` | Opus and Sonnet → `glm-5.3[1m]`; Haiku → `glm-5.3-flash[1m]`. Also set `API_TIMEOUT_MS=3000000`. On the GLM Coding Plan, older ids (`glm-5.2`, `glm-5.1`, `glm-4.7`) are auto-routed to GLM-5.3 / GLM-5.3-Flash. |
 | GLM mainland China | `open.bigmodel.cn` | Same idea; pick the GLM family your BigModel account has access to. |
-| DeepSeek | `api.deepseek.com` | Opus / Sonnet → `deepseek-v4-pro`; Haiku and subagents → `deepseek-v4-flash`. |
-| Local — Ollama (**0.32+**, direct) | `http://localhost:11434` — Ollama serves `/v1/messages` itself | `ollama launch claude` / `ollama launch codex`; **no shim**. Needs tool-calling **and** ≥64k context — and in our testing a 20B model meeting both still could not drive the harness. Read §2.6.5 before relying on it. |
-| Local — Ollama (older), vLLM, llama.cpp | CCR → `http://localhost:11434/v1/chat/completions` | Any tag you pulled (e.g. `qwen2.5-coder:32b`); needs a translation layer. See §2.6.5. |
-| Local — vLLM / llama.cpp (via proxy) | proxy address you start | Whatever you exposed; see §2.6.5. |
+| DeepSeek | `api.deepseek.com` | Opus → `deepseek-v4-pro`; Sonnet → `deepseek-flash[1m]`; Haiku and subagents → `deepseek-flash`. (`deepseek-v4-flash` is now a legacy alias for `deepseek-flash`.) |
+| Local — Ollama (**0.14+**, direct) | `http://localhost:11434` — Ollama serves `/v1/messages` itself | `ollama launch claude` / `ollama launch codex`; **no shim**. Needs tool-calling **and** ≥64k context — and in our testing a 20B model meeting both still could not drive the harness. Read §2.6.5 before relying on it. |
+| Local — vLLM / llama.cpp (direct) | `http://localhost:8000` (vLLM) or `http://127.0.0.1:8080` (`llama-server`) — both serve `/v1/messages` | Whatever model you served; needs tool-calling. See §2.6.5. |
+| Local — mixed providers, or Ollama before 0.14 | CCR in front | Whatever routes you define in CCR; see §2.6.5. |
 
 The full `ANTHROPIC_BASE_URL` for Z.ai is `https://api.z.ai/api/anthropic`; for BigModel it is `https://open.bigmodel.cn/api/anthropic`; for DeepSeek it is `https://api.deepseek.com/anthropic`. The trailing `/anthropic` segment is what makes these endpoints route to the compatibility shim — leaving it off is the most common configuration error.
 
-**Model names move fast.** The model IDs in this section (`glm-5.2`, `glm-4.7`, `deepseek-v4-pro`, and the rest) are illustrative. Before a session, check the provider's current model list — Z.ai/BigModel and DeepSeek each publish their own — and use the exact names your account can call; pasting a retired tag is the second most common error after dropping the `/anthropic` suffix. GLM in particular has moved fast: `glm-5.1` was the flagship when the first edition of this handbook was written and `glm-5.2` replaced it in June 2026, bringing a 1M-token context window. If you copied the old three-line block into `settings.json`, update it.
+**Model names move fast.** The model IDs in this section (`glm-5.3`, `glm-5.3-flash`, `deepseek-v4-pro`, `deepseek-flash`, and the rest) are illustrative. Before a session, check the provider's current model list — Z.ai/BigModel and DeepSeek each publish their own — and use the exact names your account can call; pasting a retired tag is the second most common error after dropping the `/anthropic` suffix. GLM in particular has moved fast: `glm-5.1` was the flagship when the first edition of this handbook was written, `glm-5.2` (June 2026) brought a 1M-token context window, and `glm-5.3` has since replaced it on the GLM Coding Plan, which now silently routes the old ids to GLM-5.3. If you copied an older block into `settings.json`, update it to the one below.
 
 #### 2.6.2 Option A — declare a backend in `~/.claude/settings.json`
 
@@ -554,16 +568,17 @@ This is the simplest setup: you point Claude Code at one backend, save the file,
   "env": {
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_zai_key",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.3[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.3[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5.3-flash[1m]",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "API_TIMEOUT_MS": "3000000"
   }
 }
 ```
 
-This is Z.ai's own recommended mapping: GLM-5.2 for both the Opus and the Sonnet tier, the cheaper `glm-4.7` for the Haiku tier that Claude Code uses for small background calls. `CLAUDE_CODE_AUTO_COMPACT_WINDOW` tells Claude Code it may fill GLM-5.2's 1M-token window before auto-compacting — leave it out and you compact far earlier than you need to, which matters when the agent is holding a codebook and three scripts at once.
+This is Z.ai's own recommended mapping: GLM-5.3 for both the Opus and the Sonnet tier, the cheaper GLM-5.3-Flash for the Haiku tier that Claude Code uses for small background calls. The `[1m]` suffix and `CLAUDE_CODE_AUTO_COMPACT_WINDOW` together tell Claude Code it may fill GLM-5.3's 1M-token window before auto-compacting — leave it out and you compact far earlier than you need to, which matters when the agent is holding a codebook and three scripts at once.
 
 **DeepSeek example:**
 
@@ -573,13 +588,14 @@ This is Z.ai's own recommended mapping: GLM-5.2 for both the Opus and the Sonnet
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_deepseek_key",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-flash[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-flash",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "deepseek-flash"
   }
 }
 ```
 
-Restart Claude Code; run `/usage` or just trigger any tool call to confirm the backend has switched.
+Restart Claude Code; run `/status` (it shows the base URL in use) or just trigger any tool call to confirm the backend has switched.
 
 #### 2.6.3 Option B — keep keys outside the project and switch with shell functions
 
@@ -597,10 +613,11 @@ export DEEPSEEK_API_KEY="..."
 glm() {
   export ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic"
   export ANTHROPIC_AUTH_TOKEN="$ZAI_API_KEY"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2"
-  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.7"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.3[1m]"
+  export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.3[1m]"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5.3-flash[1m]"
   export CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000
+  export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
   export API_TIMEOUT_MS=3000000
   claude "$@"
 }
@@ -608,9 +625,10 @@ glm() {
 deepseek() {
   export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
   export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-flash[1m]"
   export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-flash"
+  export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-flash"
   claude "$@"
 }
 
@@ -620,15 +638,18 @@ claude-anthropic() {
   unset ANTHROPIC_DEFAULT_OPUS_MODEL
   unset ANTHROPIC_DEFAULT_HAIKU_MODEL
   unset CLAUDE_CODE_AUTO_COMPACT_WINDOW API_TIMEOUT_MS
+  unset CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC CLAUDE_CODE_SUBAGENT_MODEL
   claude "$@"
 }
 ```
 
 From then on, `glm` opens Claude Code against Z.ai, `deepseek` opens it against DeepSeek, and `claude-anthropic` falls back to vanilla Anthropic. The PATH binary `claude` itself is still the one CLI you trust.
 
+> **Do not combine Option A and Option B.** An `env` block in `~/.claude/settings.json` **overrides** variables exported in your shell. If you have left a provider block in `settings.json` from Option A, the shell functions above silently do nothing — `deepseek` still talks to whatever the file names. Pick one mechanism per machine, and confirm with `/status` which base URL is actually in use.
+
 #### 2.6.4 Option C — CC Switch, a one-click GUI for provider switching
 
-Options A and B edit configuration by hand. If you juggle several providers or accounts — an Anthropic login for one project, GLM and DeepSeek for others, a Kimi key for a collaborator's repo — a GUI that makes those same edits for you is less error-prone. **CC Switch** is a cross-platform desktop app that manages provider configurations for Claude Code (and Codex, Gemini CLI, Claude Desktop, and more) from one window, with 50+ built-in provider presets and a system-tray menu for instant switching. It is an open-source, third-party tool — **not** an Anthropic product.
+Options A and B edit configuration by hand. If you juggle several providers or accounts — an Anthropic login for one project, GLM and DeepSeek for others, a Kimi key for a collaborator's repo — a GUI that makes those same edits for you is less error-prone. **CC Switch** is a cross-platform desktop app that manages provider configurations for Claude Code (and Codex, Gemini CLI, OpenCode, Claude Desktop, and more) from one window, with a large set of built-in provider presets and a system-tray menu for instant switching. It is an open-source, third-party tool — **not** an Anthropic product.
 
 **Install.**
 
@@ -651,12 +672,12 @@ On **Windows**, download the `.msi` installer (Windows 10+); on other **Linux** 
 
 1. **Add Provider** → choose a preset (Anthropic official, GLM/Z.ai, DeepSeek, Kimi/Moonshot, …) or enter a custom base URL + key.
 2. Select the provider and click **Enable** — or pick it from the **tray** menu for an instant switch.
-3. Restart the terminal (not needed for Claude Code) and run any tool call or `/usage` to confirm the backend changed.
+3. Restart the terminal (not needed for Claude Code) and run any tool call or `/status` to confirm the backend changed.
 4. To return to your Anthropic login, enable the **"Official Login"** preset, restart, and sign in normally.
 
 **Two cautions — the workshop's data-boundary rules still apply.**
 
-- **It stores your API keys unencrypted** in `~/.cc-switch/cc-switch.db`. Treat that file like any credential store: not on a shared lab machine, not in a synced or backed-up folder you don't control, never in git. On a borrowed computer, prefer Option B (keys in `~/.api-keys`, `chmod 600`) or clean up afterwards.
+- **It stores your API keys unencrypted** in `~/.cc-switch/cc-switch.db`. Treat that file like any credential store: not on a shared lab machine, not in a synced or backed-up folder you don't control, never in git. On a borrowed computer, prefer Option B (keys in `~/.api-keys`, `chmod 600`) or clean up afterwards. Since v4.0.4 CC Switch makes its key files owner-read/write only — that limits who on the machine can read them, but it is not encryption.
 - **Many presets are community relays**, not the vendor's own endpoint. A relay sees every prompt you send it — including participant text. Before routing a project with sensitive data through any non-official backend, run the trust checks in §2.6.6, and for restricted data prefer an official channel or a provider you have vetted.
 
 CC Switch does not replace Options A/B — it automates them behind a UI. Everything else (the plugin, `CLAUDE.md`, the permission gates) is unchanged.
@@ -671,26 +692,26 @@ CC Switch does not replace Options A/B — it automates them behind a UI. Everyt
 > dozens of tool definitions, multi-step tool loops — and that is a much higher bar. Do not
 > read a warning about the second as a problem with the first.
 
-If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and drive Claude Code or Codex with it. **Since Ollama 0.32 this needs no shim at all** — Ollama ships an integration launcher and serves the Anthropic Messages API directly. Older Ollama builds, vLLM and llama.cpp still need a translation layer, and you still want one if you intend to *mix* providers; `claude-code-router` (CCR) is the lightest option there.
+If your institution forbids sending data to a hosted API, or you want offline reproducibility, you can run a local checkpoint and drive Claude Code or Codex with it. **Since Ollama 0.14 (January 2026) this needs no shim at all** — Ollama serves the Anthropic Messages API directly, and since 0.15 it ships an integration launcher. vLLM and llama.cpp's `llama-server` also serve `/v1/messages` themselves. You only want a router if you intend to *mix* providers (or are stuck on a pre-0.14 Ollama); `claude-code-router` (CCR) is the lightest option there.
 
 **Path A — `ollama launch` (simplest; nothing to configure).** Ollama has first-class integrations for both of our tools:
 
 ```bash
 $ ollama launch claude                       # Claude Code, driven by a local model
 $ ollama launch codex                        # Codex CLI, likewise
-$ ollama launch claude --model qwen2.5:7b    # pick the model
-$ ollama launch claude --config              # configure without launching
-$ ollama launch claude --restore             # put the integration back to default
+$ ollama launch claude --model qwen3.5        # pick the model
+$ ollama launch claude --model qwen3.5 --yes  # skip the confirmation prompts
+$ ollama launch claude -- -p "…"              # pass flags through to Claude Code
 $ ollama launch                              # interactive menu of all integrations
 ```
 
-`ollama launch --help` lists the rest (Copilot CLI, OpenCode, Cline, Qwen Code, VS Code, and more).
+`ollama launch --help` lists the rest (Copilot CLI, OpenCode, Cline, Qwen Code, VS Code, and more) and the flags your build actually supports — check it, because the launcher's options have changed between releases.
 
-**It does not touch your existing setup.** Tested here: after `ollama launch claude --config`, `~/.claude/settings.json`, `~/.codex/config.toml` and `~/.zshrc` were byte-identical to before — the launcher exports environment variables for the child process only. (`--restore` exists for the Codex and ChatGPT integrations; on `claude` it returns *"claude does not support --restore"*, because there is nothing persistent to undo.)
+**It does not touch your existing setup.** Tested here on Ollama 0.32.x: after `ollama launch claude --config`, `~/.claude/settings.json`, `~/.codex/config.toml` and `~/.zshrc` were byte-identical to before — the launcher exports environment variables for the child process only. (Tested on Ollama 0.32.x: `--restore` existed for the Codex and ChatGPT integrations; on `claude` it returned *"claude does not support --restore"*, because there is nothing persistent to undo. Current Ollama docs no longer list `--config` or `--restore`.)
 
 > **This is the harness, not the model — and the distinction is the whole of Day 1.** `ollama launch claude` gives you *Claude Code's harness* driving an **open-weight** model on your machine. It does not give you Claude: Anthropic's weights are not public and never enter Ollama. What you are testing is exactly the workshop's thesis — how much of the behaviour comes from the harness and how much from the model. Expect a real drop in capability, and treat that drop as the measurement.
 
-> **Pick the model on two axes, not one.** It needs **tool-calling** *and* enough context — Ollama's own guidance is 64k or more. `ollama show <model>` prints both, so check rather than guess: on the instructor's machine `qwen2.5:7b` reports `tools` but only 32k of context, while `qwen3.6` reports 256k of context but **no `tools` capability at all**. The failure modes differ and neither is loud — truncation on a large repository versus an agent that simply never calls a tool.
+> **Pick the model on two axes, not one.** It needs **tool-calling** *and* enough context — Ollama's own guidance is 64k or more. `ollama show <model>` prints both, so check rather than guess: on the instructor's machine (Ollama 0.32, August 2026) `qwen2.5:7b` reported `tools` but only 32k of context, while `qwen3.6` reported 256k of context but **no `tools` capability at all**. The failure modes differ and neither is loud — truncation on a large repository versus an agent that simply never calls a tool.
 >
 > **`gpt-oss:20b` is the best local candidate by specification** — 20.9B parameters, **131,072 tokens of context**, and `tools`. Against Ollama's Anthropic endpoint it is genuinely correct: it answers, and it emits a well-formed Anthropic `tool_use` block (`stop_reason: tool_use`, `name=read_file`, `input={"path": "/etc/hostname"}`).
 >
@@ -698,11 +719,11 @@ $ ollama launch                              # interactive menu of all integrati
 >
 > That is Day 1's thesis, on your own laptop, in a form you can rerun: **the harness is doing far more work than it looks like, and it does not degrade gently.** It fails in a specific, diagnosable way. Scope the claim honestly, though — this is one 20B model, three prompts, one machine. Ollama's own examples use `gpt-oss:120b`, and a model that size may well hold the harness. If you have the hardware, that is the experiment worth running.
 >
-> **Two operational notes** if you try it. Claude Code does not recognise `gpt-oss:20b`, so it assumes a **200k** context window for a model that has **128k** — set `CLAUDE_CODE_MAX_CONTEXT_TOKENS` to the real number, or map it under `modelOverrides`, or auto-compact will plan against a window that does not exist. And it is a **thinking** model: with a tight `max_tokens` the reasoning eats the whole budget and the visible answer comes back **empty** (a 40-token cap returned nothing; 600 returned the answer in 45). If a local run goes silent, raise the budget before blaming the model.
+> **Two operational notes** if you try it. Claude Code does not recognise `gpt-oss:20b`, so it assumes a **200k** context window for a model that has **128k** — set `CLAUDE_CODE_MAX_CONTEXT_TOKENS` to the real number, or map it under `modelOverrides`, or auto-compact will plan against a window that does not exist. And it is a **thinking** model: with a tight `max_tokens` the reasoning eats the whole budget and the visible answer comes back **empty** (a 40-token cap returned nothing; 600 returned the answer in 45). If a local run goes silent, raise the budget before blaming the model. (Since Ollama 0.40.2, `ollama launch claude` passes the model's full context length; check what Claude Code thinks it has with `/context`.)
 >
 > **If `ollama show` errors instead of printing** — e.g. `tensor "blk.0.ffn_down_exps.weight" size overflow` — the local copy is corrupt, not the model. `ollama pull <model>` again; the re-pull repairs it.
 
-**Path B — Ollama fronted by CCR (older Ollama, or when you want to mix providers).** On **Ollama before 0.32** — and on vLLM or llama.cpp at any version — only OpenAI-style `/v1/chat/completions` is served, not the Anthropic `/v1/messages` Claude Code expects, so a shim goes in front. This is also the path to use when you want to *mix* providers rather than pin everything to one local model:
+**Path B — Ollama fronted by CCR (pre-0.14 Ollama, or when you want to mix providers).** Only **Ollama before 0.14** lacks the Anthropic `/v1/messages` endpoint Claude Code expects, so a shim goes in front. The more common reason to use this path today is to *mix* tiers across backends rather than pin everything to one local model:
 
 ```bash
 # 1. Install Ollama (macOS / Linux / WSL).
@@ -716,27 +737,26 @@ $ ollama pull deepseek-r1:14b     # distilled reasoning model
 #    GLM checkpoints also appear in the library — search "glm" there.
 
 # 3. Front Ollama with CCR (install it in Path C). In `ccr ui`, add an
-#    "ollama" provider with base URL http://localhost:11434/v1/chat/completions and your
-#    pulled tag, then launch and select it:
-$ ccr code
-#    Inside the session: /model ollama,qwen2.5-coder:32b
+#    Ollama provider at http://localhost:11434 with your pulled tag, then
+#    create a Claude Code profile under Agent Config and launch it:
+$ ccr "<your profile name>" cli
 ```
 
-> **Corrected 2026-08-24.** This section used to say that pointing `ANTHROPIC_BASE_URL` straight at `http://localhost:11434` does *not* work, because Ollama does not serve `/v1/messages`. **It does now.** Verified against Ollama 0.32.15 with a live request: `POST /v1/messages` returns a genuine Anthropic-shaped body (`"type":"message"`, `content:[{"type":"text"}]`, `stop_reason`, `usage.input_tokens`). That is what makes Path A work without any shim. Older Ollama builds do not serve it, which is why the router path below still exists.
+> **Corrected 2026-08-24.** This section used to say that pointing `ANTHROPIC_BASE_URL` straight at `http://localhost:11434` does *not* work, because Ollama does not serve `/v1/messages`. **It does now.** Verified against Ollama 0.32.15 with a live request: `POST /v1/messages` returns a genuine Anthropic-shaped body (`"type":"message"`, `content:[{"type":"text"}]`, `stop_reason`, `usage.input_tokens`). That is what makes Path A work without any shim. The endpoint was added in Ollama v0.14.0; only pre-0.14 builds need the router path below.
 
-**Path C — `claude-code-router` (CCR), install and routing.** CCR is both the shim for a single local model (Path A) and the way to *mix* providers — different routes per tier (Opus to Z.ai, Sonnet to DeepSeek, Haiku to a local Ollama model), with manual mid-session switching via `/model provider,model` (add your own fallback logic with a custom `router.js`):
+**Path C — `claude-code-router` (CCR), install and routing.** CCR is the shim for Path B and the way to *mix* providers — different routes per tier (Opus to Z.ai, Sonnet to DeepSeek, Haiku to a local Ollama model). **CCR 3.x (July 2026 on) is a rewrite**, and most online guides describe 1.x/2.x. It needs Node.js 22+, keeps its settings in a database rather than a hand-edited JSON file, and launches agents through named *profiles*:
 
 ```bash
+$ node --version                                # must be v22 or newer
 $ npm install -g @musistudio/claude-code-router
-$ ccr ui          # opens a browser config editor and creates
-                  # ~/.claude-code-router/config.json
-$ ccr start       # launches the router service
-$ ccr code        # launches Claude Code routed through CCR
+$ ccr ui          # starts the background service and opens the UI (http://127.0.0.1:3458)
+$ ccr start       # same service, no browser; ccr stop to stop it
+$ ccr "<profile name>" cli    # launch a Claude Code profile through the CCR gateway
 ```
 
-There is no `ccr config init`; the config file is created the first time you run `ccr ui` (or `ccr start`/`ccr code`) and lives at `~/.claude-code-router/config.json`. Edit the `default` and per-tier routes there or in `ccr ui`, then `ccr restart` to apply. Inside a CCR session, `/model deepseek,deepseek-v4-pro` or `/model ollama,qwen2.5-coder:32b` switches routes mid-conversation — the `provider,model` form is a CCR feature, not stock Claude Code.
+In `ccr ui`, add your providers, then create and enable a **Claude Code** profile under **Agent Config** with the routes you want. Settings live in `~/.claude-code-router/` (`config.sqlite`; on Windows `%APPDATA%\claude-code-router`). Do not edit those files while CCR is running — use **Settings → Export data**. To change routes, edit them in the UI, then `ccr stop` and `ccr start`. The `ccr code`, `ccr restart`, `config.json` and `/model provider,model` instructions in older guides are for CCR 1.x/2.x; in 3.x any word after `ccr` other than `start`, `ui`, `stop` or `serve` is read as a profile name.
 
-> **vLLM / llama.cpp.** If you already serve models with vLLM (`vllm serve <model>`) or llama.cpp (`llama-server`), they expose OpenAI-style chat completions, not Anthropic-style. vLLM ships its own Claude Code integration guide; otherwise put `litellm`, an `anthropic-proxy`, or CCR in front to translate the OpenAI ↔ Anthropic schemas. The Claude Code side never changes.
+> **vLLM / llama.cpp.** If you already serve models with vLLM or llama.cpp, both now serve the Anthropic Messages API themselves. Start vLLM with `vllm serve <model> --enable-auto-tool-choice --tool-call-parser <parser>` and set `ANTHROPIC_BASE_URL=http://localhost:8000`; for `llama-server` use `http://127.0.0.1:8080`. Put `litellm` or CCR in front only when you want to mix providers. The Claude Code side never changes.
 
 #### 2.6.6 Workshop checks before you trust a backend
 
@@ -752,9 +772,9 @@ Record the result of each check in a one-line note in `logs/backend-test.md`. **
 
 #### 2.6.7 Option D — ZCode, Z.ai's own agent app, running the scholar skills
 
-Options A–C keep the Claude Code CLI and swap the model underneath it. **ZCode** does something different: it is Z.ai's own agent application, built around GLM-5.2, replacing the harness as well as the model. Z.ai calls it an *Agentic Development Environment* — a desktop app with a Goal mode for long multi-step tasks, browser automation, remote-development and phone-control channels. It is not an Anthropic product and it is not Claude Code; it is a separate program with its own configuration directory, `~/.zcode/`.
+Options A–C keep the Claude Code CLI and swap the model underneath it. **ZCode** does something different: it is Z.ai's own agent application, built around GLM-5.3, replacing the harness as well as the model. Z.ai calls it an *Agentic Development Environment* — a desktop app with a Goal mode for long multi-step tasks, multi-subagent workflows, browser automation, remote-development and phone-control channels. It is not an Anthropic product and it is not Claude Code; it is a separate program with its own configuration directory, `~/.zcode/`.
 
-The reason it belongs in this handbook is one design decision on Z.ai's part: **ZCode reads Claude Code's skills, plugins, commands, and hooks.** The `open-scholar-skill` suite you installed in §2.4 runs inside it, with GLM-5.2 doing the work. If your department cannot fund an Anthropic subscription, or you need a mainland-China billing path, this is the shortest route from "no Claude budget" to "the scholar pipeline runs on my laptop."
+The reason it belongs in this handbook is one design decision on Z.ai's part: **ZCode can import Claude Code's skills and install Claude Code–format plugins** — skills, commands, subagents, MCP servers, and plugin hooks. The `open-scholar-skill` suite you installed in §2.4 runs inside it, with GLM-5.3 doing the work. What it does *not* do is run the hooks in your Claude Code settings files; see *Difference 3*. If your department cannot fund an Anthropic subscription, or you need a mainland-China billing path, this is the shortest route from "no Claude budget" to "the scholar pipeline runs on my laptop."
 
 **Which option do you want?**
 
@@ -766,7 +786,7 @@ The reason it belongs in this handbook is one design decision on Z.ai's part: **
 
 Parts II–IV of this handbook assume a `$` prompt and `/scholar-*` commands. Under ZCode the *skill files are the same*, but invocation, project memory, and hooks all differ. Read the three "difference" blocks below before you start the CFPS run in ZCode; the third one is a safety issue.
 
-**Install.** ZCode is a desktop app — macOS (Apple Silicon and Intel), Windows (x64 and ARM64), Linux (x64 AppImage). There is no `npm install`. Download from the official install page, which always carries the current version:
+**Install.** ZCode is a desktop app — macOS (Apple Silicon and Intel), Windows (x64 and ARM64), Linux (x64 and ARM64; AppImage, DEB, or RPM). The current version is 3.15.3 as of 13 October 2026. There is no `npm install`. Download from the official install page, which always carries the current version:
 
 - English docs: <https://zcode.z.ai/en/docs/install>
 - 中文文档: <https://zcode.z.ai/cn/docs/install>
@@ -778,6 +798,8 @@ $ xattr -dr com.apple.quarantine /Applications/ZCode.app
 
 # Linux — make the AppImage executable and run it
 $ chmod +x ZCode-*.AppImage && ./ZCode-*.AppImage
+# Debian/Ubuntu: sudo apt install ./ZCode-*.deb · Fedora/RHEL: sudo dnf install ./ZCode-*.rpm
+# (match the filename to the package you downloaded)
 ```
 
 On Windows, run the `.exe` installer and follow the wizard.
@@ -786,23 +808,23 @@ On Windows, run the `.exe` installer and follow the wizard.
 
 - **Z.ai account** (international) — sign in; a GLM Coding Plan entitlement covers usage. Coding endpoints are `https://api.z.ai/api/coding/paas/v4` (OpenAI-style) and `https://api.z.ai/api/anthropic` (Anthropic-style).
 - **BigModel** (mainland China) — the Zhipu platform, same GLM models: `https://open.bigmodel.cn/api/coding/paas/v4` and `https://open.bigmodel.cn/api/anthropic`.
-- **API key** — any Anthropic- or OpenAI-compatible provider. ZCode's own list includes Anthropic, OpenRouter, Moonshot, OpenAI, MiniMax, and custom endpoints, so you can run the ZCode interface against a Claude model if you want to compare harnesses while holding the model fixed.
+- **API key** — any Anthropic- or OpenAI-compatible provider. ZCode's own list includes Anthropic, OpenRouter, Moonshot, OpenAI, MiniMax, Xiaomi MiMo, and custom Anthropic- or OpenAI-compatible endpoints (DeepSeek, for example), so you can run the ZCode interface against a Claude model if you want to compare harnesses while holding the model fixed.
 
-The selectable GLM models are **GLM-5.2** (the flagship, 1M-token context) and **GLM-5-Turbo**; anything else depends on your account's permissions. **Do not substitute the general endpoint for the coding endpoint** — they are region- and billing-specific and are not interchangeable. This is the ZCode equivalent of dropping the `/anthropic` suffix in §2.6.1: the same category of one-line mistake, with the same symptom of nothing working and no useful error.
+The selectable GLM models are **GLM-5.3** (the flagship, 1M-token context) and **GLM-5.3-Flash**; anything else depends on your account's permissions. Once a Coding Plan is active, calls through the Anthropic-style URL no longer draw on your prepaid balance. **Do not substitute the general endpoint for the coding endpoint** — they are region- and billing-specific and are not interchangeable. This is the ZCode equivalent of dropping the `/anthropic` suffix in §2.6.1: the same category of one-line mistake, with the same symptom of nothing working and no useful error.
 
 Confirm the connection the way Z.ai's own quickstart does — ask the agent to list the files in the current directory. If it comes back with your real filenames, both the model and the tool loop are live.
 
 **Getting `open-scholar-skill` into ZCode.** Three routes. Take the first one; the other two are there for when you already have a Claude Code install you would rather reuse, or when something does not register and you want to see the files with your own eyes.
 
-*Route 1 — the plugin store (do this one).* The repo publishes a marketplace manifest, so ZCode can install it in one step, and a plugin install registers **all** of its component types at once — `skills/`, `commands/`, `agents/`, `.mcp.json`, `hooks/hooks.json` — which is what makes this the only route that brings the reviewer, code-review, and verification subagents along without extra work.
+*Route 1 — the plugin store (do this one).* The repo publishes a marketplace manifest, so ZCode can install it in one step, and a plugin install registers **all** of its component types at once — `skills/`, `commands/`, `agents/`, `.mcp.json`, `hooks/hooks.json` — which is what makes this the only route that brings the reviewer, code-review, and verification subagents along without extra work. One caveat: `open-scholar-skill` ships no `hooks/hooks.json`, so the plugin does **not** bring the data guard with it — see *Difference 3*.
 
-Open **Settings → Plugins**, click **Create → Add marketplace** in the top right, and enter:
+Open a workspace first (plugins install into the workspace that is open), then **Settings → Plugins**; the Claude Code marketplace is preloaded. Click **Create → Add marketplace** in the top right, and enter:
 
 ```
 joshzyj/open-scholar-skill
 ```
 
-ZCode validates the manifest before adding it. The marketplace then appears in the **Personal** segment as `open-scholar`; find the **open-scholar-skill** card and click **Install**. Newly installed plugins are enabled by default, and enabling one reloads the agent runtime immediately — no restart. Later, the gear icon above the search box opens **Marketplace sources**, where you refresh to pick up new skills after an upstream release.
+ZCode validates the manifest before adding it. The marketplace then appears in the **Personal** segment as `open-scholar`; find the **open-scholar-skill** card and click **Install**. Newly installed plugins are enabled by default, and enabling one reloads the agent runtime immediately — no restart. Plugins register into the **current workspace** (per-workspace install since ZCode 3.12.3), so repeat the install in each workspace where you want the suite; plugin hooks take effect only in new sessions. Later, the gear icon above the search box opens **Marketplace sources**, where you refresh to pick up new skills after an upstream release.
 
 The same manifest works in Claude Code, if you would rather install by plugin than by `setup.sh`:
 
@@ -813,7 +835,7 @@ $ claude plugin install open-scholar-skill@open-scholar
 
 **Still run `bash setup.sh` (§2.4.2) once, even after a plugin install.** The plugin gives you the skills and agents. It does not give you the three things `setup.sh` writes outside the repo: the `.env` with your Zotero, BibTeX, and CrossRef settings (§2.5.1); the executable bits on the skills' shell scripts; and the PreToolUse data-safety guard. That last one you must declare in ZCode by hand in any case — see *Difference 3* below.
 
-*Route 2 — import an existing Claude Code install.* If you already ran `setup.sh`, ZCode detects skills installed for Claude Code — and for Codex CLI, OpenClaw, Augment, and Windsurf — and offers to bring them in. Go to **Settings → Skills → import**, and choose **symlink** mode so a later `git pull` in the skill repo updates ZCode too; **copy** mode freezes a snapshot instead. Imported skills behave exactly like ones you write by hand in `~/.zcode/skills/<name>/SKILL.md`. Note that this route covers **skills only** — the subagents need Route 1 or Route 3.
+*Route 2 — import an existing Claude Code install.* If you already ran `setup.sh`, ZCode detects skills installed for Claude Code — and for Codex CLI, OpenClaw, Augment, and Windsurf — and offers to bring them in. Go to **Settings → Skills → import**, choose **symlink** mode, and pick the **Global** target when asked (rather than Project), so a later `git pull` in the skill repo updates ZCode too; **copy** mode freezes a snapshot instead. Imported skills behave exactly like ones you write by hand in `~/.zcode/skills/<name>/SKILL.md`. Note that this route covers **skills only** — the subagents need Route 1 or Route 3.
 
 *Route 3 — symlink by hand.* The fallback when a registration misbehaves and you want to place every file yourself:
 
@@ -825,7 +847,7 @@ $ for f in "$SRC"/.claude/agents/*.md; do ln -sfn "$f" ~/.zcode/agents/"$(basena
 $ ls ~/.zcode/skills | wc -l      # should match: ls ~/.claude/skills | wc -l
 ```
 
-Then **Settings → Skills → Refresh**. Whichever route you take, note that ZCode subagents are **user-level only** — there is no per-workspace agents directory, so every project on that machine sees the same reviewer panel.
+Then **Settings → Skills → Refresh**. Whichever route you take, note that hand-placed ZCode subagents are **user-level only** (`~/.zcode/agents/`) — there is no per-workspace agents directory, so every project on that machine sees the same reviewer panel. Subagents that come with the plugin follow its per-workspace install.
 
 **Difference 1 — how you invoke a skill.** In Claude Code you type `/scholar-init`. In ZCode, `/` is for commands (`/goal`, `/compact`, and anything in `~/.zcode/commands/`), and skills are referenced with `$`:
 
@@ -843,11 +865,11 @@ $ cp CLAUDE.md AGENTS.md     # in the project root — then keep the two in sync
 
 ZCode does not merge `AGENTS.md` files across directory levels, does not scan child directories, and does not expand `@import`. Put the data-boundary rules — the **Forbidden** block from §3.3 — at the top of the workspace `AGENTS.md`, where they cannot be missed.
 
-**Difference 3 — the safety hook must be re-declared. This is the one that can hurt you.** `setup.sh` registers the PreToolUse data guard in `~/.claude/settings.json`. **ZCode never reads that file.** Until you declare the hook yourself, ZCode runs with no data guard at all, and the failure is silent: the agent reads a restricted file, nothing blocks it, and you find out later or not at all.
+**Difference 3 — the safety hook must be re-declared. This is the one that can hurt you.** `setup.sh` registers the PreToolUse data guard in `~/.claude/settings.json`. **ZCode never executes hooks from that file**, nor from a project's `.claude/settings.json` (it may display them, but they do not run), and the plugin does not ship the guard. Until you declare the hook yourself, ZCode runs with no data guard at all, and the failure is silent: the agent reads a restricted file, nothing blocks it, and you find out later or not at all.
 
 The good news is that ZCode's hook contract is close enough to reuse the same script unmodified. ZCode writes one line of JSON to the hook's stdin and its payload, in Z.ai's own words, "carries both ZCode camelCase fields and Claude Code snake_case aliases, so legacy plugins can keep reading snake_case" — which is exactly what `pretooluse-data-guard.sh` parses (`.tool_name`, `.tool_input.file_path`, `.cwd`). Exit code 2 blocks the call, the same convention Claude Code uses.
 
-Declare it in `~/.zcode/cli/config.json` for all projects, or `<workspace>/.zcode/config.json` for one:
+Declare it **only** in the user-level `~/.zcode/cli/config.json`. Do **not** put it in `<workspace>/.zcode/config.json` or `zcode.json`: in Z.ai's words, "project-level hooks are not executed in the current version", so a per-project guard looks configured and does nothing. The user-level block:
 
 ```json
 {
@@ -871,7 +893,7 @@ Declare it in `~/.zcode/cli/config.json` for all projects, or `<workspace>/.zcod
 }
 ```
 
-`"hooks.enabled": true` is required — without it nothing fires. Quote the script path if it contains a space; the §2.5.3 warning about `My Drive` applies here word for word.
+`"hooks.enabled": true` is required — without it nothing fires. (ZCode's default `timeoutMs` is 60000; 10000 is plenty for the guard.) Quote the script path if it contains a space; the §2.5.3 warning about `My Drive` applies here word for word.
 
 Then **prove that it fires**, because a matcher naming a tool ZCode calls something else fails open and looks identical to a working guard:
 
@@ -883,7 +905,7 @@ You want a refusal that cites the guard. If the file is read, the hook is not wi
 
 **Before you trust it with the pipeline.** ZCode changes the harness *and* the model, so both halves of §2.6.6 apply: run the three-step smoke test (tool-use round-trip, long-prompt stability, and skill invocation — with `$scholar-init` rather than `/scholar-init`), plus the hook test above. Note the date and exactly which skills passed. **Do not describe the suite as "ZCode-compatible"** on the strength of one smoke test; say what you ran and when.
 
-**Two data-boundary notes, and they are not optional.** First, GLM calls through Z.ai or BigModel are processed under Chinese law whichever host you choose. For restricted, IRB-governed, or DUA-bound participant data, that is a question for your IRB and your data-use agreement, not a matter of preference — the same standard §2.6.4 applies to community relays. Second, ZCode's extras — browser automation, remote development, the phone and bot channels — widen the surface that can reach into your project directory. Enable only what you need, and keep the §4 layout so raw data sits outside anything an automation touches by default.
+**Two data-boundary notes, and they are not optional.** First, GLM calls through Z.ai or BigModel are processed under Chinese law whichever host you choose. For restricted, IRB-governed, or DUA-bound participant data, that is a question for your IRB and your data-use agreement, not a matter of preference — the same standard §2.6.4 applies to community relays. Second, ZCode's extras — browser automation, remote development, the phone and bot channels — widen the surface that can reach into your project directory. Enable only what you need, and keep the §4 layout so raw data sits outside anything an automation touches by default. Autonomous Mode, if you turn it on, still asks before dangerous commands — but it is not a substitute for the data guard.
 
 ### 2.7 Let the agent install your research toolchain
 
@@ -915,7 +937,7 @@ System installs touch shared state. Tell the agent the rules **before** you ask 
 > wait for instructions.
 ```
 
-Stay in **`default`** permission mode for this. Do *not* switch to `acceptEdits` or `bypassPermissions` — every `sudo`, `brew install`, `apt install`, or `npm install -g` should be a separate approval click.
+Stay in **Manual** permission mode for this (`claude --permission-mode manual` — sessions otherwise start in auto). Do *not* switch to `acceptEdits`, `auto`, or `bypassPermissions` — every `sudo`, `brew install`, `apt install`, or `npm install -g` should be a separate approval click.
 
 #### 2.7.2 The four prompts that cover 90 % of installs
 
@@ -1085,31 +1107,36 @@ If you remember nothing else from the workshop, remember: **the answer the agent
 
 ### 3.1 Permission modes — quick orientation
 
-Claude Code's documented permission modes are `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, and `bypassPermissions` (six in total). Not all six are reachable in every session: `auto` requires an eligible account and a recent model, and `dontAsk` is only set with `--permission-mode dontAsk` — run `/help` to see what your build exposes. The two you will use most as a learner are:
+Claude Code's documented permission modes are `manual`, `acceptEdits`, `plan`, `auto`, `dontAsk`, and `bypassPermissions` (six in total). **Manual** is the mode older guides call `default` — it was renamed in v2.1.200, and `default` is still accepted as a synonym. Since v2.1.284, an interactive session with no permission mode configured **starts in `auto` mode**, on every plan and provider; `dontAsk` is only set with `--permission-mode dontAsk`. The two you will use most as a learner are:
 
-- **`default`** — every tool / path prompts on first use. Stay here for sensitive data and first runs on a project.
+- **`manual`** (shown as **Manual** in the footer) — every tool / path prompts on first use. Use it for sensitive data and first runs on a project; because sessions now start in auto, you have to choose it (`claude --permission-mode manual`, `Shift+Tab`, or `"defaultMode": "manual"` in settings — see §5A).
 - **`plan`** — a read-only "explore" mode where the agent must produce a written plan before it can edit or run anything. Use it before any destructive or expensive multi-step work.
 
-Press `Shift+Tab` to cycle `default → acceptEdits → plan` (and into `auto` if your account is eligible); press it again to keep cycling. The full six-mode list and their safety implications are in §3.2 below: `acceptEdits` auto-accepts edits, `auto` runs everything behind a background safety classifier, `dontAsk` allows only pre-approved tools, and `bypassPermissions` skips every check.
+Press `Shift+Tab` to cycle through `manual → acceptEdits → plan → auto`; press it again to keep cycling. The full six-mode list and their safety implications are in §3.2 below: `acceptEdits` auto-accepts edits, `auto` runs everything behind a background safety classifier, `dontAsk` allows only pre-approved tools, and `bypassPermissions` skips every check.
 
 > **`/sandbox` is not a seventh permission mode.** It is easy to file it as one, and the two are answering different questions: a permission mode decides *whether a tool call runs at all*, while the sandbox decides *what a `Bash` command can reach once it is running*. They compose, and for restricted data you want both. The sandbox's own **auto-allow** mode is likewise not the permission system's `auto` mode — auto-allow skips the prompt because the OS boundary contains the command, whereas `auto` skips it because a classifier judged it safe. See §5A for the panel and both modes.
 
 ### 3.2 The commands you will use most
 
-> **A note on accuracy.** The list below was compiled against Claude Code v2.1.154 (released 2026-05-28 alongside Opus 4.8). The cadence is fast: between this handbook and your installed version, new commands may have shipped and old aliases may have been retired. Run `/help` in your installed version to see the live command list. The "Autonomy and multi-session" subsection covers commands added during the 2.x cycle, including the Dynamic Workflows research preview (`/workflows`) and the background-session work (`claude --bg`, `/resume <bg-id>`); if any of them is unrecognized in your installed version, treat it as a feature not yet shipped in your release. Where two names exist for the same command, the second one is an alias and works identically.
+> **A note on accuracy.** The list below was first compiled against Claude Code v2.1.154 (released 2026-05-28 alongside Opus 4.8) and re-checked on 2026-10-13 against v2.1.296. The cadence is fast: between this handbook and your installed version, new commands may have shipped and old aliases may have been retired. Run `/help` in your installed version to see the live command list. The "Autonomy and multi-session" subsection covers commands added during the 2.x cycle, including Dynamic Workflows (`/workflows`, switched on with the `ultracode` keyword) and the background-session work (`claude --bg`, `claude agents`, `claude attach`); if any of them is unrecognized in your installed version, treat it as a feature not yet shipped in your release. Where two names exist for the same command, the second one is an alias and works identically.
 
 #### Setup and project memory
 
 ```
 /init                Generate a CLAUDE.md project memory file
 /permissions         Inspect or change tool permissions
-/doctor              Diagnose configuration / installation issues
+/doctor  (or /checkup) Full checkup of configuration / installation.
+                     `/doctor prompt-audit` (v2.1.283+) audits what is
+                     loaded into your prompt (CLAUDE.md, skills, MCP).
 /usage   (or /cost)  Show token usage and dollar cost so far.
                      v2.1.149+: a /usage breakdown now categorizes spend
                      by skills, subagents, plugins, and MCP servers — use
                      it to spot which scholar-skill is your biggest cost
                      driver before you turn /effort xhigh on for the
-                     whole pipeline.
+                     whole pipeline. v2.1.243+ adds a Loops breakdown;
+                     v2.1.251+ a spend-limit bar.
+/release-notes       What changed in your installed version (there is
+                     no `claude changelog` shell command).
 /reload-skills       v2.1.152+: rescan ~/.claude/skills/ and the project
                      .claude/skills/ directory without restarting the
                      session. Useful right after editing a SKILL.md or
@@ -1127,6 +1154,10 @@ Press `Shift+Tab` to cycle `default → acceptEdits → plan` (and into `auto` i
 /recap                         One-line summary of this session
 /rename <name>                 Give the current session a memorable name
                                (so /resume <name> finds it later)
+/fork                          Copy this conversation into a new
+                               background session in its own git
+                               worktree (the old in-session fork is
+                               now /subtask)
 /clear   (or /reset, /new)     Start a new conversation (keeps CLAUDE.md)
 /exit    (or /quit)            Quit cleanly
 Ctrl+C twice                   Cancel the current operation
@@ -1147,7 +1178,7 @@ Closing the remote tab does not stop the local session; the agent keeps running 
 
 #### Autonomy and multi-session — newer in Claude Code 2.x
 
-These were added during the Opus 4.6 / 4.7 / 4.8 cycle. They change how a researcher can leave the agent running and supervise many sessions at once.
+These were added during the Opus 4.6 / 4.7 / 4.8 cycle and refined through the Opus 5 / 5.5 releases. They change how a researcher can leave the agent running and supervise many sessions at once.
 
 ```
 /goal <condition>             Set a completion condition. The agent works
@@ -1159,11 +1190,13 @@ These were added during the Opus 4.6 / 4.7 / 4.8 cycle. They change how a resear
                               Use it for clearly-scoped, multi-step work
                               that does not need a human between steps.
 
-/workflows                    v2.1.154+ (Opus 4.8): the Dynamic Workflows
-                              research preview. Ask Claude to design a
-                              multi-step workflow and it writes an
-                              orchestration script that dispatches tens
-                              to hundreds of parallel subagents in the
+/workflows                    v2.1.154+: Dynamic Workflows. Put the
+                              keyword `ultracode` in a request (it was
+                              `workflow` before v2.1.160), or turn it on
+                              for the session with
+                              `/effort ultracode on|off` (v2.1.284+), and
+                              Claude writes an orchestration script that
+                              dispatches parallel subagents in the
                               background with a single resumable state.
                               `/workflows` opens the dashboard that lists
                               your runs (queued, running, completed,
@@ -1171,47 +1204,57 @@ These were added during the Opus 4.6 / 4.7 / 4.8 cycle. They change how a resear
                               social-science use case: one workflow per
                               paper, each step a scholar-* skill, fan-
                               out at scholar-respond's reviewer panel,
-                              fan-in at scholar-verify. Available on
-                              Max, Team, and Enterprise plans and via
-                              the API.
+                              fan-in at scholar-verify. Sized to your
+                              plan since v2.1.271: Pro gets small
+                              workflows, a medium run is about ten
+                              agents, and a run pauses at your usage
+                              limit and resumes afterwards.
 
 /bg   (alias: /background)    Move THIS session to background-agent mode.
                               The terminal returns to your shell prompt;
                               the agent keeps running on your machine,
                               just headless. Re-attach later from
-                              `agent view` (below) or with
+                              `claude agents` (below), with
+                              `claude attach <id>`, or with
                               `/resume <session-name>`. Sessions started
                               via `claude --bg` from the shell appear
                               alongside interactive ones in
                               `/resume`, marked with `bg`.
 
 /effort                       Open a slider to tune speed vs. reasoning
-                              depth. The Opus 4.8 tiers you'll use:
-                                  low  | high (default) | xhigh | max
-                              (other levels exist; run /effort to see them)
+                              depth. The Opus 5.5 levels:
+                                  low | medium (default) | high | xhigh | max
+                              The choice is saved per model; press `s`
+                              to apply it to this session only.
                               Use `xhigh` on identification-strategy
                               memos, theory drafts, and adversarial
                               review passes; reserve `max` for the
                               hardest verification reruns where token
                               budget does not matter. Drop back to
-                              `high` (or `low`) for routine edits —
+                              `medium` (or `low`) for routine edits —
                               `xhigh`/`max` are slow and expensive.
 
-/focus                        Toggle between the normal compact
-                              transcript and the verbose view that
-                              shows every tool input/output. Verbose is
-                              what you want when /scholar-verify or
+/focus                        Toggle focus view: only your prompt, a
+                              one-line summary of the tool work, and
+                              the response.
+Ctrl+O                        Toggle the verbose transcript that shows
+                              every tool input/output. Verbose is what
+                              you want when /scholar-verify or
                               scholar-code-review is running.
 
-/code-review [--fix]          v2.1.152+: review the current diff.
-                              `--fix` applies the agent's suggested
-                              fixes to your working tree after the
-                              review, with reuse, simplification, and
-                              efficiency findings surfaced as commits-
-                              in-waiting. Pair with `scholar-code-review`
-                              when you want a 6-agent panel; use
-                              `/code-review --fix` for the lighter
-                              pre-commit pass.
+/code-review [low..max|ultra] [--fix] [--comment] [--max-findings n|all]
+                              Review the current diff at a chosen depth
+                              (alias: /review since v2.1.223). `--fix`
+                              applies the findings to your working tree;
+                              `--comment` posts them on the PR. `high`
+                              and above run in the background
+                              (v2.1.232+), and Claude no longer runs it
+                              on its own (v2.1.215) — you ask for it.
+                              From the shell, `claude ultrareview` runs
+                              the deepest pass. Pair with
+                              `scholar-code-review` when you want a
+                              6-agent panel; use `/code-review --fix`
+                              for the lighter pre-commit pass.
 
 /simplify                     v2.1.154+: cleanup-only review that
                               applies its own fixes — DRY-up duplicate
@@ -1225,10 +1268,12 @@ These were added during the Opus 4.6 / 4.7 / 4.8 cycle. They change how a resear
 To manage many background sessions at once, drop out of any one Claude session (`/exit` or close the tab) and run this in the shell instead:
 
 ```bash
-$ claude agents       # if shipped in your installed Claude Code version
+$ claude agents            # add --json for a machine-readable list
+$ claude attach <id>       # join one; claude logs <id> to peek without joining
+$ claude stop <id>         # stop it; claude rm <id> removes it from the list
 ```
 
-This is **Agent View** — a one-screen dashboard that lists every Claude Code background session on your machine, grouped by state (`Needs Input`, `Working`, `Completed`). From there you can dispatch a new session, peek at output without attaching, attach into one for follow-up, rename, or close it. Each background session is a full Claude Code conversation that persists across terminal restarts, managed by a supervisor process; the agent does not stop just because you closed iTerm. On macOS, background agents now survive Claude Code upgrades (v2.1.153+). If `claude agents` is not recognized in your installed version, fall back to running each session in its own terminal tab.
+This is **Agent View** — a one-screen dashboard that lists every Claude Code background session on your machine, grouped by state (`Needs Input`, `Working`, `Completed`). From there you can dispatch a new session, peek at output without attaching, attach into one for follow-up, rename, or close it. Each background session is a full Claude Code conversation that persists across terminal restarts, managed by a supervisor process; the agent does not stop just because you closed iTerm. On macOS, background agents now survive Claude Code upgrades (v2.1.153+). A background session that finishes a code change may offer to open a draft pull request; review the diff before you let anything leave your machine.
 
 When you dispatch a new background session from the shell, you can pre-configure it without ever attaching:
 
@@ -1239,43 +1284,42 @@ $ claude agents \
     --mcp-config ./.claude/mcp.json \
     --plugin-dir ~/.claude/plugins/open-scholar-skill \
     --permission-mode acceptEdits \
-    --model claude-opus-4-8 \
+    --model opus \
     --effort xhigh \
     --dangerously-skip-permissions   # only inside a worktree
 ```
 
-Most workshop participants will never type the full flag set — but `--model` + `--effort` lets you fire a "high-effort Opus 4.8 + xhigh" background session for the theory pass while the foreground stays on `claude-sonnet-4-6` for routine edits.
+Most workshop participants will never type the full flag set — but `--model` + `--effort` lets you fire an "Opus 5.5 + xhigh" background session for the theory pass while the foreground stays on `claude-sonnet-5-5` for routine edits. To start one in a single line, `claude --bg "<prompt>"`; `claude --resume <id> --bg` sends an existing session to the background.
 
 Workshop use cases:
 
 - `/goal` for unattended skill chains (`scholar-eda → scholar-analyze → scholar-code-review`).
 - `/workflows` for end-to-end paper orchestration: one dispatched workflow runs `scholar-init → scholar-lit-review-hypothesis → scholar-design → scholar-eda → scholar-analyze → scholar-verify` while you read morning email.
-- `/bg` + `agent view` when you run two papers in parallel (one CFPS, one CGSS) and don't want to mash two terminals.
-- `/effort xhigh` only for the theory section and the identification memo; `max` only when scholar-verify keeps flagging the same numeric mismatch and you need the deepest re-check; switch back to `high` before drafting Results.
+- `/bg` + `claude agents` when you run two papers in parallel (one CFPS, one CGSS) and don't want to mash two terminals.
+- `/effort xhigh` only for the theory section and the identification memo; `max` only when scholar-verify keeps flagging the same numeric mismatch and you need the deepest re-check; switch back to `medium` before drafting Results.
 - `/code-review --fix` after every analysis-script edit; `/simplify` before you build the replication package.
-- `/focus verbose` before any `scholar-verify` run, so you can see what each verification agent is reading.
+- `Ctrl+O` (verbose transcript) before any `scholar-verify` run, so you can see what each verification agent is reading.
 
 #### Permission modes
 
-Claude Code has **six** permission modes, all reachable through the same `Shift+Tab` cycle or the `--permission-mode <name>` CLI flag. The mode names below are the exact identifiers Claude Code uses.
+Claude Code has **six** permission modes, all reachable through the same `Shift+Tab` cycle or the `--permission-mode <name>` CLI flag. The mode names below are the exact identifiers Claude Code uses. Since v2.1.284 an interactive session starts in **`auto`** unless you set a mode; for sensitive data, set **`manual`** yourself.
 
 | Mode | What it does | When to use |
 |---|---|---|
-| **`default`** | Prompts for permission on first use of each tool / path | Learning, sensitive data, first run on a project |
+| **`manual`** (formerly `default`) | Prompts for permission on first use of each tool / path | Learning, sensitive data, first run on a project |
 | **`acceptEdits`** | Auto-accepts file edits and common filesystem commands; other tools still prompt | You trust the agent inside this folder for routine edits |
 | **`plan`** | Read-only "explore" mode — agent must propose a written plan, no edits or commands run until you accept | Before destructive or expensive multi-step work |
-| **`auto`** | Runs everything without prompting, but a separate safety classifier reviews each action and blocks escalations, external data exfiltration, prod deploys, force-push, etc. | Long autonomous tasks where you trust the direction (requires an eligible account + recent model) |
+| **`auto`** | Runs everything without prompting, but a separate safety classifier reviews each action and blocks escalations, external data exfiltration, prod deploys, force-push, etc. | The starting mode since v2.1.284; long autonomous tasks where you trust the direction |
 | **`dontAsk`** | Auto-denies anything that would otherwise prompt — only tools matching your `allow` rules and read-only commands run | Locked-down CI / scripted, non-interactive runs |
 | **`bypassPermissions`** | Skips every permission prompt and safety check (a circuit-breaker still blocks the most catastrophic patterns like `rm -rf /`) | Sandbox / worktree experiments only — see safety rules below |
 
-> **Note on availability.** All six modes are documented, but the two you can reach in a given session depend on your account and how you launched Claude Code. `auto` appears in the `Shift+Tab` cycle only when your account qualifies (all plans, a recent model such as Opus 4.6+/Sonnet 4.6, and — on Team/Enterprise — an admin has enabled it); `dontAsk` never appears in the cycle and is set only with `--permission-mode dontAsk`. Confirm what your build exposes with `/help` before relying on them in workshop demos.
+> **Note on availability.** All six modes are documented. `auto` is now available on every plan and provider, and it is where a session starts when no permission mode is configured; `permissions.defaultMode` in your settings still overrides that. Since v2.1.257, a `defaultMode` of `auto` or `bypassPermissions` written in a **project** or local settings file is ignored — it must come from `~/.claude/settings.json` or a command-line flag — so a cloned repo cannot switch on autonomy for you. `dontAsk` never appears in the cycle and is set only with `--permission-mode dontAsk`.
 
 ```
-Shift+Tab            Cycle default → acceptEdits → plan, then back.
-                     auto slots into the cycle only when your account is
-                     eligible; bypassPermissions joins it after you start
-                     with an enabling flag; dontAsk never appears in the
-                     cycle. The current mode name is shown in the status line.
+Shift+Tab            Cycle manual → acceptEdits → plan → auto, then back.
+                     bypassPermissions joins it after you start with an
+                     enabling flag; dontAsk never appears in the cycle.
+                     The current mode name is shown in the footer.
 
 /permissions         Open the interactive permissions UI to review and
                      edit the allow / ask / deny rules that the modes
@@ -1285,8 +1329,9 @@ Shift+Tab            Cycle default → acceptEdits → plan, then back.
 You can also start Claude Code already in a particular mode:
 
 ```bash
+$ claude --permission-mode manual      # start in Manual (prompts on first use)
 $ claude --permission-mode plan        # start in plan mode
-$ claude --permission-mode auto        # start in auto mode
+$ claude --permission-mode auto        # start in auto mode (the default now)
 $ claude --dangerously-skip-permissions
 # Equivalent to --permission-mode bypassPermissions.
 ```
@@ -1295,7 +1340,7 @@ $ claude --dangerously-skip-permissions
 
 `auto` and `bypassPermissions` change the consent model. Read this section before using either.
 
-- **`auto`** — the agent executes a sequence of low-risk tasks autonomously, but still pauses on destructive or shared-state actions (git push, `rm`, PR comments, external API calls beyond your project). File edits and tool calls inside the project are auto-approved.
+- **`auto`** — the agent executes a sequence of low-risk tasks autonomously, but still pauses on destructive or shared-state actions (git push, `rm`, PR comments, external API calls beyond your project). File edits and tool calls inside the project are auto-approved; it asks once before its first read outside your working directories. Because it is now the starting mode, assume you are in it unless the footer says otherwise.
 - **`bypassPermissions`** (a.k.a. the `--dangerously-skip-permissions` CLI flag) — **every** tool call is auto-approved, including destructive ones. The agent can run `rm -rf` (within the circuit-breaker's limits), `git reset --hard`, push to remotes, or anything else without asking.
 
 **Safety rules — please read before enabling either.**
@@ -1308,8 +1353,8 @@ $ claude --dangerously-skip-permissions
    $ claude --dangerously-skip-permissions
    ```
    If the agent corrupts the sandbox, delete the worktree and start over. Your main branch is untouched.
-3. **Never combine `bypassPermissions` with `scholar-safety` LOCAL_MODE files.** The whole point of LOCAL_MODE is that you confirm each Read; bypass mode defeats that. Run sensitive-data sessions in `default` or `acceptEdits` only.
-4. **`auto` is the safer middle ground.** It lets the agent chain tasks without prompting on each edit, but still stops at destructive or external-effect operations. Use `auto` for routine implementation work, not for the first session on a sensitive project.
+3. **Never combine `bypassPermissions` with `scholar-safety` LOCAL_MODE files.** The whole point of LOCAL_MODE is that you confirm each Read; bypass mode defeats that. Run sensitive-data sessions in `manual` or `acceptEdits` only.
+4. **`auto` is the safer middle ground.** It lets the agent chain tasks without prompting on each edit, but still stops at destructive or external-effect operations. Use `auto` for routine implementation work, not for the first session on a sensitive project — and since sessions now start in `auto`, switch a sensitive project to `manual` deliberately.
 5. **Always check `/usage` after a long autonomous run.** `auto` and `bypassPermissions` are how surprise bills happen.
 
 The general rule: **the more autonomy you give Claude, the more important your project layout, permissions, and safety scan become.** Bypass mode is not a substitute for `scholar-init`; it is a multiplier for whatever discipline already exists.
@@ -1330,7 +1375,7 @@ The auto-managed block has two profiles:
 
 Order doesn't matter: `/init` first then `/scholar-init`, or vice versa, both produce the same result (one user-authored block + one auto-managed block, separated by the markers). The auto-managed block refreshes on every scholar-init or scholar-full-paper run, so as the plugin's rules evolve, your `CLAUDE.md` picks up the latest contract automatically.
 
-This file is read into every future session in that directory. Use the user-authored portion (outside the markers) for things like:
+This file is read into every future session in that directory. (Since v2.1.277, if a project has no `CLAUDE.md`, Claude Code reads its `AGENTS.md` instead — handy for a repo you also open in Codex or ZCode.) Use the user-authored portion (outside the markers) for things like:
 
 ```markdown
 # CLAUDE.md — digital-divide-china-cfps
@@ -1373,7 +1418,7 @@ Use `@dir/` to attach an entire directory (the agent gets a recursive listing, n
 > !Rscript scripts/01-build-sample.R
 ```
 
-This is the fastest way to drop a quick `ls`, `git diff`, or `head -n 5 file.csv` into the conversation without making the agent propose a Bash call.
+This is the fastest way to drop a quick `ls`, `git diff`, or `head -n 5 file.csv` into the conversation without making the agent propose a Bash call. Since v2.1.186 Claude also responds to the output (set `"respondToBashCommands": false` to get the old silent behaviour).
 
 **Drag-and-drop (and paste).** Drag a file from your file manager onto the Claude Code terminal window and the absolute path is inserted at the cursor. Useful for one-off attachments like a screenshot of a reviewer's comment or a PDF you just downloaded. On macOS, `Cmd+V` pastes images directly; Claude Code will write the image to a temp path and reference it.
 
@@ -1381,30 +1426,31 @@ This is the fastest way to drop a quick `ls`, `git diff`, or `head -n 5 file.csv
 
 ### 3.5 Picking the right model — and the right tool
 
-`/model` opens an in-session picker that switches the model **without** restarting the conversation. By default `/model` changes the model for the current session only — press `d` to set the default for future sessions (v2.1.144+). The trade-off is straightforward — speed and cost on one axis, reasoning depth on the other:
+`/model` opens an in-session picker that switches the model **without** restarting the conversation. Since v2.1.251 the pick is **saved as your default** for future sessions; press `s` in the picker to use it for this session only. (`/effort` works the same way, and remembers a level per model.) The trade-off is straightforward — speed and cost on one axis, reasoning depth on the other:
 
 | Model | Model ID | Use for | Roughly |
 | ----- | -------- | ------- | ------- |
-| **Claude Haiku 4.5** | `claude-haiku-4-5` | EDA summaries, small refactors, polling jobs, routine file edits, install logs | Fast, cheapest |
-| **Claude Sonnet 4.6** | `claude-sonnet-4-6` | Most scholar-skill runs: analysis, write, citation, verification | Balanced |
-| **Claude Opus 4.7** | `claude-opus-4-7` | Steady high-quality flagship; now the default for Fast mode | Slow, expensive |
-| **Claude Opus 4.8** | `claude-opus-4-8` | Workhorse flagship (released 2026-05-28). Theory, identification memos, adversarial review, the hardest verification steps; pair with `/effort xhigh` or `/effort max` | Slow, very expensive |
-| **Claude Fable 5** | `claude-fable-5` | New top-end model (released 2026-06-09). The ceiling — frontier reasoning, vision-heavy tasks (reading numbers off dense scientific figures), and verification when Opus 4.8 + `/effort max` still isn't enough | Slowest, ~2× Opus 4.8 |
+| **Claude Haiku 5.5** | `claude-haiku-5-5` | EDA summaries, polling jobs, routine edits, install logs, bulk triage subagents | Fastest, cheapest (\$0.10 / \$0.50 up to 100K-token prompts) |
+| **Claude Sonnet 5.5** | `claude-sonnet-5-5` | Most scholar-skill runs: analysis, write, citation, verification | Balanced (\$2 / \$10) |
+| **Claude Opus 5.5** | `claude-opus-5-5` | **Default** (released 2026-09-22). Design, theory, identification memos, adversarial review; default effort `medium`, raise to `xhigh` for the hard passes | Moderate (\$4 / \$20) |
+| **Claude Fable 5.1** | `claude-fable-5-1` | The ceiling (Claude Code v2.1.257, about 2026-09-01). Hardest reasoning, vision-heavy figure reading, verification when Opus 5.5 at `xhigh`/`max` still falls short | Slowest; \$10 / \$50; uses up plan usage much faster than Opus |
 
-**What changed at 4.8.** Opus 4.8 lifts SWE-bench Verified to 88.6% (up from 87.6%) and SWE-bench Pro to 69.2% (up from 64.3%); USAMO 2026 math jumps from 69.3% to 96.7%; long-context retrieval at 1M tokens roughly doubles (GraphWalks 1M: 68.1% vs. 40.3%). The most important shift for vibe researching is *code-honesty*: Anthropic reports Opus 4.8 is "roughly four times less likely than Opus 4.7 to allow flaws in code it has written to pass unremarked" — fewer silent regressions in scholar-analyze and scholar-compute outputs. Caveats: prompt-injection robustness regressed slightly (9.6% attack success on Opus 4.8 vs. 6.0% on 4.7), so do not relax safety-status gating on data-sensitive projects.
+All four have a 1M-token context window and 128K output. Legacy IDs still accepted: `claude-opus-5`, `claude-sonnet-5`, `claude-fable-5`, `claude-opus-4-8`. Prices are per million input / output tokens.
 
-**Fable 5 — the new ceiling.** On 2026-06-09 Anthropic released **Claude Fable 5** (`claude-fable-5`), the first public model from its most powerful (Mythos-class) family and now the most capable model you can call. It is state-of-the-art on nearly every tested benchmark — software engineering (highest on Cognition's FrontierCode even at medium effort), knowledge work (top score on Hebbia's Finance Benchmark), scientific research, and especially *vision*: it can read precise numbers off dense scientific figures and reconstruct a web app's source from a screenshot. Pricing is **$10 / $50 per million input / output tokens** — roughly twice Opus 4.8, and Anthropic's most expensive generally-available model. A built-in safeguard routes high-risk prompts (cybersecurity, biology/chemistry, model distillation) to Opus 4.8 instead, in under 5% of sessions. Availability: included at no extra cost on Pro, Max, Team, and seat-based Enterprise plans **June 9–22, 2026**; after June 23 it draws on credits until capacity allows full plan restoration. (The ungated sibling, **Mythos 5**, is the same underlying model with some safeguards lifted, and is trusted-access only — not something a workshop project will call.) For vibe researching, reach for Fable 5 only when Opus 4.8 at `/effort max` still falls short, or when a task is genuinely vision-heavy; Opus 4.8 stays the everyday flagship, and Fable's credit billing after June 23 makes it easy to overspend if you leave it on.
+**What changed at 5.5.** Claude Opus 5.5 (`claude-opus-5-5`, released 2026-09-22) is now the default model on every plan, Pro included, and Anthropic's recommended starting model. At \$4 / \$20 per million input / output tokens it is cheaper than the Opus models it replaces, and its default effort is `medium` — so the everyday question is no longer "should I pay for Opus?" but "is this step worth raising the effort dial?". Max plans advertise "3.5x or more usage" on Opus 5.5. The lineup in between: Sonnet 5 (Claude Code v2.1.197, about 2026-06-30), Opus 5 (v2.1.219, about 2026-07-24), Fable 5.1 (v2.1.257), Sonnet 5.5 (v2.1.284) and Haiku 5.5 (v2.1.293). The safety advice from the 4.8 edition stands: do not relax safety-status gating on data-sensitive projects because a model is newer.
 
-**Fast mode** (Claude Code's `--fast` flag and the `/fast` toggle) now uses Opus 4.7 by default (was Opus 4.6 through v2.1.138). With Opus 4.8, Fast mode is priced at 2× standard for 2.5× speed — about three times cheaper per token-second than the previous Opus 4.7 Fast mode. Use Fast mode for big-batch scholar-monitor runs, scholar-eda regenerations, and any time you want the agent to keep up with your typing.
+**Fable 5.1 — the ceiling.** Claude Fable 5 was released on 2026-06-09 as the first public model from Anthropic's most powerful (Mythos-class) family; **Fable 5.1** (`claude-fable-5-1`) replaced it in Claude Code v2.1.257 and is the most capable model you can call, especially on vision (reading precise numbers off dense scientific figures). Pricing is **\$10 / \$50 per million input / output tokens**, its default effort is `high`, and it **draws down plan usage much faster than Opus** — since v2.1.282 Claude Code may ask you to add usage credits to keep using it. For vibe researching, reach for Fable 5.1 only when Opus 5.5 at `xhigh` or `max` still falls short, or when a task is genuinely vision-heavy; Opus 5.5 stays the everyday flagship.
 
-A common cost mistake is leaving Opus on for the entire CFPS pipeline. Switch to Haiku for `scholar-monitor`, install steps, and large mechanical edits; switch to Sonnet 4.6 for the bulk of analysis and writing; switch to Opus 4.8 with `/effort xhigh` only for the theory section, the identification memo, the pre-mortem, and the final adversarial review. Use `/usage` (with the v2.1.149+ breakdown by skills / subagents / plugins / MCP) after the first end-to-end run to spot which step is your biggest line item before reaching for `/effort max`.
+**Fast mode** (the `/fast` toggle inside a session — there is no `--fast` command-line flag) runs a supported Opus model faster at a higher price. It works with Opus 5.5, Opus 5 and Opus 4.8 (Opus 4.7 was removed from Fast mode in v2.1.219); Opus 5.5 in Fast mode is \$8 / \$40 per million tokens. Use Fast mode for big-batch scholar-monitor runs, scholar-eda regenerations, and any time you want the agent to keep up with your typing.
 
-**`/agents` — manage and launch subagents.** Subagents are *not* the same thing as skills.
+A common cost mistake is leaving the effort dial high for the entire CFPS pipeline. Switch to Haiku 5.5 for `scholar-monitor`, install steps, and large mechanical edits; use Sonnet 5.5 (or Opus 5.5 at `medium`) for the bulk of analysis and writing; raise Opus 5.5 to `/effort xhigh` only for the theory section, the identification memo, the pre-mortem, and the final adversarial review. Use `/usage` (with the v2.1.149+ breakdown by skills / subagents / plugins / MCP) after the first end-to-end run to spot which step is your biggest line item before reaching for `/effort max`.
+
+**Subagents — not the same thing as skills.**
 
 - A **skill** (everything `scholar-*`) is a named workflow: a SKILL.md plus assets and references. You invoke it with `/skill-name args`.
 - A **subagent** is a lightweight worker spawned in its **own context window**, with its own tools and prompt, that reports a single answer back. Skills *call* subagents internally (e.g., `scholar-code-review` spawns six reviewer subagents in parallel).
 
-You'll rarely write your own subagent in this workshop. But `/agents` is the command to list, edit, or create one if you want to reuse, say, a "citation-fact-checker" subagent across projects.
+You'll rarely write your own subagent in this workshop. If you want to reuse, say, a "citation-fact-checker" subagent across projects, ask Claude to create it, or edit the Markdown file under `.claude/agents/` (project) or `~/.claude/agents/` (personal) yourself. The old `/agents` wizard was removed in v2.1.198.
 
 **WebFetch and WebSearch — the two web tools you'll meet first.** Claude Code can both fetch a known URL and run a web search; these are the tools `scholar-lit-review`, `scholar-monitor`, and `scholar-citation` use under the hood.
 
@@ -1492,7 +1538,7 @@ $ claude -p "Summarize today's commits to scripts/ in one paragraph; \
              save to logs/daily-$(date +%F).md"
 ```
 
-Add `--output-format json` to get machine-readable output you can pipe into another tool. There is no interactive approval loop in `-p` mode, so every tool the prompt needs must be pre-allowed in the project's `.claude/settings.json`. **Do not enable headless mode on sensitive data without an allow-list.**
+Add `--output-format json` to get machine-readable output you can pipe into another tool. There is no interactive approval loop in `-p` mode, so every tool the prompt needs must be pre-allowed in the project's `.claude/settings.json`. Three newer flags make unattended runs safer: `--restricted` (v2.1.248) locks the run down to what your settings explicitly allow, `--permission-prompts none` (v2.1.259) denies anything that would otherwise have prompted instead of hanging, and `--max-budget-usd <amount>` stops the run at a spending cap. If a run misbehaves because of something in your configuration, `--safe-mode` (v2.1.169) starts Claude Code without your customizations so you can tell the two apart. **Do not enable headless mode on sensitive data without an allow-list.**
 
 **GitHub Actions.** Anthropic publishes a `claude-code-action` GitHub Action that runs `claude -p` on every PR. A minimal workflow:
 
@@ -1536,8 +1582,8 @@ The split matters: anything you commit (the *project* layer) is part of the IRB 
 
 **OAuth vs. API-key auth.** Two ways to log in:
 
-- **OAuth via Anthropic Console** — `claude login` opens a browser; you authenticate as your Anthropic account and Claude Code stores a refresh token. Billing flows through your Claude Pro / Max / Team subscription. Best for individual researchers.
-- **API key from `console.anthropic.com`** — paste the key, billing flows through the API console. Best when your institution holds the Anthropic account and grants you a project-scoped key, and when you want to revoke access without touching the user account.
+- **Claude account sign-in** — `claude auth login` from the shell (or `/login` inside a session) opens a browser; you authenticate with your Claude account and Claude Code stores a refresh token. Billing flows through your Claude Pro / Max / Team subscription. Best for individual researchers. (There is no `claude login` command — typed that way, `login` is just sent to Claude as a prompt. `claude auth status` and `claude auth logout` round out the set.)
+- **Anthropic Console (API billing)** — choose the Console option at sign-in (keyless, browser-based), or set an API key from `console.anthropic.com`; billing flows through the API console per token. Best when your institution holds the Anthropic account and grants you a project-scoped key, and when you want to revoke access without touching the user account.
 
 If your institution requires a per-project audit trail, **prefer API keys** — they can be rotated and revoked per project, and the Anthropic Console shows usage by key.
 
@@ -1637,7 +1683,7 @@ The most important sentence in any agent prompt: **"If you cannot verify it, mar
 
 Everything in Part I treated Claude Code as one assistant in one conversation. That mental model still works, but it leaves most of the 2026 feature set on the table. The releases over the last year added ways for the agent to **fan work out, run it in the background, repeat it on a schedule, and enforce your rules automatically**. Used well, these turn a one-paper workflow into a small research operation. Used carelessly, they multiply the number of places an unverified claim can hide. The recurring discipline of this handbook — *bounded task, inspectable artifact, human owns the standard* — matters **more** as autonomy goes up, not less.
 
-> The features below evolve quickly. Treat the exact flag names and defaults as a snapshot of mid-2026; type `/help` inside a session and read the changelog (`claude changelog` or the docs) when something behaves differently. The *concepts* are stable; the spellings drift.
+> The features below evolve quickly. Treat the exact flag names and defaults as a snapshot of October 2026 (Claude Code v2.1.296); type `/help` inside a session and run `/release-notes` (there is no `claude changelog` command) when something behaves differently. The *concepts* are stable; the spellings drift.
 
 A quick map of what to reach for:
 
@@ -1669,9 +1715,9 @@ For a researcher this is the cheapest insurance there is: you read the intended 
 
 ### Subagents — hand a bounded job to a fresh context
 
-A **subagent** is a separate Claude instance the main session delegates to. It runs in its **own context window**, with its own system prompt, an optional restricted tool list, and even its own model. The main conversation gets back only the subagent's summary — not the 30 files it read to produce it.
+A **subagent** is a separate Claude instance the main session delegates to. It runs in its **own context window**, with its own system prompt, an optional restricted tool list, and even its own model and effort level. Subagents now run in the background by default and can nest up to three levels deep. The main conversation gets back only the subagent's summary — not the 30 files it read to produce it.
 
-You already rely on this without thinking about it: `scholar-code-review` ("six reviewers, one report", §13) and the `scholar-verify` family (§15, Appendices F–J) work by dispatching specialist subagents in parallel. You can also define your own. Drop a file in `.claude/agents/`:
+You already rely on this without thinking about it: `scholar-code-review` ("six reviewers, one report", §13) and the `scholar-verify` family (§15, Appendices F–J) work by dispatching specialist subagents in parallel. You can also define your own — ask Claude to write one, or drop a file in `.claude/agents/` yourself (the old `/agents` wizard was removed in v2.1.198):
 
 ```markdown
 ---
@@ -1695,7 +1741,7 @@ This is the headline addition, and the one the workshop gets asked about most. A
 Where a single subagent is "do this one bounded job," a dynamic workflow is "do this *across hundreds of units* and bring me the consolidated result":
 
 ```
-> Use a workflow: for every .R script under analysis/, check whether missing-value
+> ultracode: for every .R script under analysis/, check whether missing-value
   codes (-1,-2,-8,-9,-10) are converted to NA before any model is fit. Return one
   table: script, line, status. Run them in parallel and consolidate.
 ```
@@ -1753,7 +1799,7 @@ Enforced, but still **cooperative**: the harness runs your script and obeys its 
 
 ### The Bash sandbox — `/sandbox`, and its two modes
 
-Claude Code ships an OS-level sandbox for the `Bash` tool. Where a hook *asks*, the sandbox *enforces*: the operating system refuses the `open()`, for the command and every child process it spawns, no matter how the path is spelled. macOS uses Seatbelt; Linux and WSL2 use `bubblewrap`. **Native Windows is not supported** — Windows participants run Claude Code inside WSL2 (Appendix K); WSL1 will not work either.
+Claude Code ships an OS-level sandbox for the `Bash` tool. Where a hook *asks*, the sandbox *enforces*: the operating system refuses the `open()`, for the command and every child process it spawns, no matter how the path is spelled. macOS uses Seatbelt; Linux and WSL2 use `bubblewrap`. **The sandbox does not run on native Windows** — Claude Code itself now runs natively on Windows, but to get the sandbox, Windows participants run Claude Code inside WSL2 (Appendix K); WSL1 will not work either.
 
 You do not have to hand-write JSON to turn it on. **`/sandbox`** opens a panel with three tabs:
 
@@ -1807,7 +1853,53 @@ A **worktree** is a separate working directory on its own branch. Claude Code ca
 
 ### Models, effort, and fast mode
 
-Three dials worth knowing: `/model` switches between Opus (deepest reasoning), Sonnet (balanced), and Haiku (fast and cheap — good for subagents and triage); an **effort** setting trades thinking depth for speed and cost; and **`/fast`** (on recent Opus 4.x) returns answers noticeably quicker for routine work. A sensible default: Opus for design, analysis, and verification; Haiku for bulk mechanical subagent jobs. There is also **`/ultrareview`**, a user-triggered, billed multi-agent review of your current branch or a pull request — a heavier, independent second opinion than `scholar-code-review`.
+Three dials worth knowing: `/model` switches between Opus (deepest reasoning), Sonnet (balanced), and Haiku (fast and cheap — good for subagents and triage); an **effort** setting trades thinking depth for speed and cost; and **`/fast`** (on Opus 5.5, Opus 5 and Opus 4.8) returns answers noticeably quicker at a higher price. A sensible default: Opus 5.5 at `medium` for design, analysis, and verification, raised to `xhigh` for the hardest passes; Haiku 5.5 for bulk mechanical subagent jobs. There is also **`claude ultrareview`** (from the shell, or `/code-review ultra` in a session), a user-triggered, billed multi-agent review of your current branch or a pull request — a heavier, independent second opinion on the code, alongside `scholar-code-review` on the statistics.
+
+### What changed between v2.1.154 and v2.1.296 (June–October 2026)
+
+The first printing of this section was written against Claude Code v2.1.154. By 13 October 2026 the current release was v2.1.296, and several of those changes alter what a careful researcher should do on day one. The nine below are the ones that matter for this workshop; `/release-notes` lists the rest.
+
+#### Sessions now start in auto mode — choose Manual for restricted data
+
+Since v2.1.284, an interactive session with no permission mode configured **starts in `auto`**, on every plan and provider. The mode older guides call `default` is now **Manual** (renamed in v2.1.200; `default` is still accepted). For any project that holds restricted data, make Manual the project's starting mode in its `.claude/settings.json`:
+
+```json
+{ "permissions": { "defaultMode": "manual" } }
+```
+
+The footer then shows a **Manual** badge when you launch. The reverse is deliberately impossible: since v2.1.257, a project or local settings file **cannot** switch on `auto` or `bypassPermissions` — those must come from `~/.claude/settings.json` or a command-line flag — so a repository you clone cannot quietly raise its own autonomy. Even in auto mode, Claude asks once before its first read outside your working directories.
+
+#### A new model lineup, and a per-model effort dial
+
+The default model on every plan, Pro included, is now **Claude Opus 5.5** (released 2026-09-22), with Sonnet 5.5, Haiku 5.5 and Fable 5.1 around it; §3.5 has the table and prices. Two habits change. Opus 5.5's default effort is **`medium`**, not `high`, so the dial is now the main cost lever: raise it to `xhigh` for the identification memo and the adversarial review, then drop back. And both `/model` and `/effort` now **save** your pick — `/effort` remembers a level per model — so a choice you made for one hard pass sticks to the next session. Press `s` in either picker to apply the change to this session only.
+
+#### Background sessions managed from the shell
+
+Background sessions are now first-class shell objects. `claude --bg "<prompt>"` starts one; `claude --resume <id> --bg` sends an existing session to the background; `claude agents` (add `--json` for scripts) lists them; and `claude attach`, `claude logs`, `claude stop` and `claude rm` join, peek at, stop and remove them. Inside a session, `/fork` copies the conversation into a new background session in its own git worktree, so an experiment cannot touch your main checkout (the old in-session fork is now `/subtask`). One caution: a background session that finishes a code change can offer to open a draft pull request. Read the diff before anything leaves your machine — draft or not, a pushed branch is visible to everyone with access to the repository.
+
+#### `/code-review` at a chosen depth
+
+`/code-review` (alias `/review` since v2.1.223) now takes a depth — `low`, `medium`, `high`, `xhigh`, `max`, or `ultra` — plus `--fix` to apply the findings, `--comment` to post them on a pull request, and `--max-findings n` (or `all`). `high` and above run in the background. Claude no longer starts a review on its own (v2.1.215): you ask for it, which keeps review a decision rather than a side effect. `claude ultrareview` from the shell runs the deepest pass. None of this replaces `scholar-code-review`, which checks the *statistics*; `/code-review` checks the code.
+
+#### Safer headless runs
+
+Three flags make `claude -p` safer to leave unattended (§3.8): `--restricted` (v2.1.248), `--permission-prompts none` (v2.1.259) so a run that hits a prompt is denied rather than left hanging, and `--max-budget-usd` to cap spending. When a run misbehaves and you suspect your own configuration, `--safe-mode` (v2.1.169) starts Claude Code without your customizations so you can tell the two apart.
+
+#### `AGENTS.md` is read too, and `/doctor prompt-audit`
+
+Since v2.1.277, Claude Code reads a project's `AGENTS.md` when there is no `CLAUDE.md` — useful for a repository you also open in Codex or ZCode, but it means a cloned repo's `AGENTS.md` now speaks to Claude as well, so read it. `/doctor` (alias `/checkup`) is now a full checkup, and `/doctor prompt-audit` (v2.1.283) shows what is being loaded into your prompt — the quickest way to see whether your data-boundary rules actually made it in.
+
+#### Subagents run in the background, nest, and take their own effort
+
+Subagents now run in the background by default (v2.1.198), can nest up to three levels deep (v2.1.219), and accept a per-agent `effort` (v2.1.292); the built-in Explore agent inherits the main session's model, and `CLAUDE_CODE_SUBAGENT_MODEL` sets a model for all of them. The `/agents` wizard is gone (removed in v2.1.198): to create or edit a subagent, ask Claude to do it, or edit the Markdown file in `.claude/agents/` yourself, as in the `lit-triage` example above.
+
+#### Workflows: the `ultracode` switch, sized to your plan
+
+The keyword that triggers a dynamic workflow is now **`ultracode`** (it was `workflow` before v2.1.160), and `/effort ultracode on|off` (v2.1.284) turns it on for a whole session. Since v2.1.271 workflows are sized to your plan: Pro gets small workflows, a medium run is about ten agents, and a run that reaches your usage limit pauses and resumes afterwards instead of failing. `/usage` now has a **Loops** breakdown (v2.1.243) and a spend-limit bar (v2.1.251), so check it after the first run.
+
+#### Plugins in one line, and `/skill-doctor`
+
+A plugin now installs from the shell in one command — `claude plugin install <plugin> --marketplace <source>` — and `claude plugin details <plugin>` shows what it ships before you trust it. Since v2.1.268, `/plugin` changes apply when you close the menu, so `/reload-plugins` is no longer needed. `/skill-doctor` (v2.1.261) checks your installed skills for problems; run it after installing or updating `open-scholar-skill`.
 
 ### A note on autonomy and verification
 
@@ -2155,7 +2247,9 @@ Choosing `ANONYMIZE` runs `python3 scripts/gates/anonymize-presidio.py anonymize
 
 For CFPS we typically choose **LOCAL_MODE** for any wave-level person file: scripts can load the data and produce summary counts, regression tables, and figures, but **the raw row values never reach Claude's context window**. This is a real privacy boundary, not a slogan — §6.5 spells out exactly what LOCAL_MODE permits.
 
-> **Changes need a restart.** Claude Code snapshots hook configuration at session start. After a `review` pass that changes statuses, restart Claude Code before expecting the guard to honour the new values. Under Codex, the project must be *trusted* before the hook activates at all; until then `AGENTS.md` instructs the agent to self-enforce against the sidecar.
+> **Changes need a restart.** Claude Code snapshots hook configuration at session start. After a `review` pass that changes statuses, restart Claude Code before expecting the guard to honour the new values. Under Codex, the project must be *trusted* before the hook activates at all — and since Codex 0.150 an untrusted project's `AGENTS.md` is ignored too, so the old self-enforcement fallback is gone.
+>
+> **Trust the project before Codex touches data.** Since Codex 0.150, a project you have not marked as trusted gets **neither** its project-level `AGENTS.md` instructions **nor** its hooks. The open-scholar-skill data-boundary rules and the PreToolUse guard are both silently inactive until you accept the trust prompt on first launch (or add `[projects."<absolute path>"]` with `trust_level = "trusted"` to `~/.codex/config.toml`). Check with `/status` and `/debug-config` before your first `Read` of anything under `data/`.
 
 ### 6.3 Inspect `safety-status.json`
 
@@ -4782,7 +4876,7 @@ When it fails, the skill prescribes the cheapest lever first: sharpen the codebo
 Not every project can double-code 500 documents by hand, and the skill is honest about the substitutes:
 
 - **Two different models** annotate the dev set via Batch APIs (e.g. Claude + GPT); agreement becomes gold, disagreement goes to an adjudication file. Inter-model Cohen κ is reported.
-- **Only one provider?** Use **two models of it** (`gpt-5.6` + `gpt-4.1`). Model diversity still filters the boundary cases, which is what gold-setting is actually for.
+- **Only one provider?** Use **two models of it** (e.g. `gpt-5.6-sol` + `gpt-5.6-luna`). Model diversity still filters the boundary cases, which is what gold-setting is actually for.
 - **Model forces temperature ≠ 0** (the GPT-5 and o-series do)? Run it *K* times and majority-vote — `gold_reconcile.py --mode majority` — to damp the non-determinism. The deployment model keeps temperature = 0 regardless.
 - Human double-coding, when you have it, reports **Krippendorff α ≥ 0.70**.
 
@@ -5068,7 +5162,7 @@ If the report shows Tier 1 (local library) hits, you are configured. If everythi
 
 **4. Know that `scholar-write` is data-safety gated.** It is a **Tier B** skill: it checks `.claude/safety-status.json` and refuses fail-fast on `NEEDS_REVIEW:*`, `HALTED`, or `LOCAL_MODE` inputs. It does not implement the LOCAL_MODE dispatch contract itself — it just declines. Resolve the sidecar with `/scholar-init review` (§6.2) first.
 
-**5. Under Codex**, there are no slash commands. Export `SCHOLAR_SKILL_DIR` to the repo root and symlink the skill folders into `~/.codex/skills/`, then invoke in prose — "Use scholar-write to draft the Introduction for ASR." Persist the variable:
+**5. Under Codex**, export `SCHOLAR_SKILL_DIR` to the repo root and symlink the skill folders into `~/.agents/skills/` (the documented user-level location; the older `~/.codex/skills/` is still read), then invoke with `$scholar-write`, pick it from the `/skills` picker, or ask in prose — "Use scholar-write to draft the Introduction for ASR." Persist the variable:
 
 ```bash
 $ echo 'export SCHOLAR_SKILL_DIR="$HOME/open-scholar-skills"' >> ~/.zshrc
@@ -6896,6 +6990,8 @@ What **not** to ask Codex to do:
 - "Invent missing data" (this should never be asked).
 - "Choose the journal" (editorial judgment is yours).
 
+**Which model reviews your work.** If `~/.codex/config.toml` sets no `model`, Codex uses its recommended default. That is **GPT-6.1 Sol** from Codex 0.159 onward; on 0.154 the picker offers GPT-6-Astra and GPT-5.6 Sol, Terra and Luna. GPT-5.5 leaves Codex on 14 October 2026, and GPT-5.4, 5.3-Codex and 5.2 are already gone, so delete any `model = "gpt-5.x…"` line from older configs. Run `codex debug models` to see the catalog your build actually offers, and record the model and reasoning effort in your AI-use disclosure.
+
 ## 23A. `scholar-openai` — the same review, orchestrated
 
 ```yaml
@@ -6917,20 +7013,20 @@ argument-hint: "[code|stats|logic|full|prose|custom] [manuscript-path]
 > /scholar-openai prose drafts/manuscript-submission-2026-05-06.md 11.5
 ```
 
-Agents spawn in parallel as background processes with a 300-second timeout each:
+Lenses are dispatched **serially** by default — the constraint is the shared account token quota, not wall-clock time — cheapest first, with a 300-second timeout each:
 
 ```bash
 codex exec -C "$CODEX_WORKDIR" --skip-git-repo-check \
-  -c 'sandbox_permissions=["disk-full-read-access"]' \
+  -s read-only \
   -o "${REVIEW_DIR}/A1-code-correctness-${RUN_TS}.md" \
-  "You are a code review agent for a social science research project. …" &
+  "You are a code review agent for a social science research project. …"
 ```
 
 Reports land in `reviews/codex/`, and **Claude** — not Codex — synthesizes them into a scorecard, a deduplicated fix checklist, and a cross-agent agreement section.
 
 Three details matter for using this honestly:
 
-- **The read-only guarantee is architectural, not sandboxed.** The skill documents that `disk-full-read-access` does *not* actually confine reads — Codex can `cat` any absolute path. The real guarantee against modification is that Codex is only ever given `-o <file>` (it writes only its own report) and is prompted to review, never to edit.
+- **The read-only guarantee is architectural, not sandboxed.** Neither setting confines reads: `-s read-only` blocks writes, but Codex can still `cat` any absolute path, and the old `sandbox_permissions` override is silently ignored by Codex 0.154 and later. The real guarantee against modification is that Codex is only ever given `-o <file>` (it writes only its own report) and is prompted to review, never to edit.
 - **Under LOCAL_MODE, a data-free mirror is built first**, and every failure mode of that mirror build — an empty path, a hardcoded absolute data path, a missing `rsync` — **halts fail-closed** rather than falling back to the live tree.
 - **P3, the reviewer-eye lens, is deliberately unprimed.** It must not read the prior peer-review or verification outputs. It answers three questions: what is your first impression, would you recognize this as a paper a reviewer would take seriously, and would you recognize it as AI-drafted.
 
@@ -6950,7 +7046,7 @@ Whenever you start a new project:
    ```
 
 2. **Copy raw data into `data/raw/`. Do not edit.**
-3. **`cd projects/<slug>` and run `claude`.**
+3. **`cd projects/<slug>` and run `claude --permission-mode manual`.** Sessions otherwise start in auto mode (§3.1).
 4. **Run `/scholar-init --slug <slug>`.**
 5. **Run `/scholar-init review`.** Resolve every NEEDS_REVIEW. (The `review` mode lives on `scholar-init`, not `scholar-safety`.)
 6. **Run `/init`** to generate `CLAUDE.md`. Edit it. Add forbidden actions.
@@ -8520,7 +8616,7 @@ This appendix exists because the §2 install instructions assume a Unix-like she
 
 After step 3 you are on the same path as macOS and Linux users; nothing else in this handbook needs to be adjusted for Windows.
 
-> **Do not use PowerShell, `cmd.exe`, or Git-Bash as your primary shell.** Claude Code and Codex both run on Windows natively, but the open-scholar-skill PreToolUse hook is a Bash script that calls `jq` and `python3` with POSIX semantics. The hook fails closed on Windows-native shells. WSL2/Ubuntu gives you a real Linux kernel where every part of the stack — `bash`, `jq`, `python3`, `git`, `R`, the skill plugin's symlinks — works without modification.
+> **Do not use PowerShell, `cmd.exe`, or Git-Bash as your primary shell.** Claude Code (Windows 10 1809 or later) and Codex both run on Windows natively — native Claude Code uses a PowerShell tool unless Git for Windows is installed (point `CLAUDE_CODE_GIT_BASH_PATH` at its `bash.exe`), and its Bash sandbox does not run there — but the open-scholar-skill PreToolUse hook is a Bash script that calls `jq` and `python3` with POSIX semantics. The hook fails closed on Windows-native shells. WSL2/Ubuntu gives you a real Linux kernel where every part of the stack — `bash`, `jq`, `python3`, `git`, `R`, the skill plugin's symlinks — works without modification.
 
 ### K.1 Requirements
 
@@ -8585,7 +8681,7 @@ $ sudo apt -y install build-essential curl wget unzip ca-certificates \
 $ git --version && jq --version && python3 --version
 ```
 
-That gives you the bare minimum the §2 install needs. Everything else — Node.js, Claude Code, Codex, the open-scholar-skill plugin, R, the social-science packages — comes from §2 and §2.7 *unchanged*.
+That gives you the bare minimum the §2 install needs. Everything else — Claude Code (native installer, no Node.js needed), Codex (and Node.js, if you install Codex through `npm`), the open-scholar-skill plugin, R, the social-science packages — comes from §2 and §2.7 *unchanged*.
 
 ### K.5 Where your files live
 
@@ -8626,10 +8722,10 @@ $ cat ~/.ssh/id_ed25519.pub | clip.exe
 
 If your IT policy forbids WSL2, you can run Claude Code and Codex on Windows natively. The constraints:
 
-- Install Node.js LTS from <https://nodejs.org> (the `.msi` installer also adds `npm` to PATH).
-- `npm install -g @anthropic-ai/claude-code` and `npm install -g @openai/codex` both work.
+- Install Claude Code with the native installer from PowerShell — `irm https://claude.ai/install.ps1 | iex` — or `winget install Anthropic.ClaudeCode`. No Node.js is needed for Claude Code.
+- Install Codex with `npm install -g @openai/codex` (needs Node.js 22+ from <https://nodejs.org>) or the official Windows installer (<https://learn.chatgpt.com/docs/codex/cli>).
 - Use **Windows Terminal + PowerShell 7+** (not the legacy `cmd.exe`).
-- Install **Git for Windows** from <https://git-scm.com/download/win>. During install, choose "Use Git from the Windows Command Prompt" and "Checkout as-is, commit Unix-style line endings."
+- Install **Git for Windows** from <https://git-scm.com/download/win> (without it, native Claude Code falls back to a PowerShell tool; set `CLAUDE_CODE_GIT_BASH_PATH` if it cannot find `bash.exe`). During install, choose "Use Git from the Windows Command Prompt" and "Checkout as-is, commit Unix-style line endings."
 - Install **Python** via <https://www.python.org/downloads/windows/> (tick "Add Python to PATH"). For R, use the official CRAN installer from <https://cran.r-project.org/bin/windows/base/> plus RTools.
 - Install **`jq`** with `winget install jqlang.jq` (the open-scholar-skill PreToolUse hook needs it).
 - The PreToolUse hook script in `open-scholar-skill/scripts/gates/pretooluse-data-guard.sh` is Bash. Either (a) install Git-Bash and configure Claude Code's hooks to invoke it under `bash.exe`, or (b) accept that data-safety guarding will not work on Windows-native installs and **never read sensitive data with this setup**.
@@ -8640,7 +8736,8 @@ The native path saves disk space but loses you the PreToolUse hook and a uniform
 
 | Symptom | Cause | Fix |
 | ------- | ----- | --- |
-| `claude` not found after `npm install -g ...` inside WSL2 | npm installed binaries are under `~/.npm-global/bin` and that's not on PATH | `echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc && exec bash` |
+| `claude` not found after the native install inside WSL2 | The native installer puts `claude` in `~/.local/bin`, which is not on PATH | `echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc && exec bash` |
+| `codex` not found after `npm install -g ...` inside WSL2 | npm installed binaries are under `~/.npm-global/bin` and that's not on PATH | `echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc && exec bash` |
 | `bash: jq: command not found` when running setup.sh | `jq` not installed on Ubuntu side | `sudo apt install jq` |
 | Slow file I/O when working in `/mnt/c/...` | Cross-filesystem boundary | Move the project under `/home/yourname/projects/` |
 | PreToolUse hook always blocks files | Project lives on `/mnt/c/...`; path canonicalization mismatches `.claude/safety-status.json` entries | Move project to `/home/yourname/...` and re-run `/scholar-init` |
@@ -8654,9 +8751,9 @@ A successful Windows install ends with this exact handshake, run from inside Win
 ```bash
 $ wsl -l -v          # (run this one in PowerShell) — VERSION must be 2
 $ uname -a            # Linux DESKTOP-...  5.x.x ... GNU/Linux
-$ node --version      # v20.x.x
-$ claude --version    # 2.x.y (current as of 2026-05 is in the 2.1.x range)
-$ codex --version     # codex-cli 0.130.0 or later
+$ node --version      # v22.x.x (only needed for an npm install of Codex)
+$ claude --version    # 2.1.x (current as of 2026-10 is 2.1.296)
+$ codex --version     # codex-cli 0.154.0 or later
 $ jq --version        # jq-1.6 or later
 $ pwd                 # /home/yourname/projects/...
 ```
@@ -8667,7 +8764,7 @@ If all seven commands return clean output, return to §2.4 and install the open-
 
 Both tools carry a large set of built-in commands that the workshop never has time to walk through. This appendix lists them **A–Z**, with what each one does, so you can find the command you half-remember.
 
-> **Verified 2026-08-04** against the official command reference (`code.claude.com/docs/en/commands`) and, for Codex, extracted directly from the installed `codex-cli 0.145.0` binary. **This is the fastest-moving surface in either tool** — commands appear, get renamed, and disappear between releases. Type `/` in either TUI to see what *your* build actually offers, and treat this appendix as a map rather than a contract. Availability also varies by platform, plan, and account.
+> **Verified 2026-08-04** against the official command reference (`code.claude.com/docs/en/commands`), and **re-verified 2026-10-13** against Claude Code v2.1.296. Codex was re-verified 2026-10-13 against the installed `codex-cli 0.154.0` (current release 0.162.1). **This is the fastest-moving surface in either tool** — commands appear, get renamed, and disappear between releases. Type `/` in either TUI to see what *your* build actually offers, and treat this appendix as a map rather than a contract. Availability also varies by platform, plan, and account.
 
 ### L.1 Claude Code — built-in slash commands, A–Z
 
@@ -8675,7 +8772,7 @@ Both tools carry a large set of built-in commands that the workshop never has ti
 |---|---|
 | `/add-dir <path>` | Add another working directory for file access in this session |
 | `/advisor [model\|off]` | Consult a second model for guidance; toggle the advisor tool |
-| `/agents` | Manage subagent configurations |
+| `/agents` | *Removed in v2.1.198* — ask Claude to create or edit a subagent, or edit `.claude/agents/` |
 | `/background [prompt]` | Detach the session to run as a background agent, freeing the terminal |
 | `/branch [name]` | Branch the conversation to try a different direction |
 | `/btw [question]` | Ask a quick side question without adding it to the conversation |
@@ -8690,12 +8787,13 @@ Both tools carry a large set of built-in commands that the workshop never has ti
 | `/cost` | Alias for `/usage` |
 | `/desktop` | Continue this session in the Claude Code desktop app (alias `/app`) |
 | `/diff` | Open an interactive viewer for uncommitted changes |
+| `/effort [level\|ultracode on\|off]` | Set reasoning effort for the current model (saved per model; `s` for this session only) |
 | `/exit` | Exit the CLI (alias `/quit`) |
 | `/export [filename]` | Export the conversation as plain text |
-| `/fast [on\|off]` | Toggle fast mode |
+| `/fast [on\|off]` | Toggle fast mode (Opus 5.5, Opus 5, Opus 4.8) |
 | `/feedback [report]` | Send product feedback |
-| `/focus` | Toggle the focus view |
-| `/fork [prompt]` | Copy this conversation into a new background session |
+| `/focus` | Toggle the focus view (prompt, one-line summary, response); `Ctrl+O` is the verbose transcript |
+| `/fork [prompt]` | Copy this conversation into a new background session in its own worktree |
 | `/goal [condition\|clear]` | Keep working until a stated condition is met |
 | `/heapdump` | Write a JS heap snapshot for diagnosing memory use |
 | `/help` | Show help and available commands |
@@ -8710,25 +8808,26 @@ Both tools carry a large set of built-in commands that the workshop never has ti
 | `/mcp [reconnect <server>\|enable\|disable]` | Manage MCP servers and OAuth (§3.6) |
 | `/memory` | Edit `CLAUDE.md` memory files, or manage auto-memory |
 | `/mobile` | Show a QR code to download the mobile app (aliases `/ios`, `/android`) |
-| `/model [model]` | Switch model and save it as your default (§3.5) |
-| `/passes` | Share a free week of Claude Code |
+| `/model [model]` | Switch model and save it as your default; `s` for this session only (§3.5) |
+| `/passes` | Share a free week of Claude Code (not confirmed in v2.1.296; check your `/` menu) |
 | `/permissions` | Manage allow / ask / deny rules (alias `/allowed-tools`; §3.1) |
 | `/plan [description]` | Enter plan mode directly from the prompt |
+| `/release-notes` | Show what changed in your installed version |
 | `/remote-control` | Continue this local session from another device |
 | `/resume [name]` | Return to an earlier conversation or checkpoint |
 | `/rewind [target]` | Roll code **and** conversation back to a checkpoint |
 | `/sandbox` | Open the sandbox panel — tabs, modes, and defaults in §5A |
 | `/security-review [--fix] [target]` | Check the diff for security vulnerabilities |
-| `/simplify [--fix] [target]` | Simplify the diff without changing behaviour |
+| `/simplify [target]` | Simplify the diff without changing behaviour, applying its own fixes |
 | `/status` | Show session status and settings |
 | `/subtask <prompt>` | Hand a side task to a subagent that reports back here |
 | `/tasks` | List background work for this session |
 | `/teleport` | Pull a web session into this terminal |
-| `/test` | Run tests and capture output |
+| `/test` | Run tests and capture output (not confirmed in v2.1.296; check your `/` menu) |
 | `/upgrade` | Upgrade to Claude Code Pro |
 | `/usage` | Token usage and costs for this session |
 | `/verify [--fix] [target]` | Verify that code changes are correct |
-| `/web [url]` | Add a web page to the conversation |
+| `/web [url]` | Add a web page to the conversation (not confirmed in v2.1.296; check your `/` menu) |
 
 ### L.2 Claude Code — bundled skills and workflows
 
@@ -8739,21 +8838,22 @@ These ship with Claude Code and are invoked the same way, but are skills rather 
 | `/autofix-pr [prompt]` | Spawn a session that watches this branch's PR and pushes fixes |
 | `/batch <instruction>` | Orchestrate large-scale changes across a codebase in parallel |
 | `/claude-api [migrate\|managed-agents-onboard]` | Load Claude API / Managed Agents reference material |
-| `/code-review [low…max\|ultra] [--fix] [--comment]` | Review the current diff (this is `ultrareview` at `ultra`) |
+| `/code-review [low…max\|ultra] [--fix] [--comment] [--max-findings n\|all]` | Review the current diff (alias `/review`; this is `ultrareview` at `ultra`; `high` and above run in the background) |
 | `/dataviz [request]` | Design guidance for charts, graphs, and dashboards |
 | `/debug [description]` | Enable debug logging and troubleshoot |
 | `/deep-research <question>` | Fan out web searches, cross-check sources, synthesize a cited report |
 | `/design-login` · `/design-sync [hint]` | Authorize and sync a React design system to Claude Design |
-| `/doctor` | Setup checkup that diagnoses and can fix issues (alias `/checkup`) |
+| `/doctor [prompt-audit]` | Setup checkup that diagnoses and can fix issues (alias `/checkup`); `prompt-audit` shows what is loaded into the prompt |
 | `/fewer-permission-prompts` | Scan transcripts and propose an allowlist to cut prompts |
 | `/loop [interval] [prompt]` | Run a prompt repeatedly while the session stays open (alias `/proactive`) |
-| `/review [pr#]` | Fast single-pass read-only review of a GitHub pull request |
+| `/review` | Alias of `/code-review` since v2.1.223 |
+| `/skill-doctor` | Check installed skills for problems (v2.1.261) |
 
-Two Claude Code commands are run from the shell, not the session: **`claude doctor`** (read-only install diagnostics without starting a session) and **`claude agents`** (monitor background sessions).
+Several Claude Code commands are run from the shell, not the session: **`claude doctor`** (read-only install diagnostics without starting a session), **`claude update`** and **`claude install`**, **`claude auth login|logout|status`**, **`claude agents`** (list background sessions; `--json`), **`claude attach`** / **`logs`** / **`stop`** / **`rm`** / **`respawn`** for one of them, **`claude --bg "<prompt>"`** to start one, **`claude mcp`** (including `login` / `logout`), **`claude plugin`** (`install --marketplace`, `details`, `eval`), **`claude ultrareview`**, **`claude auto-mode`**, **`claude import codex|gemini|cursor`**, and **`claude purge`**.
 
 ### L.3 Codex — slash commands, A–Z
 
-Extracted from the shipped `codex-cli 0.145.0` binary, so this is what the workshop's install actually offers. Note that the published Codex documentation currently describes a **different** command set from the released binary — where they disagree, believe your own `/` menu.
+Extracted from the shipped `codex-cli 0.154.0` binary, so this is what the workshop's install actually offers. Later builds (0.155–0.161) add `/voice`, `/tui`, `/daemon`, and `/mcp login <name>`. Note that the published Codex documentation currently describes a **different** command set from the released binary — where they disagree, believe your own `/` menu.
 
 | Command | What it does |
 |---|---|
@@ -8762,13 +8862,16 @@ Extracted from the shipped `codex-cli 0.145.0` binary, so this is what the works
 | `/apps` | Manage apps (connectors) |
 | `/approve` | Approve one retry of a recent auto-review denial |
 | `/archive` | Archive this session and exit |
+| `/cd` · `/pwd` | Change · print the working directory (0.149) |
 | `/clear` | Clear the terminal and start a new chat |
 | `/compact` | Summarize the conversation to avoid hitting the context limit |
-| `/copy` | Copy the last response as markdown |
+| `/copy` | Copy the last response or part of it (picker: code blocks, quotes) |
 | `/debug-config` | Show config layers and requirement sources, for debugging |
 | `/delete` | Permanently delete this session and exit |
 | `/diff` | Show the git diff, **including untracked files** |
+| `/exit` | Exit Codex (same as `/quit`) |
 | `/experimental` | Toggle experimental features |
+| `/export` | Export the conversation (0.148) |
 | `/feedback` | Send logs to the maintainers |
 | `/fork` | Fork the current chat |
 | `/goal` | Set or view the goal for a long-running task |
@@ -8784,39 +8887,45 @@ Extracted from the shipped `codex-cli 0.145.0` binary, so this is what the works
 | `/model` | Choose model **and reasoning effort** |
 | `/new` | Start a new chat mid-conversation |
 | `/permissions` | Choose what Codex is allowed to do (the approval policy) |
+| `/personality` | Choose Codex's communication style |
 | `/pets` | Choose or hide the terminal pet |
 | `/plan` | Switch to Plan mode |
 | `/plugins` | Browse plugins |
 | `/ps` · `/stop` | List background terminals · stop all of them |
 | `/quit` | Exit Codex |
+| `/raw` | Toggle raw scrollback for copy-friendly selection |
+| `/recap` | Summarize the session so far (0.153) |
 | `/rename` | Rename the current thread |
 | `/resume` | Resume a saved chat |
 | `/review` | Review my current changes and find issues |
 | `/rollout` | Print the rollout (session transcript) file path |
-| `/sandbox-add-read-dir <abs path>` | Let the sandbox read one extra directory (**Windows**) |
+| `/sandbox-add-read-dir <abs path>` | Let the sandbox read one extra directory (**Windows**) — removed in 0.155 |
 | `/setup-default-sandbox` | Set up the elevated agent sandbox (**Windows**) |
 | `/side` · `/btw` | Start a side conversation in an ephemeral fork |
 | `/skills` | Use skills to improve how Codex performs specific tasks |
 | `/statusline` | Configure which items appear in the status line |
 | `/status` | Show session configuration and token usage |
+| `/theme` | Choose the syntax-highlighting theme |
+| `/title` | Configure the terminal title |
 | `/usage` | View account usage, or a usage-limit reset |
 | `/vim` | Toggle Vim mode for the composer |
+| `/worktree` | *(experimental, 0.154)* Work in a separate git worktree |
 
-The binary also carries a syntax-highlighting **theme** picker, a terminal-**title** configurator, a communication-**style** picker, and a raw-scrollback toggle for copy-friendly selection; their exact invocation names could not be pinned from the binary, so check your `/` menu. `test-approval`, `debug-m-drop`, and `debug-m-update` are internal test hooks marked "DO NOT USE".
+`test-approval`, `debug-m-drop`, and `debug-m-update` are internal test hooks marked "DO NOT USE".
 
 ### L.4 Codex — shell subcommands
 
-Unlike Claude Code, Codex puts substantial functionality in shell subcommands (`codex-cli 0.145.0`, `codex --help`):
+Unlike Claude Code, Codex puts substantial functionality in shell subcommands (`codex-cli 0.154.0`, `codex --help`):
 
 | Subcommand | What it does |
 |---|---|
-| `exec` (alias `e`) | Run Codex non-interactively — the form §23 uses for external review |
+| `exec` (alias `e`) | Run Codex non-interactively — the form §23 uses for external review. It has no `-a` flag (it never prompts); set its reach with `-s read-only\|workspace-write`. `--full-auto` was removed in 0.147 |
 | `review` | Run a code review non-interactively |
 | `apply` (alias `a`) | Apply Codex's latest diff to the working tree via `git apply` |
 | `resume` / `fork` | Resume or fork a previous interactive session (`--last` for the most recent) |
 | `archive` / `unarchive` / `delete` | Manage saved sessions by id or name |
 | `sandbox` | Run commands inside a Codex-provided sandbox |
-| `mcp` / `mcp-server` | Manage external MCP servers · run Codex itself as an MCP server |
+| `mcp` | Manage external MCP servers (`list`, `get`, `add`, `remove`, `login`, `logout`); `mcp-server` was removed in 0.154 |
 | `plugin` | Manage Codex plugins |
 | `login` / `logout` | Manage authentication |
 | `doctor` | Diagnose install, config, auth, and runtime health |
@@ -8824,7 +8933,10 @@ Unlike Claude Code, Codex puts substantial functionality in shell subcommands (`
 | `completion` | Generate shell-completion scripts |
 | `cloud` | *(experimental)* Browse Codex Cloud tasks and apply changes locally |
 | `app` / `app-server` / `remote-control` | Desktop app and app-server tooling |
-| `debug` / `features` | Debugging tools · inspect feature flags |
+| `debug` / `features` | Debugging tools (`codex debug models` shows the model catalog) · inspect feature flags |
+| `agents` / `queue` | Manage agents · queued work (0.149) |
+| `exec-server` | *(experimental)* Run the exec server |
+| `migrate-rollouts` | Migrate saved session files |
 
-Two flags matter for everything in this handbook: **`-c key=value`** overrides any `~/.codex/config.toml` value (`-c model="gpt-5.2-codex"`), and **`--enable` / `--disable`** toggle named features.
+Two flags matter for everything in this handbook: **`-c key=value`** overrides any `~/.codex/config.toml` value (`-m gpt-5.6-sol`, or `-c model="gpt-5.6-sol"`; on Codex ≥ 0.159 the default is `gpt-6.1-sol`), and **`--enable` / `--disable`** toggle named features.
 {% endraw %}
