@@ -31,8 +31,8 @@ main:
   #- title: "中文"
   #  url: /chn/
 
-  #- title: "ZLab"
-  #  url: /zlab/
+  - title: "Lab"
+    url: /zlab/
 
   #- title: "AAPI"
   #  url: /aapi/
