@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <clipPath id="frame"><rect width="400" height="400"/></clipPath>
+    <!-- curly hair built from overlapping blobs -->
+    <g id="curls">
+      <circle cx="0"   cy="0"  r="30"/><circle cx="36"  cy="-14" r="26"/>
+      <circle cx="-34" cy="-10" r="27"/><circle cx="16" cy="-34" r="27"/>
+      <circle cx="-16" cy="-36" r="25"/><circle cx="54" cy="12" r="25"/>
+      <circle cx="-54" cy="10" r="26"/>
+    </g>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <!-- warm cream ground, matching Hao's -->
+    <rect width="400" height="400" fill="#FBE9C8"/>
+    <!-- light pencil hatching -->
+    <g stroke="#EFD6AC" stroke-width="5" opacity=".55">
+      <line x1="-40" y1="60"  x2="120" y2="-40"/>
+      <line x1="-40" y1="130" x2="150" y2="-10"/>
+      <line x1="270" y1="-30" x2="440" y2="100"/>
+      <line x1="300" y1="-30" x2="440" y2="150"/>
+    </g>
+
+    <!-- shoulders / black polo -->
+    <path d="M60 400 C62 322 110 292 160 280 L240 280 C290 292 338 322 340 400 Z"
+          fill="#2A241F" stroke="#1A1613" stroke-width="5" stroke-linejoin="round"/>
+    <!-- collar -->
+    <path d="M163 282 L200 322 L237 282" fill="none" stroke="#4A423B" stroke-width="5" stroke-linecap="round"/>
+    <!-- placket + buttons -->
+    <line x1="200" y1="322" x2="200" y2="372" stroke="#4A423B" stroke-width="4"/>
+    <circle cx="200" cy="338" r="3.4" fill="#6E655C"/>
+    <circle cx="200" cy="360" r="3.4" fill="#6E655C"/>
+
+    <!-- neck -->
+    <path d="M172 250 L172 288 Q200 302 228 288 L228 250 Z" fill="#D9A273" stroke="#8C5A33" stroke-width="4.5" stroke-linejoin="round"/>
+
+    <!-- hair back mass -->
+    <g fill="#2E2520">
+      <use href="#curls" transform="translate(126,150) scale(1.08)"/>
+      <use href="#curls" transform="translate(274,150) scale(1.08)"/>
+      <use href="#curls" transform="translate(200,108) scale(1.12)"/>
+    </g>
+
+    <!-- face -->
+    <path d="M126 150 Q126 100 200 100 Q274 100 274 150 L274 198 Q274 262 200 272 Q126 262 126 198 Z"
+          fill="#E8B183" stroke="#8C5A33" stroke-width="5" stroke-linejoin="round"/>
+
+    <!-- ears -->
+    <ellipse cx="125" cy="192" rx="11" ry="16" fill="#E8B183" stroke="#8C5A33" stroke-width="4"/>
+    <ellipse cx="275" cy="192" rx="11" ry="16" fill="#E8B183" stroke="#8C5A33" stroke-width="4"/>
+
+    <!-- hair front: fringe of curls across the brow -->
+    <g fill="#2E2520" stroke="#1F1915" stroke-width="3">
+      <circle cx="146" cy="132" r="30"/><circle cx="182" cy="116" r="31"/>
+      <circle cx="220" cy="114" r="31"/><circle cx="256" cy="132" r="30"/>
+      <circle cx="120" cy="168" r="28"/><circle cx="280" cy="168" r="28"/>
+      <circle cx="112" cy="202" r="25"/><circle cx="288" cy="202" r="25"/>
+      <circle cx="116" cy="234" r="23"/><circle cx="284" cy="234" r="23"/>
+    </g>
+
+    <!-- eyebrows -->
+    <path d="M158 178 Q174 169 190 177" fill="none" stroke="#2E2520" stroke-width="7" stroke-linecap="round"/>
+    <path d="M210 177 Q226 169 242 178" fill="none" stroke="#2E2520" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- eyes: warm closed-arc smile, like Hao's -->
+    <path d="M160 200 Q174 188 188 200" fill="none" stroke="#241D18" stroke-width="6" stroke-linecap="round"/>
+    <path d="M212 200 Q226 188 240 200" fill="none" stroke="#241D18" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- cheeks -->
+    <ellipse cx="156" cy="218" rx="14" ry="9" fill="#E8927A" opacity=".5"/>
+    <ellipse cx="244" cy="218" rx="14" ry="9" fill="#E8927A" opacity=".5"/>
+
+    <!-- nose -->
+    <path d="M200 206 L200 222 Q206 226 199 228" fill="none" stroke="#8C5A33" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- mustache -->
+    <path d="M200 237 Q182 229 170 236 Q180 245 200 240 Q220 245 230 236 Q218 229 200 237 Z"
+          fill="#3A2F27" stroke="#241C16" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- smile -->
+    <path d="M182 250 Q200 272 218 250 Q200 258 182 250 Z" fill="#8C3B2E" stroke="#5E2418" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M186 252 Q200 256 214 252 Q200 250 186 252 Z" fill="#FBEDE6"/>
+  </g>
+</svg>
