@@ -1,7 +1,7 @@
 ---
 permalink: /zlab/
-title: "Zhang Computational Social Science Lab"
-excerpt: "People, projects, and placements from the Zhang CSS Lab at Stony Brook University."
+title: "The Zhang CSS Lab at SBU"
+excerpt: "People, projects, and placements from the Zhang CSS Lab at SBU."
 author_profile: true
 ---
 
@@ -38,7 +38,7 @@ author_profile: true
 }
 </style>
 
-<p class="zl-lead">The <strong>Zhang Computational Social Science Lab</strong> at Stony Brook University studies social and human behavior with computational, statistical, and network methods — natural language processing and computer vision applied to data large enough that reading it by hand is no longer an option. Our current work centers on the relationship between <strong>AI and society</strong>, alongside long-running interests in mobility, segregation, and polarization in the United States.</p>
+<p class="zl-lead">The <strong>Zhang CSS Lab</strong> at SBU studies social and human behavior with computational, statistical, and network methods — natural language processing and computer vision applied to data large enough that reading it by hand is no longer an option. Our current work centers on the relationship between <strong>AI and society</strong>, alongside long-running interests in mobility, segregation, and polarization in the United States.</p>
 
 ## What we work on
 
