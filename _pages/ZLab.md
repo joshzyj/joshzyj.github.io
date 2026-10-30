@@ -99,7 +99,7 @@ Three lines of research run in parallel. All three share a method — large-scal
 ## Placements
 
 <div class="zl-place">
-  <img src="/images/haolin.png" alt="Hao Lin">
+  <img src="/images/haolin-cartoon.png" alt="Illustrated portrait of Hao Lin">
   <div class="zl-place-body">
     <h3>Hao Lin</h3>
     <div class="zl-dest">Senior Data Scientist, Apple</div>
