@@ -110,7 +110,7 @@ Three lines of research run in parallel. All three share a method — large-scal
 <div class="zl-place">
   <img src="/images/danial-cartoon.png" alt="Illustrated portrait of Danial Vahabli">
   <div class="zl-place-body">
-    <h3>Danial Vahabli</h3>
+    <h3><a href="https://www.danialvahabli.com">Danial Vahabli</a></h3>
     <div class="zl-dest">Postdoctoral Researcher, WZB Berlin Social Science Center</div>
     <p>A political sociologist working at the intersection of resistance, culture, and globalization, and a former graduate fellow of Stony Brook's Institute for Advanced Computational Science. His dissertation asks how and why domestic dissidents seek international support, how their concerns get represented in international media, and what that support does to the movements receiving it.</p>
   </div>
