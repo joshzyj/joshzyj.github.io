@@ -19,6 +19,11 @@ author_profile: true
 .zl-place h3 { margin: .05em 0 .28em; font-size: 1.14em; color: #7a3b1c; line-height: 1.25; }
 .zl-place .zl-dest { font-weight: 700; color: #a84a22; font-size: .93em; }
 .zl-place p { margin: .3em 0 0; font-size: .89em; color: #5a5048; line-height: 1.5; }
+.zl-alumni { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 1.2em 0 1.5em; }
+.zl-alum { border: 1px solid #e7d9c9; border-radius: 10px; background: #fdfaf6; padding: 1em 1.15em; }
+.zl-alum h3 { margin: .1em 0 .25em; font-size: 1.08em; color: #7a3b1c; line-height: 1.25; }
+.zl-alum .zl-dest { font-weight: 700; color: #a84a22; font-size: .9em; }
+.zl-alum p { margin: .4em 0 0; font-size: .87em; color: #5a5048; line-height: 1.45; }
 .zl-note { border-left: 3px solid #a84a22; background: #f7ece2; padding: .7em 1em; border-radius: 0 6px 6px 0; font-size: .92em; }
 .zl-figure { margin: 1.5em 0; }
 .zl-figure img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid #e7d9c9; box-shadow: 0 6px 20px rgba(40,25,12,.14); }
@@ -113,6 +118,21 @@ Three lines of research run in parallel. All three share a method — large-scal
     <h3><a href="https://www.danialvahabli.com">Danial Vahabli</a></h3>
     <div class="zl-dest">Postdoctoral Researcher, WZB Berlin Social Science Center</div>
     <p>A political sociologist working at the intersection of resistance, culture, and globalization, and a former graduate fellow of Stony Brook's Institute for Advanced Computational Science. His dissertation asks how and why domestic dissidents seek international support, how their concerns get represented in international media, and what that support does to the movements receiving it.</p>
+  </div>
+</div>
+
+## Master's and RA placements
+
+<div class="zl-alumni">
+  <div class="zl-alum">
+    <h3>Pradeep Nalluri</h3>
+    <div class="zl-dest">Amazon Web Services (AWS)</div>
+    <p>Worked on the lab's <a href="/aapi/">Anti-AAPI Hate Speech and Incident Project</a>.</p>
+  </div>
+  <div class="zl-alum">
+    <h3>Amarnath Kalluru</h3>
+    <div class="zl-dest">Amazon Web Services (AWS)</div>
+    <p>Worked on community resilience research in the lab.</p>
   </div>
 </div>
 
