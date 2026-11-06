@@ -1,18 +1,12 @@
 ---
 permalink: /zlab/
 title: "Zhang AI and Computational Social Science Lab"
-excerpt: "People, projects, and placements from the Zhang ACSS Lab at Stony Brook University."
+excerpt: "Research, projects, and placements from the Zhang ACSS Lab at Stony Brook University."
 author_profile: true
 ---
 
 <style>
 .zl-lead { font-size: 1.05em; line-height: 1.6; }
-.zl-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin: 1.5em 0; }
-.zl-card { border: 1px solid #e2e2e2; border-radius: 10px; padding: 1.05em 1.15em; background: #fafafa; transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease; }
-.zl-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.10); border-color: #a84a22; transform: translateY(-2px); }
-.zl-card h3 { margin: .1em 0 .3em; font-size: 1.12em; line-height: 1.25; }
-.zl-card .zl-role { font-size: .72em; letter-spacing: .07em; text-transform: uppercase; color: #a84a22; font-weight: 700; }
-.zl-card p { margin: 0; font-size: .87em; color: #555; line-height: 1.45; }
 .zl-place { display: flex; gap: 1.1em; align-items: flex-start; border: 1px solid #e7d9c9; border-left: 5px solid #a84a22; border-radius: 12px; background: linear-gradient(100deg, #f7ece2 0%, #fdfaf6 62%); padding: 1.1em 1.3em; margin: 1.1em 0; box-shadow: 0 1px 2px rgba(80,50,20,.06); }
 .zl-place img { width: 86px; height: 86px; object-fit: cover; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(80,50,20,.18); flex-shrink: 0; }
 .zl-place-body { flex: 1; min-width: 0; }
@@ -72,26 +66,6 @@ Three lines of research run in parallel. All three share a method — large-scal
     <div class="zl-tags">Related: large language and vision models for global social protests; visual framing in global news media</div>
   </div>
 
-</div>
-
-## Current members
-
-<div class="zl-cards">
-  <div class="zl-card">
-    <div class="zl-role">PhD Student · Sociology</div>
-    <h3><a href="https://www.stonybrook.edu/sociology/people/bulin-li.html">Bulin Li</a></h3>
-    <p>Immigration, politics, and computational social science. Applies NLP to large social media datasets to trace how people legitimize immigration in public discourse. BA from Anhui University; master's degrees in sociology and statistics from American University and George Washington University.</p>
-  </div>
-  <div class="zl-card">
-    <div class="zl-role">PhD Student · Sociology</div>
-    <h3>Zoey Zhang</h3>
-    <p>Computational social science.</p>
-  </div>
-  <div class="zl-card">
-    <div class="zl-role">PhD Student · Sociology</div>
-    <h3><a href="https://www.stonybrook.edu/sociology/people/kaizhe-wang.html">Kaizhe Wang</a></h3>
-    <p>Social stratification and demography through causal inference and computational methods, with an active interest in gender and LGBTQ+ issues. BA from East China University of Science and Technology; MS in social policy from Peking University.</p>
-  </div>
 </div>
 
 ## The lab's first PhD
